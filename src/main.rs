@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate diesel;
 
+use actix_files as fs;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
@@ -27,10 +28,16 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
+            .service(
+                fs::Files::new("/static", "./static")
+                    .show_files_listing()
+                    .use_last_modified(true)
+            )
             .route("/users", web::get().to(handlers::get_all_users))
             .route("/users/{id}", web::get().to(handlers::get_user_by_id))
             .route("/users", web::post().to(handlers::add_user))
             .route("/users", web::delete().to(handlers::delete_user))
+            .configure(router::config_router)
     })
     .bind("127.0.0.1:8080")?
     .run()

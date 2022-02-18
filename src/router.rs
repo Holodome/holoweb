@@ -1,6 +1,10 @@
-use actix_web::{get, Result};
+use actix_web::{get, Result, web};
 use crate::HttpResponse;
 use askama::Template;
+
+pub fn config_router(cfg: &mut web::ServiceConfig) {
+    cfg.service(index);
+}
 
 #[derive(Template)]
 #[template(path = "index.html")]
