@@ -20,6 +20,7 @@ pub fn find_post_by_id(
         .filter(id.eq(post_id.to_string()))
         .first::<models::Post>(&conn)
         .optional()?;
+    log::info!("Found post by id '{:?}': {:?}", post_id, post);
     Ok(post)
 }
 
@@ -34,6 +35,7 @@ pub fn add_new_post(
         contents: post.contents.clone()
     };
     insert_into(posts).values(&new_post).execute(&conn)?;
+    log::info!("Inserted new post: {:?}", new_post);
     Ok(new_post)
 }
 
@@ -42,6 +44,7 @@ pub fn get_all_posts(
 ) -> Result<Vec<models::Post>, DbError> {
     let conn = db.get().unwrap();
     let items = posts.load::<models::Post>(&conn)?;
+    log::info!("Queried all posts: n={:?}", items.len());
     Ok(items)
 }
 
@@ -54,5 +57,6 @@ pub fn delete_post_by_id(
         posts
             .filter(id.eq(post_id.to_string()))
     ).execute(&conn)?;
+    log::info!("Deleted post with id='{:?}'", post_id);
     Ok(())
 }

@@ -1,6 +1,5 @@
 use askama::Template;
 use actix_web::{get, Result, HttpResponse, web};
-use actix_web::web::post;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(index)
