@@ -8,7 +8,7 @@ pub struct Post {
     pub contents: String
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, Serialize, Deserialize)]
 #[table_name="posts"]
 pub struct NewPost<'a> {
     pub name: &'a str,
