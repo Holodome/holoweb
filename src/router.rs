@@ -1,39 +1,19 @@
-use actix_web::{get, Result, web};
-use crate::HttpResponse;
-use askama::Template;
+use actix_web::{web, HttpResponse, Error};
+use actix_web::{get, post};
+use crate::handlers;
+use crate::Pool;
 
-pub fn config_router(cfg: &mut web::ServiceConfig) {
-    cfg.service(index)
-        .service(projects)
-        .service(blog_posts);
-}
+pub fn configure()
 
-#[derive(Template)]
-#[template(path = "index.html")]
-struct Index;
-
-#[derive(Template)]
-#[template(path = "projects.html")]
-struct Projects;
-
-#[derive(Template)]
-#[template(path = "blog_posts.html")]
-struct BlogPosts;
-
-#[get("/")]
-async fn index() -> Result<HttpResponse> {
-    let s = Index.render().unwrap();
-    Ok(HttpResponse::Ok().content_type("text/html").body(s))
-}
-
-#[get("/projects")]
-async fn projects() -> Result<HttpResponse> {
-    let s = Projects.render().unwrap();
-    Ok(HttpResponse::Ok().content_type("text/html").body(s))
-}
-
-#[get("/blog_posts")]
-async fn blog_posts() -> Result<HttpResponse> {
-    let s = BlogPosts.render().unwrap();
-    Ok(HttpResponse::Ok().content_type("text/html").body(s))
+#[get("/post/{post_id}")]
+async fn get_post(
+    pool: web::Data<Pool>,
+    id: web::Path<i32>
+) -> Result<HttpResponse, Error> {
+    Ok(
+        web::block(move || handlers::find_post_by_id(pool, id.into_inner()))
+            .await
+            .map(|post| HttpResponse::Ok().json(post))
+            .map_err(|_| HttpResponse::InternalServerError())?
+    )
 }

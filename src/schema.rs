@@ -1,8 +1,7 @@
 table! {
-    users (id) {
-        id -> Int4,
+    posts (id) {
+        id -> Integer,
         name -> Text,
-        email -> Text,
-        created_at -> Timestamp,
+        contents -> Text,
     }
 }

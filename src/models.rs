@@ -1,18 +1,14 @@
-use serde::{Deserialize, Serialize};
-use crate::schema::users;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize, Queryable)]
-pub struct User {
+pub struct Post {
     pub id: i32,
     pub name: String,
-    pub email: String,
-    pub created_at: chrono::NaiveDateTime
+    pub contents: String
 }
 
-#[derive(Insertable, Debug)]
-#[table_name = "users"]
-pub struct NewUser<'a> {
+#[derive(Debug)]
+pub struct NewPost<'a> {
     pub name: &'a str,
-    pub email: &'a str,
-    pub created_at: chrono::NaiveDateTime,
+    pub contents: &'a str
 }
