@@ -1,6 +1,7 @@
 use actix_web::web;
 use diesel::{insert_into, OptionalExtension};
-use crate::handlers::InputPost;
+use uuid::Uuid;
+use crate::diesel::ExpressionMethods;
 use crate::models::{NewPost, Post};
 use crate::Pool;
 use crate::schema::posts::dsl::*;
@@ -12,25 +13,28 @@ type DbError = Box<dyn std::error::Error + Send + Sync>;
 
 pub fn find_post_by_id(
     db: web::Data<Pool>,
-    post_id: i32
+    post_id: Uuid
 ) -> Result<Option<Post>, DbError> {
     let conn = db.get().unwrap();
-    let post = posts.find(post_id).get_result::<Post>(&conn);
-    Ok(post.optional()?)
+    let post = posts
+        .filter(id.eq(post_id.to_string()))
+        .first::<Post>(&conn)
+        .optional()?;
+    Ok(post)
 }
 
 pub fn add_new_post(
     db: web::Data<Pool>,
-    post: web::Json<InputPost>
-) -> Result<(), DbError> {
+    post: web::Json<NewPost>
+) -> Result<Post, DbError> {
     let conn = db.get().unwrap();
-    let new_post = NewPost {
-        name: &post.name,
-        contents: &post.contents
+    let new_post = Post {
+        id: Uuid::new_v4().to_string(),
+        name: post.name.clone(),
+        contents: post.contents.clone()
     };
     insert_into(posts).values(&new_post).execute(&conn)?;
-    println!("Here\n");
-    Ok(())
+    Ok(new_post)
 }
 
 pub fn get_all_posts(

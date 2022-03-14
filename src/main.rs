@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate diesel;
 
-use actix_files as fs;
 use actix_web::{web, App, HttpServer, middleware};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
@@ -33,11 +32,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .wrap(middleware::Logger::default())
-            .service(
-                fs::Files::new("/static", "./static")
-                    .show_files_listing()
-                    .use_last_modified(true)
-            )
             .configure(handlers::configure)
     })
     .bind("127.0.0.1:8080")?

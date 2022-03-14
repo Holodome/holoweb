@@ -1,12 +1,7 @@
 use actix_web::{HttpResponse, web, get, post, Error};
 use crate::{actions, Pool};
-use serde::{Serialize, Deserialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct InputPost {
-    pub name: String,
-    pub contents: String
-}
+use uuid::Uuid;
+use crate::models;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(get_post)
@@ -18,7 +13,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 #[get("/post/{post_id}")]
 async fn get_post(
     pool: web::Data<Pool>,
-    post_id: web::Path<i32>
+    post_id: web::Path<Uuid>
 ) -> Result<HttpResponse, Error> {
     Ok(
         web::block(move || actions::find_post_by_id(pool, post_id.into_inner()))
@@ -43,11 +38,11 @@ async fn get_all_posts(
 #[post("/post")]
 async fn add_post(
     pool: web::Data<Pool>,
-    new_post: web::Json<InputPost>) -> Result<HttpResponse, Error> {
+    new_post: web::Json<models::NewPost>) -> Result<HttpResponse, Error> {
     Ok(
         web::block(move || actions::add_new_post(pool, new_post))
             .await?
-            .map(|post| HttpResponse::Ok())
+            .map(|post| HttpResponse::Ok().json(post))
             .map_err(actix_web::error::ErrorInternalServerError)?
     )
 }
@@ -55,13 +50,13 @@ async fn add_post(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::{test, HttpServer, App};
+    use actix_web::{test, App};
     use diesel::r2d2::ConnectionManager;
     use diesel::{r2d2, SqliteConnection};
     use crate::models;
 
     #[actix_web::test]
-    fn post_routes() {
+    async fn post_routes() {
         std::env::set_var("RUST_LOG", "actix_web=debug");
         env_logger::init();
         dotenv::dotenv().ok();
@@ -81,11 +76,13 @@ mod tests {
 
         let req = test::TestRequest::post()
             .uri("/post")
-            .set_json(&models::NewPost{
-                name: "Test name",
-                contents: "Test contents"
+            .set_json(&models::NewPost {
+                name: "Test name".to_string(),
+                contents: "Test contents".to_string()
             })
             .to_request();
-        let resp = test::call_and_read_body_json(&mut app, req);
+        let resp: models::Post = test::call_and_read_body_json(&mut app, req).await;
+
+        assert_eq!(resp.name, "Test name");
     }
 }

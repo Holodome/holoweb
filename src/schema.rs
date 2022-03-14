@@ -1,6 +1,6 @@
 table! {
     posts (id) {
-        id -> Integer,
+        id -> Text,
         name -> Text,
         contents -> Text,
     }
