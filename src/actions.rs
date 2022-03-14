@@ -44,3 +44,15 @@ pub fn get_all_posts(
     let items = posts.load::<Post>(&conn)?;
     Ok(items)
 }
+
+pub fn delete_post_by_id(
+    db: web::Data<Pool>,
+    post_id: Uuid
+) -> Result<(), DbError> {
+    let conn = db.get().unwrap();
+    diesel::delete(
+        posts
+            .filter(id.eq(post_id.to_string()))
+    ).execute(&conn)?;
+    Ok(())
+}

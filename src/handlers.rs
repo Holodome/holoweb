@@ -1,4 +1,4 @@
-use actix_web::{HttpResponse, web, get, post, Error};
+use actix_web::{HttpResponse, web, get, post, Error, delete};
 use crate::{actions, Pool};
 use uuid::Uuid;
 use crate::models;
@@ -10,7 +10,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     ;
 }
 
-#[get("/post/{post_id}")]
+#[get("/post/{post_uid}")]
 async fn get_post(
     pool: web::Data<Pool>,
     post_id: web::Path<Uuid>
@@ -43,6 +43,19 @@ async fn add_post(
         web::block(move || actions::add_new_post(pool, new_post))
             .await?
             .map(|post| HttpResponse::Ok().json(post))
+            .map_err(actix_web::error::ErrorInternalServerError)?
+    )
+}
+
+#[delete("/post/{post_id}")]
+async fn delete_post(
+    pool: web::Data<Pool>,
+    post_id: web::Path<Uuid>
+) -> Result<HttpResponse, Error> {
+    Ok(
+        web::block(move || actions::delete_post_by_id(pool, post_id.into_inner()))
+            .await?
+            .map(|_| HttpResponse::Ok().json(()))
             .map_err(actix_web::error::ErrorInternalServerError)?
     )
 }
