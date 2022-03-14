@@ -1,5 +1,7 @@
 use askama::Template;
 use actix_web::{get, Result, HttpResponse, web};
+use crate::{actions, Pool};
+use crate::models;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(index)
@@ -11,8 +13,10 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 struct Index;
 
 #[derive(Template)]
-#[template(path="post.html")]
-struct Post;
+#[template(path="posts.html")]
+struct Posts<'a> {
+    posts: &'a Vec<models::Post>
+}
 
 #[get("/")]
 async fn index() -> Result<HttpResponse> {
@@ -21,7 +25,12 @@ async fn index() -> Result<HttpResponse> {
 }
 
 #[get("/posts")]
-async fn posts() -> Result<HttpResponse> {
-    let s = Post.render().unwrap();
+async fn posts(pool: web::Data<Pool>) -> Result<HttpResponse> {
+    let posts = &actions::get_all_posts(pool)
+        .unwrap_or(Vec::default());
+
+    let s = Posts {
+        posts
+    }.render().unwrap();
     Ok(HttpResponse::Ok().content_type("text/html").body(s))
 }
