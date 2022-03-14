@@ -10,7 +10,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     ;
 }
 
-#[get("/post/{post_uid}")]
+#[get("/api/post/{post_uid}")]
 async fn get_post(
     pool: web::Data<Pool>,
     post_id: web::Path<Uuid>
@@ -23,7 +23,7 @@ async fn get_post(
     )
 }
 
-#[get("/post")]
+#[get("/api/post")]
 async fn get_all_posts(
     pool: web::Data<Pool>
 ) -> Result<HttpResponse, Error> {
@@ -35,7 +35,7 @@ async fn get_all_posts(
     )
 }
 
-#[post("/post")]
+#[post("/api/post")]
 async fn add_post(
     pool: web::Data<Pool>,
     new_post: web::Json<models::NewPost>) -> Result<HttpResponse, Error> {
@@ -47,7 +47,7 @@ async fn add_post(
     )
 }
 
-#[delete("/post/{post_id}")]
+#[delete("/api/post/{post_id}")]
 async fn delete_post(
     pool: web::Data<Pool>,
     post_id: web::Path<Uuid>
