@@ -1,17 +1,43 @@
-use actix_web::{web};
-use crate::Pool;
+use actix_web::{HttpResponse, web, get, post, Error};
+use crate::{actions, Pool};
 use crate::models::Post;
-use crate::diesel::QueryDsl;
-use crate::diesel::RunQueryDsl;
+use serde::{Serialize, Deserialize};
 
 use crate::schema::posts::dsl::*;
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InputPost {
+    pub name: String,
+    pub contents: String
+}
 
-pub fn find_post_by_id(
-    db: web::Data<Pool>,
-    post_id: i32
-) -> Result<Post, diesel::result::Error> {
-    let conn = db.get().unwrap();
-    let post = posts.find(post_id).get_result::<Post>(&conn);
-    post
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(get_post)
+        .service(add_post)
+    ;
+}
+
+#[get("/post/{post_id}")]
+async fn get_post(
+    pool: web::Data<Pool>,
+    post_id: web::Path<i32>
+) -> Result<HttpResponse, Error> {
+    Ok(
+        web::block(move || actions::find_post_by_id(pool, post_id.into_inner()))
+            .await
+            .map(|post| HttpResponse::Ok().json(post))
+            .map_err(|_| HttpResponse::NotFound())?
+    )
+}
+
+#[post("/post/{post_id}")]
+async fn add_post(
+    pool: web::Data<Pool>,
+    new_post: web::Json<InputPost>) -> Result<HttpResponse, Error> {
+    Ok(
+        web::block(move || actions::add_new_post(pool, new_post))
+            .await
+            .map(|post| HttpResponse::Ok().json(post))
+            .map_err(|_| HttpResponse::InternalServerError())?
+    )
 }

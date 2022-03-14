@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use crate::schema::posts;
 
 #[derive(Debug, Serialize, Deserialize, Queryable)]
 pub struct Post {
@@ -7,7 +8,8 @@ pub struct Post {
     pub contents: String
 }
 
-#[derive(Debug)]
+#[derive(Debug, Insertable)]
+#[table_name="posts"]
 pub struct NewPost<'a> {
     pub name: &'a str,
     pub contents: &'a str

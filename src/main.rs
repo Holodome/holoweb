@@ -2,7 +2,7 @@
 extern crate diesel;
 
 use actix_files as fs;
-use actix_web::{get, web, App, HttpResponse, HttpServer, Error, middleware};
+use actix_web::{web, App, HttpServer, middleware};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 
@@ -10,11 +10,9 @@ mod schema;
 mod models;
 mod handlers;
 mod router;
+mod actions;
 
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
-
-
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -38,7 +36,7 @@ async fn main() -> std::io::Result<()> {
                     .show_files_listing()
                     .use_last_modified(true)
             )
-            .service(get_post)
+            .configure(handlers::configure)
     })
     .bind("127.0.0.1:8080")?
     .run()
