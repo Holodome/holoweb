@@ -16,7 +16,7 @@ async fn get_post(
     post_id: web::Path<Uuid>
 ) -> Result<HttpResponse, Error> {
     Ok(
-        web::block(move || services::find_post_by_id(pool, post_id.into_inner()))
+        web::block(move || services::get_post_by_id(pool, post_id.into_inner()))
             .await?
             .map(|post| HttpResponse::Ok().json(post))
             .map_err(actix_web::error::ErrorInternalServerError)?

@@ -11,7 +11,7 @@ use crate::diesel::RunQueryDsl;
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
-pub fn find_post_by_id(
+pub fn get_post_by_id(
     db: web::Data<Pool>,
     post_id: Uuid
 ) -> Result<Option<models::Post>, DbError> {
@@ -21,6 +21,19 @@ pub fn find_post_by_id(
         .first::<models::Post>(&conn)
         .optional()?;
     log::info!("Found post by id '{:?}': {:?}", post_id, post);
+    Ok(post)
+}
+
+pub fn get_post_by_name(
+    db: web::Data<Pool>,
+    post_name: String
+) -> Result<Option<models::Post>, DbError> {
+    let conn = db.get().unwrap();
+    let post = posts
+        .filter(name.eq(&post_name))
+        .first::<models::Post>(&conn)
+        .optional()?;
+    log::info!("Found post by name '{:?}': {:?}", &post_name, post);
     Ok(post)
 }
 
