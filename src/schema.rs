@@ -1,5 +1,5 @@
 table! {
-    posts (id) {
+    blog_posts (id) {
         id -> Text,
         name -> Text,
         contents -> Text,

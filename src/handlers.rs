@@ -38,7 +38,7 @@ async fn get_all_posts(
 #[post("/api/post")]
 async fn add_post(
     pool: web::Data<Pool>,
-    new_post: web::Json<models::NewPost>) -> Result<HttpResponse, Error> {
+    new_post: web::Json<models::NewBlogPost>) -> Result<HttpResponse, Error> {
     Ok(
         web::block(move || services::add_new_post(pool, new_post))
             .await?
@@ -94,7 +94,7 @@ mod tests {
                 contents: "Test contents".to_string()
             })
             .to_request();
-        let resp: models::Post = test::call_and_read_body_json(&mut app, req).await;
+        let resp: models::BlogPost = test::call_and_read_body_json(&mut app, req).await;
 
         assert_eq!(resp.name, "Test name");
     }

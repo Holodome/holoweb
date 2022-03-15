@@ -2,9 +2,9 @@
 
 {% block content %}
 
-{% for post_ in posts %}
-<a href="/post/{{post_.name}}">
-  {{ post_.name }}
+{% for post in posts %}
+<a href="/blog_post/{{post.name}}">
+  {{ post.name }}
 </a>
 {% endfor %}
 

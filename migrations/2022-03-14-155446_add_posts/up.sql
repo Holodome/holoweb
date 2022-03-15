@@ -1,5 +1,5 @@
 -- Your SQL goes here
-create table posts (
+create table blog_posts (
     id varchar primary key not null,
     name text unique not null,
     contents text not null
