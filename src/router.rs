@@ -1,6 +1,6 @@
 use askama::Template;
 use actix_web::{get, Result, HttpResponse, web};
-use crate::{actions, Pool};
+use crate::{services, Pool};
 use crate::models;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
@@ -26,7 +26,7 @@ async fn index() -> Result<HttpResponse> {
 
 #[get("/posts")]
 async fn posts(pool: web::Data<Pool>) -> Result<HttpResponse> {
-    let posts = &actions::get_all_posts(pool)
+    let posts = &services::get_all_posts(pool)
         .unwrap_or(Vec::default());
 
     let s = Posts {

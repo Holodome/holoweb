@@ -10,7 +10,7 @@ mod schema;
 mod models;
 mod handlers;
 mod router;
-mod actions;
+mod services;
 
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 

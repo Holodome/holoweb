@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse, web, get, post, Error, delete};
-use crate::{actions, Pool};
+use crate::{services, Pool};
 use uuid::Uuid;
 use crate::models;
 
@@ -16,7 +16,7 @@ async fn get_post(
     post_id: web::Path<Uuid>
 ) -> Result<HttpResponse, Error> {
     Ok(
-        web::block(move || actions::find_post_by_id(pool, post_id.into_inner()))
+        web::block(move || services::find_post_by_id(pool, post_id.into_inner()))
             .await?
             .map(|post| HttpResponse::Ok().json(post))
             .map_err(actix_web::error::ErrorInternalServerError)?
@@ -28,7 +28,7 @@ async fn get_all_posts(
     pool: web::Data<Pool>
 ) -> Result<HttpResponse, Error> {
     Ok(
-        web::block(move || actions::get_all_posts(pool))
+        web::block(move || services::get_all_posts(pool))
             .await?
             .map(|users| HttpResponse::Ok().json(users))
             .map_err(actix_web::error::ErrorInternalServerError)?
@@ -40,7 +40,7 @@ async fn add_post(
     pool: web::Data<Pool>,
     new_post: web::Json<models::NewPost>) -> Result<HttpResponse, Error> {
     Ok(
-        web::block(move || actions::add_new_post(pool, new_post))
+        web::block(move || services::add_new_post(pool, new_post))
             .await?
             .map(|post| HttpResponse::Ok().json(post))
             .map_err(actix_web::error::ErrorInternalServerError)?
@@ -53,7 +53,7 @@ async fn delete_post(
     post_id: web::Path<Uuid>
 ) -> Result<HttpResponse, Error> {
     Ok(
-        web::block(move || actions::delete_post_by_id(pool, post_id.into_inner()))
+        web::block(move || services::delete_post_by_id(pool, post_id.into_inner()))
             .await?
             .map(|_| HttpResponse::Ok().json(()))
             .map_err(actix_web::error::ErrorInternalServerError)?
