@@ -20,11 +20,16 @@ pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "actix_web=debug");
-    env_logger::init();
+    env_logger::init_from_env(
+        env_logger::Env::default()
+            .filter_or("LOG_LEVEL", "website=trace,actix_web=debug")
+    );
     dotenv::dotenv().ok();
 
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL expected");
+    log::info!("Initialized logging");
+
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL expected");
 
     let manager = ConnectionManager::<SqliteConnection>::new(database_url);
     let pool: Pool = r2d2::Pool::builder()
