@@ -3,6 +3,8 @@ extern crate diesel;
 
 use actix_files as fs;
 use actix_web::{web, App, HttpServer, middleware};
+use actix_web::http::{StatusCode};
+use actix_web::middleware::{ErrorHandlers};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 
@@ -11,6 +13,8 @@ mod models;
 mod handlers;
 mod router;
 mod services;
+mod error_handlers;
+mod templates;
 
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
@@ -36,6 +40,9 @@ async fn main() -> std::io::Result<()> {
                 fs::Files::new("/static", "./static")
                     .show_files_listing()
             )
+            .wrap(
+                ErrorHandlers::new()
+                    .handler(StatusCode::NOT_FOUND, error_handlers::not_found_handler))
             .wrap(middleware::Logger::default())
             .configure(handlers::configure)
             .configure(router::configure)
