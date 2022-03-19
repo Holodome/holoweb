@@ -42,7 +42,7 @@
 //     Ok(
 //         web::block(move || services::add_new_post(pool, new_post))
 //             .await?
-//             .map(|post| HttpResponse::Ok().json(post))
+//             .map(|post| HttpResponse::Created().json(post))
 //             .map_err(actix_web::error::ErrorInternalServerError)?
 //     )
 // }

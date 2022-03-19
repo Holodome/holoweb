@@ -1,7 +1,9 @@
+use diesel::expression::AsExpression;
+use diesel::query_builder::AsChangeset;
 use serde::{Serialize, Deserialize};
 use crate::schema::{users, blog_posts, comments, projects};
 
-#[derive(Debug, Serialize, Deserialize, Queryable)]
+#[derive(Debug, Serialize, Deserialize, Queryable, Insertable)]
 pub struct User {
     pub id: String,
     pub name: String,
@@ -12,17 +14,34 @@ pub struct User {
     pub is_banned: bool
 }
 
-#[derive(Debug, Insertable)]
-#[table_name = "users"]
+#[derive(Debug)]
 pub struct NewUser<'a> {
-    pub id: &'a str,
     pub name: &'a str,
     pub email: &'a str,
     pub password: &'a str,
-    pub created_at: &'a str,
     pub role: &'a str,
-    pub is_banned: bool
 }
+
+#[derive(Debug, AsChangeset)]
+#[table_name = "users"]
+pub struct UpdateUser<'a> {
+    pub id: &'a str,
+    pub name: Option<&'a str>,
+    pub email: Option<&'a str>,
+    pub password: Option<&'a str>,
+    pub created_at: Option<&'a str>,
+    pub role: Option<&'a str>,
+    pub is_banned: Option<bool>
+}
+
+// impl AsChangeset for UpdateUser {
+//     type Target = ();
+//     type Changeset = ();
+//
+//     fn as_changeset(self) -> Self::Changeset {
+//         todo!()
+//     }
+// }
 
 #[derive(Debug, Serialize, Deserialize, Queryable)]
 pub struct BlogPost {
@@ -36,7 +55,6 @@ pub struct BlogPost {
 #[derive(Debug, Insertable)]
 #[table_name = "blog_posts"]
 pub struct NewBlogPost<'a> {
-    pub id: &'a str,
     pub title: &'a str,
     pub brief: Option<&'a str>,
     pub contents: &'a str,
@@ -55,7 +73,6 @@ pub struct Comment {
 #[derive(Debug, Insertable)]
 #[table_name = "comments"]
 pub struct NewComment<'a> {
-    pub id: &'a str,
     pub author_id: &'a str,
     pub post_id: &'a str,
     pub parent_id: Option<&'a str>,
@@ -73,7 +90,6 @@ pub struct Project {
 #[derive(Debug, Insertable)]
 #[table_name = "projects"]
 pub struct NewProject<'a> {
-    pub id: &'a str,
     pub title: &'a str,
     pub brief: &'a str,
     pub author_id: &'a str
