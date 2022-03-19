@@ -2,8 +2,8 @@
 -- This file should undo anything in `up.sql`
 create table users (
     id varchar primary key not null,
-    name text not null,
-    email text not null,
+    name text unique not null,
+    email text unique not null,
     password varchar not null,
     created_at text not null,
     role text not null,
@@ -34,7 +34,7 @@ create table comments (
 
 create table projects (
     id varchar primary key not null,
-    title text not null,
+    title text unique not null,
     brief text not null,
 
     author_id varchar not null,
