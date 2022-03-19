@@ -5,9 +5,9 @@ create table users (
     name text not null,
     email text not null,
     password varchar not null,
-    created_at integer not null,
-    role integer not null,
-    status integer not null
+    created_at text not null,
+    role text not null,
+    is_banned boolean not null
 );
 
 create table blog_posts (
@@ -25,7 +25,7 @@ create table comments (
     author_id varchar not null,
     post_id varchar not null,
 
-    parent_id varchar not null,
+    parent_id varchar,
     contents text not null,
 
     foreign key (author_id) references users(id),
@@ -34,7 +34,7 @@ create table comments (
 
 create table projects (
     id varchar primary key not null,
-    name text not null,
+    title text not null,
     brief text not null,
 
     author_id varchar not null,

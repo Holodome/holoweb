@@ -13,7 +13,7 @@ table! {
         id -> Text,
         author_id -> Text,
         post_id -> Text,
-        parent_id -> Text,
+        parent_id -> Nullable<Text>,
         contents -> Text,
     }
 }
@@ -28,7 +28,7 @@ table! {
 table! {
     projects (id) {
         id -> Text,
-        name -> Text,
+        title -> Text,
         brief -> Text,
         author_id -> Text,
     }
@@ -40,9 +40,9 @@ table! {
         name -> Text,
         email -> Text,
         password -> Text,
-        created_at -> Integer,
-        role -> Integer,
-        status -> Integer,
+        created_at -> Text,
+        role -> Text,
+        is_banned -> Bool,
     }
 }
 
