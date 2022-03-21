@@ -13,7 +13,7 @@ create table users (
 create table blog_posts (
     id varchar primary key not null,
     title text unique not null,
-    brief text unique,
+    brief text unique not null,
     contents text not null,
     author_id varchar not null,
 

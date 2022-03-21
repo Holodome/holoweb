@@ -12,6 +12,8 @@ mod schema;
 mod models;
 mod handlers;
 mod router;
+
+#[allow(dead_code)]
 mod services;
 mod error_handlers;
 mod templates;

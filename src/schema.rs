@@ -2,7 +2,7 @@ table! {
     blog_posts (id) {
         id -> Text,
         title -> Text,
-        brief -> Nullable<Text>,
+        brief -> Text,
         contents -> Text,
         author_id -> Text,
     }

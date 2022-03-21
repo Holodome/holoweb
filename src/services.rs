@@ -1,7 +1,5 @@
-use actix_web::web;
 use diesel::{insert_into, OptionalExtension, SqliteConnection};
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use serde_json::Value::String;
 use uuid::Uuid;
 use crate::diesel::ExpressionMethods;
 use crate::models;
@@ -44,7 +42,8 @@ pub fn get_user_by_email(conn: &Conn, user_email: &str)
         .optional()?)
 }
 
-pub fn get_all_users(conn: &Conn) -> Result<Vec<models::User>> {
+pub fn get_all_users(conn: &Conn)
+    -> Result<Vec<models::User>> {
     use crate::schema::users::dsl::*;
 
     Ok(users
@@ -53,7 +52,7 @@ pub fn get_all_users(conn: &Conn) -> Result<Vec<models::User>> {
 }
 
 pub fn add_user(conn: &Conn, item: models::NewUser)
-    -> Result<Option<User>> {
+    -> Result<User> {
     use crate::schema::users::dsl::*;
 
     let user = models::User {
@@ -67,10 +66,11 @@ pub fn add_user(conn: &Conn, item: models::NewUser)
     };
 
     insert_into(users).values(&user).execute(conn)?;
-    Ok(Some(user))
+    Ok(user)
 }
 
-pub fn update_user(conn: &Conn, item: models::UpdateUser) -> Result<Option<User>> {
+pub fn update_user(conn: &Conn, item: models::UpdateUser)
+    -> Result<Option<User>> {
     use crate::schema::users::dsl::*;
     diesel::update(
         users.filter(id.eq(item.id))
@@ -99,6 +99,32 @@ pub fn get_blog_post_by_title(conn: &Conn, post_title: &str)
         .first::<models::BlogPost>(conn)
         .optional()?
     )
+}
+
+pub fn add_blog_post(conn: &Conn, item: models::NewBlogPost)
+    -> Result<models::BlogPost> {
+    use crate::schema::blog_posts::dsl::*;
+
+    let blog_post = models::BlogPost {
+        id: Uuid::new_v4().to_string(),
+        title: item.title.to_string(),
+        brief: item.brief.unwrap_or(&"").to_string(),
+        contents: item.contents.to_string(),
+        author_id: item.author_id.to_string()
+    };
+
+    insert_into(blog_posts).values(&blog_post).execute(conn)?;
+    Ok(blog_post)
+}
+
+pub fn update_blog_post(conn: &Conn, item: models::UpdateBlogPost)
+    -> Result<Option<models::BlogPost>> {
+    use crate::schema::blog_posts::dsl::*;
+
+    diesel::update(blog_posts.filter(id.eq(item.id))
+    ).set(&item).execute(conn)?;
+
+    get_blog_post_by_id(conn, &item.id)
 }
 
 pub fn get_comments_by_post_id(conn: &Conn, required_post_id: &str)
