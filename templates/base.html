@@ -15,15 +15,22 @@
 </head>
 <body>
 
-<div class="ui inverted vertical center aligned segment">
-    <div class="ui container">
-        <div class="ui large borderless inverted menu">
-            <a class="item" href="/">Holodome</a>
-            <a class="item" href="#about">About</a>
-            <a class="item" href="/blog_posts">Posts</a>
+<div class="pusher">
+    <div class="ui inverted vertical masthead center aligned segment">
+
+        <div class="ui container">
+            <div class="ui large secondary inverted pointing menu">
+                <a class="item" href="/">Home</a>
+                <a class="item" href="/blog_posts">Posts</a>
+                <div class="right item">
+                    <a class="ui inverted button">Log in</a>
+                    <a class="ui inverted button">Sign Up</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 {% block content %}
 {% endblock %}
@@ -31,15 +38,14 @@
 {% block footer %}
 {% endblock %}
 
-<h4 class="ui horizontal divider header">
-    <a href="#about" id="about">
-        About
-    </a>
-</h4>
-
-<div class="ui vertical stripe">
-    <div class="ui text container">
-        <p>Hello</p>
+<div class="ui inverted vertical footer segment">
+    <div class="ui container">
+        <div class="column">
+            <h4 class="ui inverted header">About</h4>
+            <p>
+                Prototype
+            </p>
+        </div>
     </div>
 </div>
 

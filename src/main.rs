@@ -10,7 +10,6 @@ use diesel::r2d2::{self, ConnectionManager};
 
 mod schema;
 mod models;
-mod handlers;
 mod router;
 
 #[allow(dead_code)]
@@ -51,8 +50,7 @@ async fn main() -> std::io::Result<()> {
                 ErrorHandlers::new()
                     .handler(StatusCode::NOT_FOUND, error_handlers::not_found_handler))
             .wrap(middleware::Logger::default())
-            // .configure(handlers::configure)
-            // .configure(router::configure)
+            .configure(router::configure)
     })
     .bind("127.0.0.1:8080")?
     .run()
