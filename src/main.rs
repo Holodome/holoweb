@@ -7,15 +7,19 @@ use actix_web::http::{StatusCode};
 use actix_web::middleware::{ErrorHandlers};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
+use secrecy::Secret;
+use crate::config::HmacSecret;
 
 mod schema;
-mod models;
+mod domain;
 mod router;
 
 #[allow(dead_code)]
 mod services;
 mod error_handlers;
 mod templates;
+mod routes;
+mod config;
 
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
@@ -37,11 +41,17 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create db pool");
 
+    let hmac_secret = "123";
+    let settings = config::AppSettings {
+        hmac_secret: config::HmacSecret(Secret::new(hmac_secret.into()))
+    };
+
     log::info!("Starting server on 127.0.0.1:8080");
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(settings.clone()))
             .service(
                 fs::Files::new("/static", "./static")
                     .show_files_listing()
