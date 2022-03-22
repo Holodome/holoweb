@@ -17,14 +17,13 @@
 
 <div class="pusher">
     <div class="ui inverted vertical masthead center aligned segment">
-
         <div class="ui container">
             <div class="ui large secondary inverted pointing menu">
                 <a class="item" href="/">Home</a>
                 <a class="item" href="/blog_posts">Posts</a>
                 <div class="right item">
-                    <a class="ui inverted button">Log in</a>
-                    <a class="ui inverted button">Sign Up</a>
+                    <a class="ui inverted button" href="/login">Log in</a>
+                    <a class="ui inverted button" href="/register">Sign Up</a>
                 </div>
             </div>
         </div>
@@ -38,8 +37,8 @@
 {% block footer %}
 {% endblock %}
 
-<div class="ui inverted vertical footer segment">
-    <div class="ui container">
+<div class="ui inverted vertical footer segment" style="position: absolute; bottom: 0; width: 100%">
+    <div class="ui center aligned container">
         <div class="column">
             <h4 class="ui inverted header">About</h4>
             <p>

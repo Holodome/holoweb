@@ -27,6 +27,11 @@
 
     </form>
 
+    {% if let Some(error) = error %}
+    <div class="ui negative message">
+      {{ error }}
+    </div>
+    {% endif %}
     <div class="ui message">
       New to us? <a href="/register">Sign Up</a>
     </div>
