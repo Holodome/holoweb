@@ -1,9 +1,9 @@
 use secrecy::Secret;
 
 #[derive(Clone, serde::Deserialize)]
-pub struct HmacSecret(Secret<String>);
+pub struct HmacSecret(pub Secret<String>);
 
-#[derive(serde::Deserialize)]
+#[derive(Clone, serde::Deserialize)]
 pub struct AppSettings {
     pub hmac_secret: HmacSecret
 }
