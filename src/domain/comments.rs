@@ -6,7 +6,7 @@ pub struct Comment {
     pub author_id: String,
     pub post_id: String,
     pub parent_id: Option<String>,
-    pub contents: String
+    pub contents: String,
 }
 
 #[derive(Debug, Insertable)]
@@ -15,5 +15,5 @@ pub struct NewComment<'a> {
     pub author_id: &'a str,
     pub post_id: &'a str,
     pub parent_id: Option<&'a str>,
-    pub contents: &'a str
+    pub contents: &'a str,
 }

@@ -8,7 +8,7 @@ pub struct User {
     pub password: String,
     pub created_at: String,
     pub role: String,
-    pub is_banned: bool
+    pub is_banned: bool,
 }
 
 #[derive(Debug)]
@@ -28,5 +28,5 @@ pub struct UpdateUser<'a> {
     pub password: Option<&'a str>,
     pub created_at: Option<&'a str>,
     pub role: Option<&'a str>,
-    pub is_banned: Option<bool>
+    pub is_banned: Option<bool>,
 }

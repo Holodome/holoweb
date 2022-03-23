@@ -1,10 +1,8 @@
-use actix_web::{get, Result, HttpResponse, web};
-use crate::{services, Pool, templates};
-
+use crate::{services, templates, Pool};
+use actix_web::{get, web, HttpResponse, Result};
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(index_page)
-    ;
+    cfg.service(index_page);
 }
 
 #[get("/")]

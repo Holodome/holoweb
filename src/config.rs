@@ -5,5 +5,5 @@ pub struct HmacSecret(pub Secret<String>);
 
 #[derive(Clone, serde::Deserialize)]
 pub struct AppSettings {
-    pub hmac_secret: HmacSecret
+    pub hmac_secret: HmacSecret,
 }

@@ -1,9 +1,11 @@
+use crate::templates;
 use actix_web::dev::ServiceResponse;
 use actix_web::middleware::ErrorHandlerResponse;
 use actix_web::Result;
-use crate::templates;
 
-pub fn not_found_handler<B>(res: actix_web::dev::ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>> {
+pub fn not_found_handler<B>(
+    res: actix_web::dev::ServiceResponse<B>,
+) -> Result<ErrorHandlerResponse<B>> {
     let (req, res) = res.into_parts();
     let res = res.set_body(templates::render(templates::NotFoundTemplate));
 
