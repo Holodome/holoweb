@@ -1,14 +1,16 @@
 #[macro_use]
 extern crate diesel;
 
-use crate::config::HmacSecret;
+use std::net::TcpListener;
 use actix_files as fs;
 use actix_web::http::StatusCode;
 use actix_web::middleware::ErrorHandlers;
 use actix_web::{middleware, web, App, HttpServer};
+use askama::filters::format;
 use diesel::prelude::*;
-use diesel::r2d2::{self, ConnectionManager};
+use diesel::r2d2::ConnectionManager;
 use secrecy::Secret;
+use crate::startup::{run, Pool};
 
 mod domain;
 mod router;
@@ -20,8 +22,7 @@ mod routes;
 #[allow(dead_code)]
 mod services;
 mod templates;
-
-pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
+mod startup;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -34,31 +35,12 @@ async fn main() -> std::io::Result<()> {
 
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL expected");
 
-    let manager = ConnectionManager::<SqliteConnection>::new(database_url);
-    let pool: Pool = r2d2::Pool::builder()
-        .build(manager)
+    let pool: Pool = Pool::builder()
+        .build(ConnectionManager::new(database_url))
         .expect("Failed to create db pool");
 
-    let hmac_secret = "123";
-    let settings = config::AppSettings {
-        hmac_secret: config::HmacSecret(Secret::new(hmac_secret.into())),
-    };
-
-    log::info!("Starting server on 127.0.0.1:8080");
-
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(pool.clone()))
-            .app_data(web::Data::new(settings.clone()))
-            .service(fs::Files::new("/static", "./static").show_files_listing())
-            .wrap(
-                ErrorHandlers::new()
-                    .handler(StatusCode::NOT_FOUND, error_handlers::not_found_handler),
-            )
-            .wrap(middleware::Logger::default())
-            .configure(router::configure)
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+    let address = "127.0.0.1:8080";
+    let listener = TcpListener::bind(address)?;
+    run(listener, pool)?.await?;
+    Ok(())
 }

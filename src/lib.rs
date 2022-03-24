@@ -1,3 +1,3 @@
-mod startup;
-
-pub use startup::*;
+pub mod startup;
+pub mod routes;
+pub mod config;
