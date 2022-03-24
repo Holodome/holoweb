@@ -32,7 +32,7 @@ jobs:
         with:
           command: install
           args: >
-            diesel
+            diesel_cli
       - name: Migrate database
         run: |
           diesel migration run
