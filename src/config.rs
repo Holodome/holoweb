@@ -1,6 +1,6 @@
 use config::Config;
 
-#[derive(Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct Settings {
     pub database_path: String,
     pub application_port: u16,
