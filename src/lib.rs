@@ -1,3 +1,3 @@
-pub mod startup;
-pub mod routes;
 pub mod config;
+pub mod routes;
+pub mod startup;

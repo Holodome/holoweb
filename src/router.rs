@@ -1,4 +1,4 @@
-use crate::{services, templates};
+use crate::{templates};
 use actix_web::{get, web, HttpResponse, Result};
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
