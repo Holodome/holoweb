@@ -6,7 +6,6 @@ use diesel::r2d2::ConnectionManager;
 use std::net::TcpListener;
 
 mod domain;
-mod router;
 mod schema;
 
 mod config;
@@ -15,7 +14,6 @@ mod routes;
 #[allow(dead_code)]
 mod services;
 mod startup;
-mod templates;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

@@ -1,7 +1,7 @@
+use diesel::r2d2::ConnectionManager;
 use holosite::config::get_config;
 use holosite::startup::{run, Pool};
 use std::net::TcpListener;
-use diesel::r2d2::ConnectionManager;
 
 pub struct TestApp {
     pub address: String,
