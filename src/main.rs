@@ -17,7 +17,7 @@ mod telemetry;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let subscriber = telemetry::get_subscriber("holosite".into(), "info".into());
+    let subscriber = telemetry::get_subscriber("holosite".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
     tracing::info!("Initialized logging");
 

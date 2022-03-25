@@ -836,6 +836,7 @@ dependencies = [
  "hmac",
  "htmlescape",
  "log",
+ "once_cell",
  "reqwest",
  "secrecy",
  "serde",
