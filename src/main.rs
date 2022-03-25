@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
         .build(ConnectionManager::new(config.database_path))
         .expect("Failed to create db pool");
 
-    let address = format!("127.0.0.1:{}", config.application_port);
+    let address = format!("{}:{}", config.app.host, config.app.port);
     tracing::info!("Starting server on {:?}", &address);
     let listener = TcpListener::bind(address)?;
 
