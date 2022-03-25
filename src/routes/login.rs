@@ -6,7 +6,7 @@
 // use askama::Template;
 // use derive_more::Display;
 // use hmac::{Hmac, Mac};
-// use log::Log;
+// use tracing::Log;
 // use secrecy::{ExposeSecret, Secret};
 // use std::fmt::{Display, Formatter};
 //
@@ -83,7 +83,7 @@
 //         Some(query) => match query.0.verify(&secret) {
 //             Ok(error) => Some(htmlescape::encode_minimal(&error)),
 //             Err(e) => {
-//                 log::warn!("Failed to verify query parameters using hmac tag ({})", e);
+//                 tracing::warn!("Failed to verify query parameters using hmac tag ({})", e);
 //                 None
 //             }
 //         },
