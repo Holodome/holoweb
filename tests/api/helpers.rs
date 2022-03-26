@@ -1,8 +1,8 @@
 use diesel::r2d2::ConnectionManager;
 use holosite::config::get_config;
-use holosite::startup::{run, Pool};
+use holosite::startup::{Pool, Application};
 use once_cell::sync::Lazy;
-use std::net::TcpListener;
+use uuid::Uuid;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
@@ -26,27 +26,31 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 
 pub struct TestApp {
     pub address: String,
-    pub db_pool: Pool,
+    pub pool: Pool
 }
 
 pub async fn spawn_app() -> TestApp {
     Lazy::force(&TRACING);
 
-    let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
-    let port = listener.local_addr().unwrap().port();
-    let address = format!("http://127.0.0.1:{}", port);
-    let config = get_config().expect("Failed to read config");
-    let pool = configure_database(config.database_path).await;
+    let config = {
+        let mut c = get_config().expect("Failed ot get config");
+        c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
+        c.app.port = 0;
+        c
+    };
 
-    let server = run(listener, pool.clone()).expect("Failed to bind address");
-    let _ = tokio::spawn(server);
+    let app = Application::build(config.clone())
+        .await
+        .expect("Failed to build application");
+    let address = format!("http://127.0.0.1:{}", app.port());
+    let _ = tokio::spawn(app.run_until_stopped());
     TestApp {
         address,
-        db_pool: pool,
+        pool: get_connection_pool(&config.database_path)
     }
 }
 
-async fn configure_database(path: String) -> Pool {
+fn get_connection_pool(path: &str) -> Pool {
     let pool: Pool = Pool::builder()
         .build(ConnectionManager::new(path))
         .expect("Failed to create db pool");

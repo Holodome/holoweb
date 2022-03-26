@@ -1,10 +1,6 @@
 #[macro_use]
 extern crate diesel;
 
-use crate::startup::{run, Pool};
-use diesel::r2d2::ConnectionManager;
-use std::net::TcpListener;
-
 mod domain;
 mod schema;
 
@@ -24,14 +20,7 @@ async fn main() -> std::io::Result<()> {
     let config = config::get_config().expect("Failed to get config");
     tracing::info!("Loaded config: {:?}", config);
 
-    let pool: Pool = Pool::builder()
-        .build(ConnectionManager::new(config.database_path))
-        .expect("Failed to create db pool");
-
-    let address = format!("{}:{}", config.app.host, config.app.port);
-    tracing::info!("Starting server on {:?}", &address);
-    let listener = TcpListener::bind(address)?;
-
-    run(listener, pool)?.await?;
+    let app = startup::Application::build(config).await?;
+    app.run_until_stopped().await?;
     Ok(())
 }
