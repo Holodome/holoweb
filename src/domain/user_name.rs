@@ -7,7 +7,7 @@ pub enum UserNameError {
     #[error("Is too long")]
     IsTooLong,
     #[error("Forbidden characters")]
-    ForbiddenCharacters
+    ForbiddenCharacters,
 }
 
 #[derive(Debug)]
@@ -30,7 +30,6 @@ impl UserName {
 
         Ok(Self(s))
     }
-
 }
 
 impl AsRef<String> for UserName {
@@ -40,6 +39,4 @@ impl AsRef<String> for UserName {
 }
 
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}
