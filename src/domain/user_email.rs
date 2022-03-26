@@ -23,8 +23,8 @@ impl AsRef<str> for UserEmail {
 mod tests {
     use super::UserEmail;
     use claim::{assert_err, assert_ok};
-    use fake::{Fake, faker};
     use fake::faker::internet::en::SafeEmail;
+    use fake::{faker, Fake};
     use quickcheck::Gen;
 
     #[derive(Debug, Clone)]

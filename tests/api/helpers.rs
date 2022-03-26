@@ -29,7 +29,7 @@ pub struct TestApp {
     pub db_pool: Pool,
 }
 
-async fn spawn_app() -> TestApp {
+pub async fn spawn_app() -> TestApp {
     Lazy::force(&TRACING);
 
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
@@ -51,18 +51,4 @@ async fn configure_database(path: String) -> Pool {
         .build(ConnectionManager::new(path))
         .expect("Failed to create db pool");
     pool
-}
-
-#[actix_web::test]
-async fn health_check_works() {
-    let app = spawn_app().await;
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(format!("{}/health_check", &app.address))
-        .send()
-        .await
-        .expect("Failed to execute request");
-    assert!(response.status().is_success());
-    assert_eq!(Some(0), response.content_length());
 }
