@@ -3,11 +3,9 @@ extern crate diesel;
 
 mod domain;
 mod schema;
-
 mod config;
 mod error_handlers;
 mod routes;
-mod services;
 mod startup;
 mod telemetry;
 

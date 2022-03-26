@@ -1,6 +1,6 @@
 use diesel::r2d2::ConnectionManager;
 use holosite::config::get_config;
-use holosite::startup::{Pool, Application};
+use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
 use uuid::Uuid;
 
@@ -26,7 +26,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 
 pub struct TestApp {
     pub address: String,
-    pub pool: Pool
+    pub pool: Pool,
 }
 
 pub async fn spawn_app() -> TestApp {
@@ -46,7 +46,7 @@ pub async fn spawn_app() -> TestApp {
     let _ = tokio::spawn(app.run_until_stopped());
     TestApp {
         address,
-        pool: get_connection_pool(&config.database_path)
+        pool: get_connection_pool(&config.database_path),
     }
 }
 

@@ -11,7 +11,7 @@ pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 pub struct Application {
     port: u16,
-    server: Server
+    server: Server,
 }
 
 impl Application {
@@ -27,7 +27,7 @@ impl Application {
         let port = listener.local_addr().unwrap().port();
         let server = run(listener, pool)?;
 
-        Ok( Self { port, server } )
+        Ok(Self { port, server })
     }
 
     pub fn port(&self) -> u16 {
