@@ -3,25 +3,25 @@ use config::Config;
 #[derive(Debug, serde::Deserialize)]
 pub struct ApplicationSettings {
     pub port: u16,
-    pub host: String
+    pub host: String,
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct Settings {
     pub database_path: String,
-    pub app: ApplicationSettings
+    pub app: ApplicationSettings,
 }
 
 pub enum Environment {
     Local,
-    Production
+    Production,
 }
 
 impl Environment {
     pub fn as_str(&self) -> &'static str {
         match self {
             Environment::Local => "local",
-            Environment::Production => "production"
+            Environment::Production => "production",
         }
     }
 }
@@ -36,7 +36,7 @@ impl TryFrom<String> for Environment {
             other => Err(format!(
                 "{} is not a supported environment. Use 'local' or 'production'",
                 other
-            ))
+            )),
         }
     }
 }
