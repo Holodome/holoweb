@@ -1,12 +1,12 @@
 #[macro_use]
 extern crate diesel;
 
+mod schema;
 mod authentication;
 mod config;
 mod domain;
 mod error_handlers;
 mod routes;
-mod schema;
 mod startup;
 mod telemetry;
 
