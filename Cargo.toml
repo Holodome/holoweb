@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Ilya Vinogradov <holodmoose@gmail.com>"]
 
-
 [lib]
 path = "src/lib.rs"
+test = false
 
 [[bin]]
 path = "src/main.rs"

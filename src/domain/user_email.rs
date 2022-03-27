@@ -4,11 +4,11 @@ use validator::validate_email;
 pub struct UserEmail(String);
 
 impl UserEmail {
-    pub fn parse(s: String) -> Result<Self, String> {
+    pub fn parse(s: String) -> Result<Self, anyhow::Error> {
         if validate_email(&s) {
             Ok(Self(s))
         } else {
-            Err(format!("{} is not a valid user email", s))
+            Err(anyhow::anyhow!("{} is not a valid user email", s))
         }
     }
 }
