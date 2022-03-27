@@ -15,7 +15,10 @@ impl UserName {
 
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
         if s.chars().any(|g| forbidden_characters.contains(&g)) {
-            return Err(anyhow::anyhow!("{} user name contains forbidden characters", s));
+            return Err(anyhow::anyhow!(
+                "{} user name contains forbidden characters",
+                s
+            ));
         }
 
         Ok(Self(s))
@@ -30,11 +33,11 @@ impl AsRef<String> for UserName {
 
 #[cfg(test)]
 mod tests {
-    use claim::{assert_err, assert_ok};
-    use fake::Fake;
-    use fake::faker::internet::en::Username;
-    use quickcheck::Gen;
     use crate::domain::user_name::UserName;
+    use claim::{assert_err, assert_ok};
+    use fake::faker::internet::en::Username;
+    use fake::Fake;
+    use quickcheck::Gen;
 
     #[test]
     fn a_256_grapheme_long_name_is_valid() {
