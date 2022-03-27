@@ -1,3 +1,4 @@
+pub mod authentication;
 pub mod config;
 pub mod domain;
 pub mod routes;

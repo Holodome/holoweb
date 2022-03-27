@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate diesel;
 
+mod authentication;
 mod config;
 mod domain;
 mod error_handlers;
