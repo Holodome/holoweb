@@ -1,6 +1,6 @@
 mod health_check;
-mod login;
 mod home;
+mod login;
 
 pub use health_check::*;
 pub use home::*;
