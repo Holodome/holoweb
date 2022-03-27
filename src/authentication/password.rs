@@ -1,6 +1,4 @@
-use crate::authentication::password::AuthError::InvalidCredentials;
 use crate::startup::Pool;
-use actix_web::web;
 use diesel::{OptionalExtension, QueryDsl, RunQueryDsl};
 use secrecy::{ExposeSecret, Secret};
 use sha3::Digest;
@@ -32,10 +30,10 @@ pub async fn validate_credentials(
         if stored_password.expose_secret().eq(&password_hash) {
             Ok(stored_user_id)
         } else {
-            Err(InvalidCredentials(anyhow::anyhow!("Invalid password")))
+            Err(AuthError::InvalidCredentials(anyhow::anyhow!("Invalid password")))
         }
     } else {
-        Err(InvalidCredentials(anyhow::anyhow!("Invalid username")))
+        Err(AuthError::InvalidCredentials(anyhow::anyhow!("Invalid username")))
     }
 }
 
@@ -45,6 +43,7 @@ struct StoredCredentials {
     password: String,
 }
 
+#[tracing::instrument(name = "Get stored credentials", skip(username, pool))]
 async fn get_stored_credentials(
     username: &str,
     pool: &Pool,

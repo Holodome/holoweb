@@ -1,5 +1,5 @@
 use crate::config::Settings;
-use crate::routes::health_check;
+use crate::routes::{health_check, home};
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 use diesel::r2d2::{self, ConnectionManager};
@@ -44,7 +44,12 @@ pub fn run(listener: TcpListener, pool: Pool) -> Result<Server, std::io::Error> 
         App::new()
             .wrap(TracingLogger::default())
             .app_data(web::Data::new(pool.clone()))
+            .service(
+                actix_files::Files::new("/static", "./static")
+                    .show_files_listing()
+            )
             .route("/health_check", web::get().to(health_check))
+            .route("/", web::get().to(home))
     })
     .listen(listener)?
     .run();
