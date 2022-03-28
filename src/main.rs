@@ -1,14 +1,4 @@
-#[macro_use]
-extern crate diesel;
-
-mod authentication;
-mod config;
-mod domain;
-mod error_handlers;
-mod routes;
-mod schema;
-mod startup;
-mod telemetry;
+use holosite::{telemetry, startup, config};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
