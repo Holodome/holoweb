@@ -1,12 +1,12 @@
-use actix_session::{Session, SessionExt};
-use actix_web::{FromRequest, HttpRequest};
-use std::future::{Ready, ready};
+use actix_session::SessionExt;
 use actix_web::dev::Payload;
+use actix_web::{FromRequest, HttpRequest};
 use diesel::connection::StatementCacheKey::Type;
+use std::future::{ready, Ready};
 
-pub struct TypedSession(Session);
+pub struct Session(actix_session::Session);
 
-impl TypedSession {
+impl Session {
     const USER_ID_KEY: &'static str = "user_id";
 
     pub fn renew(&self) {
@@ -26,11 +26,11 @@ impl TypedSession {
     }
 }
 
-impl FromRequest for TypedSession {
-    type Error = <Session as FromRequest>::Error;
-    type Future = Ready<Result<TypedSession, Self::Error>>;
+impl FromRequest for Session {
+    type Error = <actix_session::Session as FromRequest>::Error;
+    type Future = Ready<Result<Session, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
-        ready(Ok(TypedSession(req.get_session())))
+        ready(Ok(Session(req.get_session())))
     }
 }
