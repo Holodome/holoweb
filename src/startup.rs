@@ -44,10 +44,7 @@ pub fn run(listener: TcpListener, pool: Pool) -> Result<Server, std::io::Error> 
         App::new()
             .wrap(TracingLogger::default())
             .app_data(web::Data::new(pool.clone()))
-            .service(
-                actix_files::Files::new("/static", "./static")
-                    .show_files_listing()
-            )
+            .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .route("/health_check", web::get().to(health_check))
             .route("/", web::get().to(home))
     })
