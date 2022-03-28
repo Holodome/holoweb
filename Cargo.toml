@@ -42,6 +42,9 @@ claim = "0.5.0"
 validator = "0.14.0"
 unicode-segmentation = "1.9.0"
 thiserror = "1.0.30"
+actix-session = "0.6.2"
+actix-web-lab = "0.15.0"
+actix-web-flash-messages = "0.3.2"
 
 [dev-dependencies]
 reqwest = "0.11.10"

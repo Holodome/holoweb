@@ -1,7 +1,6 @@
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
-use diesel::connection::StatementCacheKey::Type;
 use std::future::{ready, Ready};
 
 pub struct Session(actix_session::Session);

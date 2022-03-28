@@ -1,34 +1,30 @@
-use std::fmt::Formatter;
-use actix_web::{HttpResponse, web};
-use actix_web::error::InternalError;
-use actix_web::http::header::ContentType;
-use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
-use askama::Template;
-use secrecy::Secret;
-use crate::authentication::{AuthError, Credentials, validate_credentials};
+use crate::authentication::{validate_credentials, AuthError, Credentials};
 use crate::session::Session;
 use crate::startup::Pool;
 use crate::utils::see_other;
+use actix_web::error::InternalError;
+use actix_web::http::header::ContentType;
+use actix_web::{web, HttpResponse};
+use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
+use askama::Template;
+use secrecy::Secret;
 use serde::Deserialize;
+use std::fmt::Formatter;
 
 #[derive(Template)]
 #[template(path = "login.html")]
 struct LoginTemplate {
-    errors: Vec<String>
+    errors: Vec<String>,
 }
 
-#[tracing::instrument(
-    skip(flash_messages)
-)]
+#[tracing::instrument(skip(flash_messages))]
 pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
-    let errors = flash_messages.iter()
-        .map(|m| m.content().to_string()).collect::<Vec<_>>();
-    let s = LoginTemplate {
-        errors
-    }.render().unwrap();
-    HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(s)
+    let errors = flash_messages
+        .iter()
+        .map(|m| m.content().to_string())
+        .collect::<Vec<_>>();
+    let s = LoginTemplate { errors }.render().unwrap();
+    HttpResponse::Ok().content_type(ContentType::html()).body(s)
 }
 
 #[derive(thiserror::Error)]
@@ -36,7 +32,7 @@ pub enum LoginError {
     #[error("Authentication failed")]
     AuthError(#[source] anyhow::Error),
     #[error("Something went wrong")]
-    UnexpectedError(#[from] anyhow::Error)
+    UnexpectedError(#[from] anyhow::Error),
 }
 
 impl std::fmt::Debug for LoginError {
@@ -50,17 +46,17 @@ impl std::fmt::Debug for LoginError {
 #[derive(Deserialize)]
 pub struct FormData {
     name: String,
-    password: Secret<String>
+    password: Secret<String>,
 }
 
 pub async fn login(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
-    session: Session
+    session: Session,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
     let credentials = Credentials {
         username: form.0.name,
-        password: form.0.password
+        password: form.0.password,
     };
     tracing::Span::current().record("username", &tracing::field::display(&credentials.username));
     match validate_credentials(credentials, &pool).await {
@@ -70,14 +66,12 @@ pub async fn login(
             session
                 .insert_user_id(user_id)
                 .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
-            Ok(
-                see_other("/home")
-            )
-        },
+            Ok(see_other("/home"))
+        }
         Err(e) => {
             let e = match e {
                 AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
-                AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into())
+                AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
             };
             Err(login_redirect(e))
         }

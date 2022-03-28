@@ -30,10 +30,14 @@ pub async fn validate_credentials(
         if stored_password.expose_secret().eq(&password_hash) {
             Ok(stored_user_id)
         } else {
-            Err(AuthError::InvalidCredentials(anyhow::anyhow!("Invalid password")))
+            Err(AuthError::InvalidCredentials(anyhow::anyhow!(
+                "Invalid password"
+            )))
         }
     } else {
-        Err(AuthError::InvalidCredentials(anyhow::anyhow!("Invalid username")))
+        Err(AuthError::InvalidCredentials(anyhow::anyhow!(
+            "Invalid username"
+        )))
     }
 }
 
