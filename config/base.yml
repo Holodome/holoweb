@@ -1,3 +1,5 @@
 database_path: "/tmp/holosite.sqlite"
+redis_uri: "redis://127.0.0.1:6379"
 app:
   port: 8080
+  hmac_secret: "super-long-and-secret-random-key-needed-to-verify-message-integrity"

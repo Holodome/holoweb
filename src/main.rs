@@ -1,7 +1,7 @@
 use holosite::{config, startup, telemetry};
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> anyhow::Result<()> {
     let subscriber = telemetry::get_subscriber("holosite".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
     tracing::info!("Initialized logging");
