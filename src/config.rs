@@ -5,14 +5,14 @@ use secrecy::Secret;
 pub struct ApplicationSettings {
     pub port: u16,
     pub host: String,
-    pub hmac_secret: Secret<String>
+    pub hmac_secret: Secret<String>,
 }
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct Settings {
     pub database_path: String,
     pub app: ApplicationSettings,
-    pub redis_uri: Secret<String>
+    pub redis_uri: Secret<String>,
 }
 
 pub enum Environment {

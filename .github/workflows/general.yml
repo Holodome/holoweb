@@ -9,9 +9,18 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+    env:
+      DIESEL_FEATURES: sqlite
+      DIESEL_VERSION: 1.4.1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
       - name: Cache dependencies
         id: cache-dependencies
         uses: actions/cache@v2
@@ -21,21 +30,39 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
+
+      - name: Cache diesel-cli
+        uses: actions/cache@v2
+        id: cache-diesel
+        with:
+          path: |
+            ~/.cargo/bin/diesel
+          key: ${{ runner.os }}-diesel-${{ env.DIESEL_VERSION }}-${{ env.DIESEL_FEATURES }}
+
       - name: Install diesel-cli
         uses: actions-rs/cargo@v1
+        if: steps.cache-diesel.outputs.cache-hit == false
         with:
           command: install
           args: >
             diesel_cli
+            --force
+            --version=${{ env.DIESEL_VERSION }}
+            --features=${{ env.DIESEL_FEATURES }}
+            --no-default-features
+            --locked
+
       - name: Migrate database
         run: |
           diesel migration run
+
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
@@ -43,36 +70,6 @@ jobs:
 
   fmt:
     name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          components: rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          components: clippy
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- -D warnings
-
-  coverage:
-    name: Code coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -83,8 +80,108 @@ jobs:
         with:
           toolchain: stable
           override: true
+          components: rustfmt
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    env:
+      DIESEL_FEATURES: sqlite
+      DIESEL_VERSION: 1.4.1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+
+      - name: Cache diesel-cli
+        uses: actions/cache@v2
+        id: cache-diesel
+        with:
+          path: |
+            ~/.cargo/bin/diesel
+          key: ${{ runner.os }}-diesel-${{ env.DIESEL_VERSION }}-${{ env.DIESEL_FEATURES }}
+
+      - name: Install diesel-cli
+        uses: actions-rs/cargo@v1
+        if: steps.cache-diesel.outputs.cache-hit == false
+        with:
+          command: install
+          args: >
+            diesel_cli
+            --force
+            --version=${{ env.DIESEL_VERSION }}
+            --features=${{ env.DIESEL_FEATURES }}
+            --no-default-features
+            --locked
+
+      - name: Migrate database
+        run: |
+          diesel migration run
+
+      - name: Run clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: -- -D warnings
+
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+    env:
+      DIESEL_FEATURES: sqlite
+      DIESEL_VERSION: 1.4.1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cache diesel-cli
+        uses: actions/cache@v2
+        id: cache-diesel
+        with:
+          path: |
+            ~/.cargo/bin/diesel
+          key: ${{ runner.os }}-diesel-${{ env.DIESEL_VERSION }}-${{ env.DIESEL_FEATURES }}
+
+      - name: Install diesel-cli
+        uses: actions-rs/cargo@v1
+        if: steps.cache-diesel.outputs.cache-hit == false
+        with:
+          command: install
+          args: >
+            diesel_cli
+            --force
+            --version=${{ env.DIESEL_VERSION }}
+            --features=${{ env.DIESEL_FEATURES }}
+            --no-default-features
+            --locked
+
+      - name: Migrate database
+        run: |
+          diesel migration run
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: '--ignore-tests'
+          args: '--ignore-tests --avoid-cfg-tarpaulin'
