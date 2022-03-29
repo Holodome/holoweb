@@ -14,7 +14,7 @@
       <div class="ui stacked segment">
         <div class="field">
           <div class="ui left icon input">
-            <input type="text" name="email" placeholder="E-mail address">
+            <input type="text" name="name" placeholder="Name">
           </div>
         </div>
         <div class="field">
@@ -27,11 +27,11 @@
 
     </form>
 
-    {% if let Some(error) = error %}
+    {% for error in errors %}
     <div class="ui negative message">
       {{ error }}
     </div>
-    {% endif %}
+    {% endfor %}
     <div class="ui message">
       New to us? <a href="/register">Sign Up</a>
     </div>

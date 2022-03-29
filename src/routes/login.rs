@@ -1,93 +1,84 @@
-// use crate::{HmacSecret, Pool, StatusCode};
-// use actix_web::body::BoxBody;
-// use actix_web::http::header::LOCATION;
-// use actix_web::{web, HttpResponse, ResponseError};
-// use askama::filters::format;
-// use askama::Template;
-// use derive_more::Display;
-// use hmac::{Hmac, Mac};
-// use log::Log;
-// use secrecy::{ExposeSecret, Secret};
-// use std::fmt::{Display, Formatter};
-//
-// #[derive(Debug, Display)]
-// pub enum LoginError {
-//     #[display(fmt = "Invalid name")]
-//     InvalidName,
-//     #[display(fmt = "Invalid password")]
-//     InvalidPassword,
-//     #[display(fmt = "Unexpected")]
-//     Unexpected,
-// }
-//
-// impl ResponseError for LoginError {
-//     fn status_code(&self) -> StatusCode {
-//         match self {
-//             LoginError::InvalidName => StatusCode::UNAUTHORIZED,
-//             LoginError::InvalidPassword => StatusCode::UNAUTHORIZED,
-//             LoginError::Unexpected => StatusCode::INTERNAL_SERVER_ERROR,
-//         }
-//     }
-//
-//     fn error_response(&self) -> HttpResponse {
-//         HttpResponse::build(self.status_code()).finish()
-//     }
-// }
-//
-// pub type Result<T, E = LoginError> = std::result::Result<T, E>;
-//
-// #[derive(serde::Deserialize)]
-// pub struct FormData {
-//     name: String,
-//     password: Secret<String>,
-// }
-//
-// #[derive(serde::Deserialize)]
-// pub struct QueryParams {
-//     error: String,
-//     tag: String,
-// }
-//
-// impl QueryParams {
-//     fn verify(self, secret: &HmacSecret) -> Result<String, anyhow::Error> {
-//         let tag = hex::decode(self.tag)?;
-//         let query_string = format!("error={}", urlencoding::Encoded::new(&self.error));
-//
-//         let mut mac =
-//             Hmac::<sha2::Sha256>::new_from_slice(secret.0.expose_secret().as_bytes()).unwrap();
-//
-//         mac.update(query_string.as_bytes());
-//         mac.verify_slice(&tag)?;
-//
-//         Ok(self.error)
-//     }
-// }
-//
-// #[derive(Template)]
-// #[template(path = "login.html")]
-// pub struct PageTemplate {
-//     error: Option<String>,
-// }
-//
-// // pub async fn login_post(form: web::Form<FormData>, pool: web::Data<Pool>)
-// //     -> Result<HttpResponse> {
-// //
-// // }
-//
-// pub async fn login_get(
-//     query: Option<web::Query<QueryParams>>,
-//     secret: web::Data<HmacSecret>,
-// ) -> HttpResponse {
-//     let error = match query {
-//         None => None,
-//         Some(query) => match query.0.verify(&secret) {
-//             Ok(error) => Some(htmlescape::encode_minimal(&error)),
-//             Err(e) => {
-//                 log::warn!("Failed to verify query parameters using hmac tag ({})", e);
-//                 None
-//             }
-//         },
-//     };
-//     let s = PageTemplate { error }.render().unwrap();
-//     HttpResponse::Ok().content_type("text/html").body(s)
-// }
+use crate::authentication::{validate_credentials, AuthError, Credentials};
+use crate::session::Session;
+use crate::startup::Pool;
+use crate::utils::see_other;
+use actix_web::error::InternalError;
+use actix_web::http::header::ContentType;
+use actix_web::{web, HttpResponse};
+use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
+use askama::Template;
+use secrecy::Secret;
+use serde::Deserialize;
+use std::fmt::Formatter;
+
+#[derive(Template)]
+#[template(path = "login.html")]
+struct LoginTemplate {
+    errors: Vec<String>,
+}
+
+#[tracing::instrument(skip(flash_messages))]
+pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
+    let errors = flash_messages
+        .iter()
+        .map(|m| m.content().to_string())
+        .collect::<Vec<_>>();
+    let s = LoginTemplate { errors }.render().unwrap();
+    HttpResponse::Ok().content_type(ContentType::html()).body(s)
+}
+
+#[derive(thiserror::Error)]
+pub enum LoginError {
+    #[error("Authentication failed")]
+    AuthError(#[source] anyhow::Error),
+    #[error("Something went wrong")]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+impl std::fmt::Debug for LoginError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use crate::utils::error_chain_fmt;
+
+        error_chain_fmt(self, f)
+    }
+}
+
+#[derive(Deserialize)]
+pub struct FormData {
+    name: String,
+    password: Secret<String>,
+}
+
+pub async fn login(
+    form: web::Form<FormData>,
+    pool: web::Data<Pool>,
+    session: Session,
+) -> Result<HttpResponse, InternalError<LoginError>> {
+    let credentials = Credentials {
+        username: form.0.name,
+        password: form.0.password,
+    };
+    tracing::Span::current().record("username", &tracing::field::display(&credentials.username));
+    match validate_credentials(credentials, &pool).await {
+        Ok(user_id) => {
+            tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
+            session.renew();
+            session
+                .insert_user_id(user_id)
+                .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
+            Ok(see_other("/home"))
+        }
+        Err(e) => {
+            let e = match e {
+                AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
+                AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
+            };
+            Err(login_redirect(e))
+        }
+    }
+}
+
+fn login_redirect(e: LoginError) -> InternalError<LoginError> {
+    FlashMessage::error(e.to_string()).send();
+    InternalError::from_response(e, see_other("/login"))
+}
