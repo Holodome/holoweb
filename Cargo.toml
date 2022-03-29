@@ -14,7 +14,7 @@ name = "holosite"
 
 [dependencies]
 actix-web = "4"
-diesel = { version = "1.4.8", features = ["sqlite", "r2d2", "uuidv07", "chrono"] }
+diesel = { version = "1.4.8", features = ["sqlite", "r2d2", "uuidv07"] }
 dotenv = "0.15.0"
 log = "0.4"
 tracing = { version = "0.1.32", featurs = ["log"] }
@@ -24,7 +24,6 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 actix-files = "0.6.0"
 askama = "0.11.0"
 secrecy = { version = "0.8.0", features = ["serde"] }
-chrono = { version = "0.4.19", features = ["serde"] }
 derive_more = "0.99.17"
 htmlescape = "0.3.1"
 hex = "0.4.3"
