@@ -12,7 +12,7 @@ pub enum PasswordError {
     #[error("Password must have both upper and lower case letters, as well as digits")]
     NoUpperAndLowerAndDigits,
     #[error("Invalid characters")]
-    InvalidCharacters
+    InvalidCharacters,
 }
 
 #[derive(Debug)]
@@ -54,12 +54,12 @@ impl AsRef<Secret<String>> for UserPassword {
 
 #[cfg(test)]
 mod tests {
+    use crate::domain::UserPassword;
     use claim::{assert_err, assert_ok};
+    use fake::faker::internet::en::Password;
     use fake::Fake;
     use quickcheck::Gen;
     use secrecy::Secret;
-    use crate::domain::UserPassword;
-    use fake::faker::internet::en::Password;
 
     #[test]
     fn too_short_password_is_rejected() {

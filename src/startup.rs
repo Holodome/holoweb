@@ -1,6 +1,8 @@
 use crate::authentication::reject_anonymous_users;
 use crate::config::Settings;
-use crate::routes::{health_check, home, login, login_form, logout, registration, registration_form};
+use crate::routes::{
+    health_check, home, login, login_form, logout, registration, registration_form,
+};
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
@@ -72,12 +74,12 @@ async fn run(
             .service(
                 web::resource("/login")
                     .route(web::get().to(login_form))
-                    .route(web::post().to(login))
+                    .route(web::post().to(login)),
             )
             .service(
                 web::resource("/registration")
                     .route(web::get().to(registration_form))
-                    .route(web::post().to(registration))
+                    .route(web::post().to(registration)),
             )
             .service(
                 web::resource("/logout")
