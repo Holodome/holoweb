@@ -4,7 +4,7 @@ const PASSWORD_MIN_LENGTH: usize = 8;
 const PASSWORD_MAX_LENGTH: usize = 128;
 
 #[derive(thiserror::Error, Debug)]
-enum PasswordError {
+pub enum PasswordError {
     #[error("Password is too short")]
     TooShort,
     #[error("Password is too long")]
@@ -15,6 +15,7 @@ enum PasswordError {
     InvalidCharacters
 }
 
+#[derive(Debug)]
 pub struct UserPassword(Secret<String>);
 
 impl UserPassword {
@@ -42,5 +43,99 @@ impl UserPassword {
         }
 
         Ok(UserPassword(s))
+    }
+}
+
+impl AsRef<Secret<String>> for UserPassword {
+    fn as_ref(&self) -> &Secret<String> {
+        &self.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use claim::{assert_err, assert_ok};
+    use fake::Fake;
+    use quickcheck::Gen;
+    use secrecy::Secret;
+    use crate::domain::UserPassword;
+    use fake::faker::internet::en::Password;
+
+    #[test]
+    fn too_short_password_is_rejected() {
+        let password = Secret::new("!1Aaaaa".to_string());
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn a_8_length_password_is_accepted() {
+        let password = Secret::new("!1Aaaaaa".to_string());
+        assert_ok!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn too_long_password_is_rejected() {
+        let mut password = "!1Aa".to_string();
+        password.push_str("a".repeat(254).as_str());
+        let password: Secret<String> = Secret::new(password);
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn non_ascii_characters_are_rejected() {
+        let password = Secret::new("Пароль1234".to_string());
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn ascii_control_characters_are_rejected() {
+        let password = Secret::new("\n\r123456".to_string());
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn only_lowercase_is_rejected() {
+        let password = Secret::new("a".repeat(8));
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn only_uppercase_is_rejected() {
+        let password = Secret::new("A".repeat(8));
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn only_digits_is_rejected() {
+        let password = Secret::new("1".repeat(8));
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[test]
+    fn password_without_digits_is_rejected() {
+        let password = Secret::new("Aa".repeat(4));
+        assert_err!(UserPassword::parse(password));
+    }
+
+    #[derive(Debug, Clone)]
+    struct ValidPasswordFixture(pub String);
+
+    impl quickcheck::Arbitrary for ValidPasswordFixture {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let password = loop {
+                let p: String = Password((8..128)).fake_with_rng(g);
+                // This is a bit ugly, but fake considers passwords that consist only of
+                // upper and lowercase characters ok, but we don't
+                if p.chars().any(|c| c.is_ascii_digit()) {
+                    break p;
+                }
+            };
+            Self(password)
+        }
+    }
+
+    #[quickcheck_macros::quickcheck]
+    fn valid_passwords_are_accepted(valid_password: ValidPasswordFixture) -> bool {
+        UserPassword::parse(Secret::new(valid_password.0)).is_ok()
     }
 }
