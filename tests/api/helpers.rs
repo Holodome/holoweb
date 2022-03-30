@@ -30,31 +30,41 @@ pub struct TestApp {
     pub api_client: reqwest::Client,
 }
 
-pub async fn spawn_app() -> TestApp {
-    Lazy::force(&TRACING);
+impl TestApp {
+    pub async fn spawn() -> TestApp {
+        Lazy::force(&TRACING);
 
-    let config = {
-        let mut c = get_config().expect("Failed ot get config");
-        c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
-        c.app.port = 0;
-        c
-    };
+        let config = {
+            let mut c = get_config().expect("Failed ot get config");
+            c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
+            c.app.port = 0;
+            c
+        };
 
-    let app = Application::build(config.clone())
-        .await
-        .expect("Failed to build application");
-    let address = format!("http://localhost:{}", app.port());
-    let _ = tokio::spawn(app.run_until_stopped());
+        let app = Application::build(config.clone())
+            .await
+            .expect("Failed to build application");
+        let address = format!("http://localhost:{}", app.port());
+        let _ = tokio::spawn(app.run_until_stopped());
 
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .cookie_store(true)
-        .build()
-        .unwrap();
-    TestApp {
-        address,
-        pool: get_connection_pool(&config.database_path),
-        api_client: client,
+        let client = reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .cookie_store(true)
+            .build()
+            .unwrap();
+        TestApp {
+            address,
+            pool: get_connection_pool(&config.database_path),
+            api_client: client,
+        }
+    }
+
+    pub async fn post_logout(&self) -> reqwest::Response {
+        self.api_client
+            .get(format!("{}/logout", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
     }
 }
 
