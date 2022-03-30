@@ -19,9 +19,11 @@ async fn error_flash_message_is_set_on_failure() {
 
     assert_is_redirect_to(&response, "/login");
 
+    // Check that error message is present now
     let html_page = app.get_login_page_html().await;
     assert!(html_page.contains("Authentication failed"));
 
+    // Check that error message is not present now
     let html_page = app.get_login_page_html().await;
     assert!(!html_page.contains("Authentication failed"));
 }
