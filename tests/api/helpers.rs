@@ -1,4 +1,5 @@
 use diesel::r2d2::ConnectionManager;
+use diesel_migrations::embed_migrations;
 use holosite::config::get_config;
 use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
@@ -66,12 +67,44 @@ impl TestApp {
             .await
             .expect("Failed to execute request")
     }
+
+    pub async fn get_login_page(&self) -> reqwest::Response {
+        self.api_client
+            .get(format!("{}/login", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn get_login_page_html(&self) -> String {
+        self.get_login_page()
+            .await
+            .text()
+            .await
+            .unwrap()
+    }
+
+    pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
+    where
+        Body: serde::Serialize
+    {
+        self.api_client
+            .post(format!("{}/login", &self.address))
+            .form(body)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
 }
+
+embed_migrations!();
 
 fn get_connection_pool(path: &str) -> Pool {
     let pool: Pool = Pool::builder()
         .build(ConnectionManager::new(path))
         .expect("Failed to create db pool");
+    let conn = pool.get().expect("Failed to get connection");
+    embedded_migrations::run(&conn).expect("Failed to run migrations");
     pool
 }
 
