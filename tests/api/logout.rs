@@ -10,6 +10,6 @@ async fn logout_returns_redirect_to_login_when_not_logged_in() {
         .send()
         .await
         .expect("Failed to execute request");
-    println!("{:?}", &response);
+
     assert_is_redirect_to(&response, "/login")
 }
