@@ -77,16 +77,12 @@ impl TestApp {
     }
 
     pub async fn get_login_page_html(&self) -> String {
-        self.get_login_page()
-            .await
-            .text()
-            .await
-            .unwrap()
+        self.get_login_page().await.text().await.unwrap()
     }
 
     pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
     where
-        Body: serde::Serialize
+        Body: serde::Serialize,
     {
         self.api_client
             .post(format!("{}/login", &self.address))
