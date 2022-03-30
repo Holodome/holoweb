@@ -40,7 +40,7 @@ actix-web-lab = "0.15.0"
 actix-web-flash-messages = { version = "0.3.2", features = ["cookies"] }
 
 [dev-dependencies]
-reqwest = "0.11.10"
+reqwest = { version = "0.11.10", default-features = false, features = ["json", "rustls-tls", "cookies"] }
 tokio = "1.17.0"
 fake = "~2.3"
 quickcheck = "0.9.2"

@@ -27,6 +27,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 pub struct TestApp {
     pub address: String,
     pub pool: Pool,
+    pub api_client: reqwest::Client,
 }
 
 pub async fn spawn_app() -> TestApp {
@@ -44,9 +45,16 @@ pub async fn spawn_app() -> TestApp {
         .expect("Failed to build application");
     let address = format!("http://localhost:{}", app.port());
     let _ = tokio::spawn(app.run_until_stopped());
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .cookie_store(true)
+        .build()
+        .unwrap();
     TestApp {
         address,
         pool: get_connection_pool(&config.database_path),
+        api_client: client,
     }
 }
 
@@ -55,4 +63,9 @@ fn get_connection_pool(path: &str) -> Pool {
         .build(ConnectionManager::new(path))
         .expect("Failed to create db pool");
     pool
+}
+
+pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
+    assert_eq!(response.status().as_u16(), 303);
+    assert_eq!(response.headers().get("Location").unwrap(), location);
 }

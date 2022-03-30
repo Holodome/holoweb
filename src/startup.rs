@@ -1,11 +1,13 @@
+use crate::authentication::reject_anonymous_users;
 use crate::config::Settings;
-use crate::routes::{health_check, home, login, login_form};
+use crate::routes::{health_check, home, login, login_form, logout};
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
-use actix_web::{web, App, HttpServer};
+use actix_web::{guard, web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
+use actix_web_lab::middleware::from_fn;
 use diesel::r2d2::{self, ConnectionManager};
 use diesel::SqliteConnection;
 use secrecy::{ExposeSecret, Secret};
@@ -69,6 +71,12 @@ async fn run(
             .route("/", web::get().to(home))
             .route("/login", web::get().to(login_form))
             .route("/login", web::post().to(login))
+            .service(
+                web::resource("/logout")
+                    .guard(guard::Get())
+                    .wrap(from_fn(reject_anonymous_users))
+                    .to(logout),
+            )
     })
     .listen(listener)?
     .run();
