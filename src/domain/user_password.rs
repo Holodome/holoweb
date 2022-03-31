@@ -135,7 +135,7 @@ mod tests {
     impl quickcheck::Arbitrary for ValidPasswordFixture {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let password = loop {
-                let p: String = Password((8..128)).fake_with_rng(g);
+                let p: String = Password(8..128).fake_with_rng(g);
                 // This is a bit ugly, but fake considers passwords that consist only of
                 // upper and lowercase characters ok, but we don't
                 if p.chars().any(|c| c.is_ascii_digit()) {

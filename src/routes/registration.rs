@@ -73,9 +73,9 @@ impl TryFrom<RegistrationFormData> for NewUser {
 }
 
 pub async fn registration(
-    form: web::Form<RegistrationFormData>,
-    pool: web::Data<Pool>,
-    session: Session,
+    _form: web::Form<RegistrationFormData>,
+    _pool: web::Data<Pool>,
+    _session: Session,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
     todo!()
 }

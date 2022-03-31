@@ -1,6 +1,6 @@
 use crate::domain::{UserEmail, UserName, UserPassword};
-use diesel::Queryable;
-use secrecy::Secret;
+
+
 
 #[derive(Debug, diesel::Queryable)]
 pub struct User {
