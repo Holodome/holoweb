@@ -21,7 +21,7 @@ pub struct UserPassword {
 }
 
 impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserPassword {
-    type Row = String;
+    type Row = <String as diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite>>::Row;
 
     fn build(row: Self::Row) -> Self {
         UserPassword {

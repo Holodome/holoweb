@@ -1,7 +1,5 @@
 use crate::domain::{UserEmail, UserName, UserPassword};
 
-
-
 #[derive(Debug, diesel::Queryable)]
 pub struct User {
     id: String,

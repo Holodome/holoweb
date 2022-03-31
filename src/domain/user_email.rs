@@ -1,7 +1,7 @@
 
 use validator::validate_email;
 
-#[derive(Debug, diesel::Queryable)]
+#[derive(Debug)]
 pub struct UserEmail {
     s: String,
 }
@@ -12,6 +12,16 @@ impl UserEmail {
             Ok(Self { s })
         } else {
             Err(anyhow::anyhow!("{} is not a valid user email", s))
+        }
+    }
+}
+
+impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserEmail {
+    type Row = <String as diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite>>::Row;
+
+    fn build(row: Self::Row) -> Self {
+        UserEmail {
+            s: row
         }
     }
 }

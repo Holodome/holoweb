@@ -1,7 +1,7 @@
 use crate::startup::Pool;
-use diesel::{OptionalExtension, QueryDsl, RunQueryDsl};
 use secrecy::{ExposeSecret, Secret};
 use sha3::Digest;
+use crate::services::get_stored_credentials;
 
 #[derive(thiserror::Error, Debug)]
 pub enum AuthError {
@@ -24,11 +24,11 @@ pub async fn validate_credentials(
     let password_hash = sha3::Sha3_256::digest(credentials.password.expose_secret().as_bytes());
     let password_hash = format!("{:x}", password_hash);
 
-    if let Some((stored_user_id, stored_password)) =
+    if let Some(credentials) =
         get_stored_credentials(&credentials.username, pool).await?
     {
-        if stored_password.expose_secret().eq(&password_hash) {
-            Ok(stored_user_id)
+        if credentials.user_password.as_ref().expose_secret().eq(&password_hash) {
+            Ok(credentials.user_name.as_ref().clone())
         } else {
             Err(AuthError::InvalidCredentials(anyhow::anyhow!(
                 "Invalid password"
@@ -39,26 +39,4 @@ pub async fn validate_credentials(
             "Invalid username"
         )))
     }
-}
-
-#[derive(serde::Deserialize, Queryable)]
-struct StoredCredentials {
-    user_id: String,
-    password: String,
-}
-
-#[tracing::instrument(name = "Get stored credentials", skip(username, pool))]
-async fn get_stored_credentials(
-    username: &str,
-    pool: &Pool,
-) -> Result<Option<(String, Secret<String>)>, anyhow::Error> {
-    use crate::diesel::ExpressionMethods;
-    use crate::schema::users::dsl::*;
-    let conn = pool.get()?;
-    Ok(users
-        .filter(name.eq(username))
-        .select((id, password))
-        .first::<StoredCredentials>(&conn)
-        .optional()?
-        .map(|c| (c.user_id, Secret::new(c.password))))
 }

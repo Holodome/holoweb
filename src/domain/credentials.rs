@@ -5,5 +5,3 @@ pub struct Credentials {
     pub user_name: UserName,
     pub user_password: UserPassword
 }
-
-

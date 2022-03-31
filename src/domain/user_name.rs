@@ -1,8 +1,18 @@
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Debug, diesel::Queryable)]
+#[derive(Debug)]
 pub struct UserName {
     s: String,
+}
+
+impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserName {
+    type Row = <String as diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite>>::Row;
+
+    fn build(row: Self::Row) -> Self {
+        UserName {
+            s: row
+        }
+    }
 }
 
 impl UserName {
