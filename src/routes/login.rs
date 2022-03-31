@@ -1,4 +1,4 @@
-use crate::authentication::{validate_credentials, AuthError, Credentials};
+use crate::services::{validate_credentials, AuthError, Credentials};
 use crate::session::Session;
 use crate::startup::Pool;
 use crate::utils::see_other;

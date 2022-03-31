@@ -1,4 +1,4 @@
-use crate::authentication::reject_anonymous_users;
+use crate::services::reject_anonymous_users;
 use crate::config::Settings;
 use crate::routes::{
     health_check, home, login, login_form, logout, registration, registration_form,
