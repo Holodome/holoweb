@@ -1,7 +1,7 @@
 use crate::domain::{Credentials, UserName};
 use crate::services::get_stored_credentials;
 use crate::startup::Pool;
-use secrecy::{ExposeSecret};
+use secrecy::ExposeSecret;
 use sha3::Digest;
 
 #[derive(thiserror::Error, Debug)]

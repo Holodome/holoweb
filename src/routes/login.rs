@@ -55,9 +55,8 @@ pub async fn login(
     pool: web::Data<Pool>,
     session: Session,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
-    let credentials = Credentials::parse(form.0.name, form.0.password).map_err(|e| {
-       login_redirect(LoginError::AuthError(e))
-    })?;
+    let credentials = Credentials::parse(form.0.name, form.0.password)
+        .map_err(|e| login_redirect(LoginError::AuthError(e)))?;
     tracing::Span::current().record("user_name", &tracing::field::display(&credentials.name));
     match validate_credentials(credentials, &pool).await {
         Ok(user_name) => {

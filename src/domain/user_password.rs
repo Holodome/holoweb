@@ -1,4 +1,9 @@
+use diesel::backend::Backend;
+use diesel::deserialize::FromSql;
+use diesel::serialize::{Output, ToSql};
+use diesel::sqlite::Sqlite;
 use secrecy::{ExposeSecret, Secret};
+use std::io::Write;
 
 const PASSWORD_MIN_LENGTH: usize = 8;
 const PASSWORD_MAX_LENGTH: usize = 128;
@@ -15,9 +20,10 @@ pub enum PasswordError {
     InvalidCharacters,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, diesel::AsExpression)]
+#[sql_type = "diesel::sql_types::Text"]
 pub struct UserPassword {
-    p: Secret<String>,
+    s: Secret<String>,
 }
 
 impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserPassword {
@@ -25,8 +31,23 @@ impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for User
 
     fn build(row: Self::Row) -> Self {
         UserPassword {
-            p: Secret::new(row),
+            s: Secret::new(row),
         }
+    }
+}
+
+impl FromSql<diesel::sql_types::Text, Sqlite> for UserPassword {
+    fn from_sql(
+        bytes: Option<&<Sqlite as Backend>::RawValue>,
+    ) -> diesel::deserialize::Result<Self> {
+        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
+            .map(|s| UserPassword { s: Secret::new(s) })
+    }
+}
+
+impl ToSql<diesel::sql_types::Text, Sqlite> for UserPassword {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
+        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(&self.s.expose_secret(), out)
     }
 }
 
@@ -54,13 +75,13 @@ impl UserPassword {
             }
         }
 
-        Ok(UserPassword { p: s })
+        Ok(UserPassword { s })
     }
 }
 
 impl AsRef<Secret<String>> for UserPassword {
     fn as_ref(&self) -> &Secret<String> {
-        &self.p
+        &self.s
     }
 }
 
@@ -68,8 +89,7 @@ impl AsRef<Secret<String>> for UserPassword {
 mod tests {
     use crate::domain::UserPassword;
     use claim::{assert_err, assert_ok};
-    
-    
+
     use secrecy::Secret;
 
     #[test]

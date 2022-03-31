@@ -1,9 +1,9 @@
-use unicode_segmentation::UnicodeSegmentation;
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
 use std::io::Write;
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, Clone, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
 #[sql_type = "diesel::sql_types::Text"]

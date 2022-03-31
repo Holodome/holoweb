@@ -1,9 +1,9 @@
-use uuid::Uuid;
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
 use std::io::Write;
+use uuid::Uuid;
 
 #[derive(Debug, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
 #[sql_type = "diesel::sql_types::Text"]
@@ -15,8 +15,7 @@ impl FromSql<diesel::sql_types::Text, Sqlite> for UserID {
     fn from_sql(
         bytes: Option<&<Sqlite as Backend>::RawValue>,
     ) -> diesel::deserialize::Result<Self> {
-        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
-            .map(|s| UserID { s })
+        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes).map(|s| UserID { s })
     }
 }
 

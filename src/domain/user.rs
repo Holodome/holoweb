@@ -1,11 +1,12 @@
 use crate::domain::{UserEmail, UserID, UserName, UserPassword};
+use crate::schema::users;
 
-#[derive(Debug, diesel::Queryable)]
+#[derive(Debug, diesel::Queryable, diesel::Insertable)]
 pub struct User {
-    id: UserID,
-    name: UserName,
-    email: UserEmail,
-    password: UserPassword,
-    created_at: String,
-    is_banned: bool,
+    pub id: UserID,
+    pub name: UserName,
+    pub email: UserEmail,
+    pub password: UserPassword,
+    pub created_at: String,
+    pub is_banned: bool,
 }
