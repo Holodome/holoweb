@@ -1,6 +1,12 @@
+use diesel::backend::Backend;
+use diesel::deserialize::FromSql;
+use diesel::serialize::{Output, ToSql};
+use diesel::sqlite::Sqlite;
+use std::io::Write;
 use validator::validate_email;
 
-#[derive(Debug, derive_more::Display)]
+#[derive(Debug, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
+#[sql_type = "diesel::sql_types::Text"]
 pub struct UserEmail {
     s: String,
 }
@@ -15,11 +21,18 @@ impl UserEmail {
     }
 }
 
-impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserEmail {
-    type Row = <String as diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite>>::Row;
+impl FromSql<diesel::sql_types::Text, Sqlite> for UserEmail {
+    fn from_sql(
+        bytes: Option<&<Sqlite as Backend>::RawValue>,
+    ) -> diesel::deserialize::Result<Self> {
+        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
+            .map(|s| UserEmail { s })
+    }
+}
 
-    fn build(row: Self::Row) -> Self {
-        UserEmail { s: row }
+impl ToSql<diesel::sql_types::Text, Sqlite> for UserEmail {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
+        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(&self.s, out)
     }
 }
 
