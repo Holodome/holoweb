@@ -1,5 +1,5 @@
 use claim::assert_ok;
-use holosite::domain::{NewUser, UserName};
+use holosite::domain::NewUser;
 use holosite::services::insert_new_user;
 use secrecy::{ExposeSecret, Secret};
 

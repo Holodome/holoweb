@@ -1,5 +1,5 @@
 use diesel::r2d2::ConnectionManager;
-use diesel_migrations::{embed_migrations, EmbedMigrations};
+use diesel_migrations::embed_migrations;
 use holosite::config::Settings;
 use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
