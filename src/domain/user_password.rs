@@ -68,8 +68,8 @@ impl AsRef<Secret<String>> for UserPassword {
 mod tests {
     use crate::domain::UserPassword;
     use claim::{assert_err, assert_ok};
-    use fake::faker::internet::en::Password;
-    use fake::Fake;
+    
+    
     use secrecy::Secret;
 
     #[test]

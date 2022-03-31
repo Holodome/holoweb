@@ -1,6 +1,6 @@
 use crate::domain::{Credentials, UserName};
 use crate::startup::Pool;
-use secrecy::Secret;
+
 
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
