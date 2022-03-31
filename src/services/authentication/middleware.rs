@@ -32,7 +32,7 @@ pub async fn reject_anonymous_users(
         Session::from_request(http_request, payload).await
     }?;
 
-    match session.get_user_id().map_err(e500)? {
+    match session.get_user_name().map_err(e500)? {
         Some(user_id) => {
             req.extensions_mut().insert(UserID(user_id));
             next.call(req).await

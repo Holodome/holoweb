@@ -1,8 +1,8 @@
-use crate::domain::{UserEmail, UserName, UserPassword};
+use crate::domain::{UserEmail, UserName, UserPassword, UserID};
 
 #[derive(Debug, diesel::Queryable)]
 pub struct User {
-    id: String,
+    id: UserID,
     name: UserName,
     email: UserEmail,
     password: UserPassword,

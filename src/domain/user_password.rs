@@ -15,7 +15,7 @@ pub enum PasswordError {
     InvalidCharacters,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UserPassword {
     p: Secret<String>,
 }

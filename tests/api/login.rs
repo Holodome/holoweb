@@ -12,8 +12,8 @@ async fn error_flash_message_is_set_on_failure() {
     let app = TestApp::spawn().await;
 
     let login_body = serde_json::json!({
-        "name": "some name",
-        "password": "some password"
+        "name": "SuperValidName",
+        "password": "!1Aapass"
     });
     let response = app.post_login(&login_body).await;
 

@@ -1,7 +1,22 @@
 use crate::domain::{UserName, UserPassword};
+use secrecy::Secret;
 
-#[derive(Debug, diesel::Queryable)]
+#[derive(Debug, Clone, diesel::Queryable)]
 pub struct Credentials {
-    pub user_name: UserName,
-    pub user_password: UserPassword
+    pub name: UserName,
+    pub password: UserPassword,
+}
+
+impl Credentials {
+    pub fn parse(
+        name: String,
+        password: Secret<String>,
+    ) -> Result<Credentials, anyhow::Error> {
+        let name = UserName::parse(name)?;
+        let password = UserPassword::parse(password)?;
+        Ok(Self {
+            name,
+            password,
+        })
+    }
 }
