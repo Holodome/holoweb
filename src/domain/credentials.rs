@@ -8,15 +8,9 @@ pub struct Credentials {
 }
 
 impl Credentials {
-    pub fn parse(
-        name: String,
-        password: Secret<String>,
-    ) -> Result<Credentials, anyhow::Error> {
+    pub fn parse(name: String, password: Secret<String>) -> Result<Credentials, anyhow::Error> {
         let name = UserName::parse(name)?;
         let password = UserPassword::parse(password)?;
-        Ok(Self {
-            name,
-            password,
-        })
+        Ok(Self { name, password })
     }
 }

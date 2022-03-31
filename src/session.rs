@@ -1,8 +1,8 @@
+use crate::domain::UserName;
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
 use std::future::{ready, Ready};
-use crate::domain::UserName;
 
 pub struct Session(actix_session::Session);
 
@@ -14,7 +14,8 @@ impl Session {
     }
 
     pub fn insert_user_name(&self, user_name: UserName) -> Result<(), serde_json::Error> {
-        self.0.insert(Self::USER_NAME_KEY, user_name.as_ref().to_string())
+        self.0
+            .insert(Self::USER_NAME_KEY, user_name.as_ref().to_string())
     }
 
     pub fn get_user_name(&self) -> Result<Option<String>, serde_json::Error> {

@@ -1,4 +1,4 @@
-use crate::domain::{UserEmail, UserName, UserPassword, UserID};
+use crate::domain::{UserEmail, UserID, UserName, UserPassword};
 
 #[derive(Debug, diesel::Queryable)]
 pub struct User {
