@@ -28,7 +28,7 @@ pub async fn validate_credentials(
             .expose_secret()
             .eq(&password_hash)
         {
-            Ok(credentials.name.clone())
+            Ok(credentials.name)
         } else {
             Err(AuthError::InvalidCredentials(anyhow::anyhow!(
                 "Invalid password"

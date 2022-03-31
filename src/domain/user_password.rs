@@ -47,7 +47,7 @@ impl FromSql<diesel::sql_types::Text, Sqlite> for UserPassword {
 
 impl ToSql<diesel::sql_types::Text, Sqlite> for UserPassword {
     fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
-        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(&self.s.expose_secret(), out)
+        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(self.s.expose_secret(), out)
     }
 }
 

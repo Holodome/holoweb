@@ -19,8 +19,8 @@ pub struct NewUser {
 
 impl NewUser {
     pub fn parse(name: String, password: Secret<String>) -> Result<Self, NewUserError> {
-        let name = UserName::parse(name).map_err(|e| NewUserError::NameError(e))?;
-        let password = UserPassword::parse(password).map_err(|e| NewUserError::PasswordError(e))?;
+        let name = UserName::parse(name).map_err(NewUserError::NameError)?;
+        let password = UserPassword::parse(password).map_err(NewUserError::PasswordError)?;
         Ok(Self { name, password })
     }
 }
