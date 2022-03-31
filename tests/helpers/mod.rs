@@ -1,6 +1,6 @@
 use diesel::r2d2::ConnectionManager;
 use diesel_migrations::{embed_migrations, EmbedMigrations};
-use holosite::config::get_config;
+use holosite::config::Settings;
 use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
 use uuid::Uuid;
@@ -35,12 +35,7 @@ impl TestApp {
     pub async fn spawn() -> TestApp {
         Lazy::force(&TRACING);
 
-        let config = {
-            let mut c = get_config().expect("Failed ot get config");
-            c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
-            c.app.port = 0;
-            c
-        };
+        let config = get_config();
 
         let app = Application::build(config.clone())
             .await
@@ -93,6 +88,13 @@ impl TestApp {
     }
 }
 
+fn get_config() -> Settings {
+    let mut c = holosite::config::get_config().expect("Failed ot get config");
+    c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
+    c.app.port = 0;
+    c
+}
+
 embed_migrations!();
 
 pub fn get_connection_pool(path: &str) -> Pool {
@@ -107,4 +109,9 @@ pub fn get_connection_pool(path: &str) -> Pool {
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
     assert_eq!(response.status().as_u16(), 303);
     assert_eq!(response.headers().get("Location").unwrap(), location);
+}
+
+pub fn get_new_connection() -> Pool {
+    let c = get_config();
+    get_connection_pool(&c.database_path)
 }
