@@ -6,7 +6,6 @@ create table users (
     email text unique not null,
     password varchar not null,
     created_at text not null,
-    role text not null,
     is_banned boolean not null
 );
 

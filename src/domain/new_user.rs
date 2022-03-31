@@ -1,4 +1,3 @@
-use crate::domain::user_email::UserEmail;
 use crate::domain::user_name::UserName;
 use crate::domain::user_password::PasswordError;
 use crate::domain::UserPassword;

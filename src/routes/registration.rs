@@ -1,4 +1,4 @@
-use crate::domain::{NewUser, NewUserError, PasswordError, UserName};
+use crate::domain::{NewUser, NewUserError, PasswordError};
 use crate::routes::LoginError;
 use crate::session::Session;
 use crate::startup::Pool;
@@ -9,7 +9,6 @@ use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 use secrecy::{ExposeSecret, Secret};
 use std::fmt::Formatter;
-use crate::schema::users::password;
 
 #[derive(Template)]
 #[template(path = "registration.html")]
@@ -66,7 +65,7 @@ impl TryFrom<RegistrationFormData> for NewUser {
 
         let user = NewUser::parse(value.name, value.password).map_err(|e| match e {
             NewUserError::NameError(e) => RegistrationError::InvalidName(e),
-            NewUserError::PasswordError(e) => RegistrationError::InvalidPassword(e)
+            NewUserError::PasswordError(e) => RegistrationError::InvalidPassword(e),
         })?;
 
         Ok(user)

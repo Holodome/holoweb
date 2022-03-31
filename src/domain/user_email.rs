@@ -1,12 +1,15 @@
+use std::io::Write;
 use validator::validate_email;
 
-#[derive(Debug)]
-pub struct UserEmail(String);
+#[derive(Debug, diesel::Queryable)]
+pub struct UserEmail {
+    s: String,
+}
 
 impl UserEmail {
     pub fn parse(s: String) -> Result<Self, anyhow::Error> {
         if validate_email(&s) {
-            Ok(Self(s))
+            Ok(Self { s })
         } else {
             Err(anyhow::anyhow!("{} is not a valid user email", s))
         }
@@ -15,7 +18,7 @@ impl UserEmail {
 
 impl AsRef<str> for UserEmail {
     fn as_ref(&self) -> &str {
-        &self.0
+        &self.s
     }
 }
 

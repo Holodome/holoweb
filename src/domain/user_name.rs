@@ -1,7 +1,9 @@
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Debug)]
-pub struct UserName(String);
+#[derive(Debug, diesel::Queryable)]
+pub struct UserName {
+    s: String,
+}
 
 impl UserName {
     pub fn parse(s: String) -> Result<UserName, anyhow::Error> {
@@ -21,13 +23,13 @@ impl UserName {
             ));
         }
 
-        Ok(Self(s))
+        Ok(Self { s })
     }
 }
 
 impl AsRef<String> for UserName {
     fn as_ref(&self) -> &String {
-        &self.0
+        &self.s
     }
 }
 

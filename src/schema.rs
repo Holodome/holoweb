@@ -41,7 +41,6 @@ table! {
         email -> Text,
         password -> Text,
         created_at -> Text,
-        role -> Text,
         is_banned -> Bool,
     }
 }

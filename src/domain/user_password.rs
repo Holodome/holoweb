@@ -16,7 +16,19 @@ pub enum PasswordError {
 }
 
 #[derive(Debug)]
-pub struct UserPassword(Secret<String>);
+pub struct UserPassword {
+    p: Secret<String>,
+}
+
+impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserPassword {
+    type Row = String;
+
+    fn build(row: Self::Row) -> Self {
+        UserPassword {
+            p: Secret::new(row),
+        }
+    }
+}
 
 impl UserPassword {
     pub fn parse(s: Secret<String>) -> Result<UserPassword, PasswordError> {
@@ -42,13 +54,13 @@ impl UserPassword {
             }
         }
 
-        Ok(UserPassword(s))
+        Ok(UserPassword { p: s })
     }
 }
 
 impl AsRef<Secret<String>> for UserPassword {
     fn as_ref(&self) -> &Secret<String> {
-        &self.0
+        &self.p
     }
 }
 
