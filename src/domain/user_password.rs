@@ -28,7 +28,9 @@ pub struct UserPassword {
 
 impl PartialEq<UserPassword> for UserPassword {
     fn eq(&self, other: &UserPassword) -> bool {
-        self.as_ref().expose_secret().eq(other.as_ref().expose_secret())
+        self.as_ref()
+            .expose_secret()
+            .eq(other.as_ref().expose_secret())
     }
 }
 

@@ -11,7 +11,10 @@ pub fn get_user_by_id(conn: &Connection, user_id: &UserID) -> Result<Option<User
         .optional()?)
 }
 
-pub fn get_user_by_name(conn: &Connection, user_name: &UserName) -> Result<Option<User>, anyhow::Error> {
+pub fn get_user_by_name(
+    conn: &Connection,
+    user_name: &UserName,
+) -> Result<Option<User>, anyhow::Error> {
     Ok(users
         .filter(name.eq(user_name))
         .first::<User>(conn)

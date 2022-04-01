@@ -5,7 +5,9 @@ use diesel::sqlite::Sqlite;
 use std::io::Write;
 use validator::validate_email;
 
-#[derive(Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
+#[derive(
+    Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
+)]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct UserEmail {
     s: String,
