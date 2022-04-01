@@ -5,7 +5,7 @@ use diesel::sqlite::Sqlite;
 use std::io::Write;
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Debug, Clone, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
+#[derive(Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct UserName {
     s: String,

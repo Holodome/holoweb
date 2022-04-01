@@ -5,7 +5,7 @@ use diesel::sqlite::Sqlite;
 use std::io::Write;
 use uuid::Uuid;
 
-#[derive(Debug, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
+#[derive(Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow)]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct UserID {
     s: String,
@@ -30,5 +30,11 @@ impl UserID {
         Self {
             s: Uuid::new_v4().to_string(),
         }
+    }
+}
+
+impl AsRef<String> for UserID {
+    fn as_ref(&self) -> &String {
+        &self.s
     }
 }

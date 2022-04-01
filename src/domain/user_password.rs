@@ -26,6 +26,12 @@ pub struct UserPassword {
     s: Secret<String>,
 }
 
+impl PartialEq<UserPassword> for UserPassword {
+    fn eq(&self, other: &UserPassword) -> bool {
+        self.as_ref().expose_secret().eq(other.as_ref().expose_secret())
+    }
+}
+
 impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserPassword {
     type Row = <String as diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite>>::Row;
 

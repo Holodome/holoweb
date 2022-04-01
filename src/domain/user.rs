@@ -1,7 +1,7 @@
 use crate::domain::{UserEmail, UserID, UserName, UserPassword};
 use crate::schema::users;
 
-#[derive(Debug, diesel::Queryable, diesel::Insertable)]
+#[derive(Debug, diesel::Queryable, diesel::Insertable, PartialEq)]
 pub struct User {
     pub id: UserID,
     pub name: UserName,
