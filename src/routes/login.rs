@@ -52,6 +52,7 @@ pub struct FormData {
     password: Secret<String>,
 }
 
+#[tracing::instrument("Login", skip(form, pool, session))]
 pub async fn login(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,

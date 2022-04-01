@@ -74,6 +74,7 @@ impl TryFrom<RegistrationFormData> for NewUser {
     }
 }
 
+#[tracing::instrument("Registration", skip(form, pool, session))]
 pub async fn registration(
     form: web::Form<RegistrationFormData>,
     pool: web::Data<Pool>,
@@ -111,7 +112,7 @@ fn registration_redirect(e: RegistrationError) -> InternalError<RegistrationErro
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{NewUser, UserPassword};
+    use crate::domain::NewUser;
     use crate::routes::{RegistrationError, RegistrationFormData};
     use claim::assert_err;
     use secrecy::Secret;
