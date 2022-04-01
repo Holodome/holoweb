@@ -30,6 +30,8 @@ pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
 
 #[derive(thiserror::Error)]
 pub enum LoginError {
+    #[error("Invalid credentials")]
+    InvalidCredentials(#[source] anyhow::Error),
     #[error("Authentication failed")]
     AuthError(#[source] anyhow::Error),
     #[error("Something went wrong")]
@@ -56,7 +58,8 @@ pub async fn login(
     session: Session,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
     let credentials = Credentials::parse(form.0.name, form.0.password)
-        .map_err(|e| login_redirect(LoginError::AuthError(e)))?;
+        .map_err(|e| login_redirect(LoginError::InvalidCredentials(e)))?;
+
     tracing::Span::current().record("user_name", &tracing::field::display(&credentials.name));
     match validate_credentials(credentials, &pool).await {
         Ok(user_name) => {
