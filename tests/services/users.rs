@@ -1,7 +1,7 @@
 use claim::{assert_ok, assert_some_eq};
 use holosite::domain::{HashedUserPassword, NewUser};
 use holosite::services::{get_user_by_id, get_user_by_name, insert_new_user};
-use secrecy::{ExposeSecret, Secret};
+use secrecy::Secret;
 
 #[test]
 fn insert_user_works() {

@@ -1,9 +1,4 @@
-use diesel::backend::Backend;
-use diesel::deserialize::FromSql;
-use diesel::serialize::{Output, ToSql};
-use diesel::sqlite::Sqlite;
 use secrecy::{ExposeSecret, Secret};
-use std::io::Write;
 
 const PASSWORD_MIN_LENGTH: usize = 8;
 const PASSWORD_MAX_LENGTH: usize = 128;

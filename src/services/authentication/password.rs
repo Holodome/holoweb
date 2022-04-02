@@ -1,8 +1,6 @@
-use crate::domain::{Credentials, HashedUserPassword, User, UserName, UserPassword};
+use crate::domain::{Credentials, HashedUserPassword, UserName};
 use crate::services::get_stored_credentials;
 use crate::startup::Pool;
-use secrecy::{ExposeSecret, Secret};
-use sha3::Digest;
 
 #[derive(thiserror::Error, Debug)]
 pub enum AuthError {
