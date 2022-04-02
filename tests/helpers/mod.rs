@@ -111,6 +111,18 @@ impl TestApp {
             .await
             .expect("Failed to execute request")
     }
+
+    pub async fn get_home_page(&self) -> reqwest::Response {
+        self.api_client
+            .get(format!("{}/", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn get_home_page_html(&self) -> String {
+        self.get_home_page().await.text().await.unwrap()
+    }
 }
 
 fn get_config() -> Settings {

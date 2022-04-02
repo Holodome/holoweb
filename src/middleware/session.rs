@@ -18,8 +18,11 @@ impl Session {
             .insert(Self::USER_NAME_KEY, user_name.as_ref().to_string())
     }
 
-    pub fn get_user_name(&self) -> Result<Option<String>, serde_json::Error> {
-        self.0.get(Self::USER_NAME_KEY)
+    pub fn get_user_name(&self) -> Result<Option<UserName>, serde_json::Error> {
+        Ok(match self.0.get(Self::USER_NAME_KEY)? {
+            Some(name) => Some(UserName::parse(name).expect("Failed to deserialize user name")),
+            None => None,
+        })
     }
 
     pub fn log_out(self) {

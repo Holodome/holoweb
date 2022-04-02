@@ -87,6 +87,10 @@ async fn registration_logout_login_works() {
     });
     let response = app.post_login(&login_body).await;
     assert_is_redirect_to(&response, "/");
+
+    let home = app.get_home_page_html().await;
+    assert!(home.contains("Log out"));
+    assert!(home.contains("Account"));
 }
 
 #[tokio::test]

@@ -1,9 +1,9 @@
-use crate::domain::{NewUser, NewUserError, PasswordError};
+use crate::domain::{NewUser, NewUserError, PasswordError, UserName};
+use crate::middleware::Session;
 use crate::services::{get_user_by_name, insert_new_user};
-use crate::session::Session;
 use crate::startup::Pool;
 use crate::utils::{extract_errors, see_other};
-use actix_web::error::InternalError;
+use actix_web::error::{ErrorInternalServerError, InternalError};
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
@@ -15,12 +15,23 @@ use std::fmt::Formatter;
 #[template(path = "registration.html")]
 struct RegistrationTemplate {
     errors: Vec<String>,
+    current_user_name: Option<UserName>,
 }
 
-#[tracing::instrument(skip(flash_messages))]
-pub async fn registration_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
-    let s = RegistrationTemplate { errors: extract_errors(&flash_messages) }.render().unwrap();
-    HttpResponse::Ok().content_type(ContentType::html()).body(s)
+#[tracing::instrument(skip(flash_messages, session))]
+pub async fn registration_form(
+    flash_messages: IncomingFlashMessages,
+    session: Session,
+) -> Result<HttpResponse, actix_web::Error> {
+    let current_user_name = session.get_user_name().map_err(ErrorInternalServerError)?;
+
+    let s = RegistrationTemplate {
+        errors: extract_errors(&flash_messages),
+        current_user_name,
+    }
+    .render()
+    .unwrap();
+    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
 }
 
 #[derive(thiserror::Error)]

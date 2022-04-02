@@ -1,4 +1,4 @@
-use crate::session::Session;
+use crate::middleware::Session;
 use crate::utils::{e500, see_other};
 use actix_web::HttpResponse;
 use actix_web_flash_messages::FlashMessage;

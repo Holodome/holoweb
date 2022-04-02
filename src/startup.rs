@@ -1,8 +1,8 @@
 use crate::config::Settings;
+use crate::middleware::reject_anonymous_users;
 use crate::routes::{
     health_check, home, login, login_form, logout, registration, registration_form,
 };
-use crate::services::reject_anonymous_users;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;

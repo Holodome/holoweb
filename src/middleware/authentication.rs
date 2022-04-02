@@ -1,27 +1,9 @@
-use crate::session::Session;
+use crate::middleware::Session;
 use crate::utils::{e500, see_other};
 use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::InternalError;
 use actix_web::{FromRequest, HttpMessage};
-use std::fmt::Formatter;
-
-#[derive(Clone, Debug)]
-pub struct UserID(String);
-
-impl std::fmt::Display for UserID {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl std::ops::Deref for UserID {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 pub async fn reject_anonymous_users(
     mut req: ServiceRequest,
@@ -33,8 +15,8 @@ pub async fn reject_anonymous_users(
     }?;
 
     match session.get_user_name().map_err(e500)? {
-        Some(user_id) => {
-            req.extensions_mut().insert(UserID(user_id));
+        Some(user_name) => {
+            req.extensions_mut().insert(user_name);
             next.call(req).await
         }
         None => {

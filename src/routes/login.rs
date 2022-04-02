@@ -1,9 +1,9 @@
-use crate::domain::Credentials;
+use crate::domain::{Credentials, UserName};
+use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
-use crate::session::Session;
 use crate::startup::Pool;
 use crate::utils::{extract_errors, extract_infos, see_other};
-use actix_web::error::InternalError;
+use actix_web::error::{ErrorInternalServerError, InternalError};
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
@@ -17,17 +17,23 @@ use std::fmt::Formatter;
 struct LoginTemplate {
     errors: Vec<String>,
     infos: Vec<String>,
+    current_user_name: Option<UserName>,
 }
 
-#[tracing::instrument(skip(flash_messages))]
-pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
+#[tracing::instrument(skip(flash_messages, session))]
+pub async fn login_form(
+    flash_messages: IncomingFlashMessages,
+    session: Session,
+) -> actix_web::Result<HttpResponse> {
+    let current_user_name = session.get_user_name().map_err(ErrorInternalServerError)?;
     let s = LoginTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
+        current_user_name,
     }
     .render()
     .unwrap();
-    HttpResponse::Ok().content_type(ContentType::html()).body(s)
+    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
 }
 
 #[derive(thiserror::Error)]
