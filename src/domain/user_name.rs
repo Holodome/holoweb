@@ -1,7 +1,17 @@
+use diesel::backend::Backend;
+use diesel::deserialize::FromSql;
+use diesel::serialize::{Output, ToSql};
+use diesel::sqlite::Sqlite;
+use std::io::Write;
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Debug)]
-pub struct UserName(String);
+#[derive(
+    Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
+)]
+#[sql_type = "diesel::sql_types::Text"]
+pub struct UserName {
+    s: String,
+}
 
 impl UserName {
     pub fn parse(s: String) -> Result<UserName, anyhow::Error> {
@@ -21,13 +31,28 @@ impl UserName {
             ));
         }
 
-        Ok(Self(s))
+        Ok(Self { s })
+    }
+}
+
+impl FromSql<diesel::sql_types::Text, Sqlite> for UserName {
+    fn from_sql(
+        bytes: Option<&<Sqlite as Backend>::RawValue>,
+    ) -> diesel::deserialize::Result<Self> {
+        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
+            .map(|s| UserName { s })
+    }
+}
+
+impl ToSql<diesel::sql_types::Text, Sqlite> for UserName {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
+        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(&self.s, out)
     }
 }
 
 impl AsRef<String> for UserName {
     fn as_ref(&self) -> &String {
-        &self.0
+        &self.s
     }
 }
 

@@ -1,4 +1,5 @@
-use crate::authentication::{validate_credentials, AuthError, Credentials};
+use crate::domain::Credentials;
+use crate::services::{validate_credentials, AuthError};
 use crate::session::Session;
 use crate::startup::Pool;
 use crate::utils::see_other;
@@ -29,6 +30,8 @@ pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
 
 #[derive(thiserror::Error)]
 pub enum LoginError {
+    #[error("Invalid credentials")]
+    InvalidCredentials(#[source] anyhow::Error),
     #[error("Authentication failed")]
     AuthError(#[source] anyhow::Error),
     #[error("Something went wrong")]
@@ -49,24 +52,24 @@ pub struct FormData {
     password: Secret<String>,
 }
 
+#[tracing::instrument("Login", skip(form, pool, session))]
 pub async fn login(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
     session: Session,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
-    let credentials = Credentials {
-        username: form.0.name,
-        password: form.0.password,
-    };
-    tracing::Span::current().record("username", &tracing::field::display(&credentials.username));
+    let credentials = Credentials::parse(form.0.name, form.0.password)
+        .map_err(|e| login_redirect(LoginError::InvalidCredentials(e)))?;
+
+    tracing::Span::current().record("user_name", &tracing::field::display(&credentials.name));
     match validate_credentials(credentials, &pool).await {
-        Ok(user_id) => {
-            tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
+        Ok(user_name) => {
+            tracing::Span::current().record("user_name", &tracing::field::display(&user_name));
             session.renew();
             session
-                .insert_user_id(user_id)
+                .insert_user_name(user_name)
                 .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
-            Ok(see_other("/home"))
+            Ok(see_other("/"))
         }
         Err(e) => {
             let e = match e {
