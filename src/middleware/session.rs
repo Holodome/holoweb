@@ -19,10 +19,10 @@ impl Session {
     }
 
     pub fn get_user_name(&self) -> Result<Option<UserName>, serde_json::Error> {
-        Ok(match self.0.get(Self::USER_NAME_KEY)? {
-            Some(name) => Some(UserName::parse(name).expect("Failed to deserialize user name")),
-            None => None,
-        })
+        Ok(self
+            .0
+            .get(Self::USER_NAME_KEY)?
+            .map(|name| UserName::parse(name).expect("Failed to deserialize user name")))
     }
 
     pub fn log_out(self) {
