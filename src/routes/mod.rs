@@ -4,6 +4,7 @@ mod home;
 mod login;
 mod logout;
 mod registration;
+mod change_password;
 
 pub use account::*;
 pub use health_check::*;

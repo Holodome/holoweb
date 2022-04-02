@@ -2,7 +2,7 @@ use crate::domain::users::{NewUser, NewUserError, PasswordError, UserName};
 use crate::middleware::Session;
 use crate::services::{get_user_by_name, insert_new_user};
 use crate::startup::Pool;
-use crate::utils::{extract_errors, see_other};
+use crate::utils::{e500, extract_errors, see_other};
 use actix_web::error::{ErrorInternalServerError, InternalError};
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
@@ -23,7 +23,7 @@ pub async fn registration_form(
     flash_messages: IncomingFlashMessages,
     session: Session,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let current_user_name = session.get_user_name().map_err(ErrorInternalServerError)?;
+    let current_user_name = session.get_user_name().map_err(e500)?;
 
     let s = RegistrationTemplate {
         errors: extract_errors(&flash_messages),

@@ -3,7 +3,7 @@ use crate::domain::users::UserName;
 use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
-use crate::utils::{extract_errors, extract_infos, see_other};
+use crate::utils::{e500, extract_errors, extract_infos, see_other};
 use actix_web::error::{ErrorInternalServerError, InternalError};
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
@@ -26,7 +26,7 @@ pub async fn login_form(
     flash_messages: IncomingFlashMessages,
     session: Session,
 ) -> actix_web::Result<HttpResponse> {
-    let current_user_name = session.get_user_name().map_err(ErrorInternalServerError)?;
+    let current_user_name = session.get_user_name().map_err(e500)?;
     let s = LoginTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),

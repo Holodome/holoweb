@@ -4,6 +4,7 @@ use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header::ContentType;
 use actix_web::HttpResponse;
 use askama::Template;
+use crate::utils::e500;
 
 #[derive(Template)]
 #[template(path = "account.html")]
@@ -14,7 +15,7 @@ struct AccountPage<'a> {
 
 #[tracing::instrument(skip(session))]
 pub async fn account(session: Session) -> actix_web::Result<HttpResponse> {
-    let current_user_name = session.get_user_name().map_err(ErrorInternalServerError)?;
+    let current_user_name = session.get_user_name().map_err(e500)?;
     let user_name = current_user_name
         .as_ref()
         .expect("Failed to get user")
