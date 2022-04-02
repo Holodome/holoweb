@@ -1,7 +1,8 @@
-use crate::domain::{StoredCredentials, UserName};
 use crate::startup::Pool;
 
+use crate::domain::users::UserName;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
+use crate::domain::credentials::StoredCredentials;
 
 #[tracing::instrument(name = "Get stored credentials", skip(username, pool))]
 pub async fn get_stored_credentials(

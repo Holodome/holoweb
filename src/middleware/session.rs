@@ -1,4 +1,4 @@
-use crate::domain::UserName;
+use crate::domain::users::UserName;
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};

@@ -1,4 +1,4 @@
-use crate::domain::{UserName, UserPassword};
+use crate::domain::users::{UserName, UserPassword};
 use secrecy::Secret;
 
 #[derive(Debug, Clone, diesel::Queryable)]

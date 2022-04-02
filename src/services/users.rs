@@ -1,6 +1,5 @@
-use crate::domain::{
-    HashedUserPassword, NewUser, User, UserEmail, UserID, UserName, UserPasswordSalt,
-};
+use crate::domain::users::hashed_user_password::HashedUserPassword;
+use crate::domain::users::{NewUser, User, UserEmail, UserID, UserName, UserPasswordSalt};
 use crate::schema::users::dsl::*;
 use crate::services::Connection;
 use diesel::{insert_into, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};

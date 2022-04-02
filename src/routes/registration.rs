@@ -1,4 +1,4 @@
-use crate::domain::{NewUser, NewUserError, PasswordError, UserName};
+use crate::domain::users::{NewUser, NewUserError, PasswordError, UserName};
 use crate::middleware::Session;
 use crate::services::{get_user_by_name, insert_new_user};
 use crate::startup::Pool;

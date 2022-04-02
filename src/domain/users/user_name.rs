@@ -58,7 +58,7 @@ impl AsRef<String> for UserName {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::user_name::UserName;
+    use crate::domain::user::user_name::UserName;
     use claim::{assert_err, assert_ok};
     use fake::faker::internet::en::Username;
     use fake::Fake;

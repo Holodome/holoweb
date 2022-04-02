@@ -1,4 +1,6 @@
-use crate::domain::{Credentials, HashedUserPassword, UserName};
+use crate::domain::credentials::Credentials;
+use crate::domain::users::hashed_user_password::HashedUserPassword;
+use crate::domain::users::UserName;
 use crate::services::get_stored_credentials;
 use crate::startup::Pool;
 

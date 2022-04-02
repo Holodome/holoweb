@@ -1,4 +1,4 @@
-use crate::domain::UserName;
+use crate::domain::users::UserName;
 use crate::middleware::Session;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header::ContentType;
