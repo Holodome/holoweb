@@ -58,11 +58,11 @@ impl AsRef<String> for UserName {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use claim::{assert_err, assert_ok};
     use fake::faker::internet::en::Username;
     use fake::Fake;
     use quickcheck::Gen;
-    use super::*;
 
     #[test]
     fn a_256_grapheme_long_name_is_valid() {
