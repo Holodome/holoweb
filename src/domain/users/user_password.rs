@@ -57,7 +57,7 @@ impl AsRef<Secret<String>> for UserPassword {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::UserPassword;
+    use super::*;
     use claim::{assert_err, assert_ok};
 
     use secrecy::Secret;

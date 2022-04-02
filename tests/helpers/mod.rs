@@ -65,11 +65,7 @@ impl TestApp {
     }
 
     pub async fn get_login_page(&self) -> reqwest::Response {
-        self.api_client
-            .get(format!("{}/login", &self.address))
-            .send()
-            .await
-            .expect("Failed to execute request")
+        self.get_page("login").await
     }
 
     pub async fn get_login_page_html(&self) -> String {
@@ -77,11 +73,7 @@ impl TestApp {
     }
 
     pub async fn get_registration_page(&self) -> reqwest::Response {
-        self.api_client
-            .get(format!("{}/registration", &self.address))
-            .send()
-            .await
-            .expect("Failed to execute request")
+        self.get_page("registration").await
     }
 
     pub async fn get_registration_page_html(&self) -> String {
@@ -113,15 +105,23 @@ impl TestApp {
     }
 
     pub async fn get_home_page(&self) -> reqwest::Response {
-        self.api_client
-            .get(format!("{}/", &self.address))
-            .send()
-            .await
-            .expect("Failed to execute request")
+        self.get_page("").await
     }
 
     pub async fn get_home_page_html(&self) -> String {
         self.get_home_page().await.text().await.unwrap()
+    }
+
+    pub async fn get_account_page_html(&self) -> String {
+        self.get_page("account").await.text().await.unwrap()
+    }
+
+    async fn get_page(&self, rel_address: &str) -> reqwest::Response {
+        self.api_client
+            .get(format!("{}/{}", &self.address, rel_address))
+            .send()
+            .await
+            .expect("Failed to execute request")
     }
 }
 

@@ -1,9 +1,11 @@
+mod account;
 mod health_check;
 mod home;
 mod login;
 mod logout;
 mod registration;
 
+pub use account::*;
 pub use health_check::*;
 pub use home::*;
 pub use login::*;

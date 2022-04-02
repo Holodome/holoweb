@@ -18,4 +18,3 @@ impl Credentials {
         Ok(Self { name, password })
     }
 }
-
