@@ -1,5 +1,6 @@
 use actix_web::http::header::LOCATION;
 use actix_web::HttpResponse;
+use actix_web_flash_messages::{IncomingFlashMessages, Level};
 
 pub fn e500<E>(e: E) -> actix_web::Error
 where
@@ -25,4 +26,23 @@ pub fn error_chain_fmt(
         current = cause.source();
     }
     Ok(())
+}
+
+pub fn extract_flash_messages_level(
+    flash_messages: &IncomingFlashMessages,
+    level: Level,
+) -> Vec<String> {
+    flash_messages
+        .iter()
+        .filter(|m| m.level() == level)
+        .map(|m| m.content().to_string())
+        .collect::<Vec<_>>()
+}
+
+pub fn extract_errors(flash_messages: &IncomingFlashMessages) -> Vec<String> {
+    extract_flash_messages_level(flash_messages, Level::Error)
+}
+
+pub fn extract_infos(flash_messages: &IncomingFlashMessages) -> Vec<String> {
+    extract_flash_messages_level(flash_messages, Level::Info)
 }

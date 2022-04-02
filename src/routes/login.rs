@@ -2,7 +2,7 @@ use crate::domain::Credentials;
 use crate::services::{validate_credentials, AuthError};
 use crate::session::Session;
 use crate::startup::Pool;
-use crate::utils::see_other;
+use crate::utils::{extract_errors, extract_infos, see_other};
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
@@ -16,15 +16,17 @@ use std::fmt::Formatter;
 #[template(path = "login.html")]
 struct LoginTemplate {
     errors: Vec<String>,
+    infos: Vec<String>,
 }
 
 #[tracing::instrument(skip(flash_messages))]
 pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
-    let errors = flash_messages
-        .iter()
-        .map(|m| m.content().to_string())
-        .collect::<Vec<_>>();
-    let s = LoginTemplate { errors }.render().unwrap();
+    let s = LoginTemplate {
+        errors: extract_errors(&flash_messages),
+        infos: extract_infos(&flash_messages),
+    }
+    .render()
+    .unwrap();
     HttpResponse::Ok().content_type(ContentType::html()).body(s)
 }
 
