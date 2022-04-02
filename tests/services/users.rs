@@ -15,11 +15,7 @@ fn insert_user_works() {
     let res = insert_new_user(&conn, &new_user);
     assert_ok!(&res);
 
-    assert_eq!(res.as_ref()
-
-
-
-                   .unwrap().name.as_ref(), name);
+    assert_eq!(res.as_ref().unwrap().name.as_ref(), name);
 }
 
 #[test]
