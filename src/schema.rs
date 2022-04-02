@@ -40,6 +40,7 @@ table! {
         name -> Text,
         email -> Text,
         password -> Text,
+        password_salt -> Text,
         created_at -> Text,
         is_banned -> Bool,
     }
