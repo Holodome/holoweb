@@ -1,9 +1,9 @@
-use crate::domain::{HashedUserPassword, NewUser, User, UserEmail, UserID, UserName, UserPasswordSalt};
+use crate::domain::{
+    HashedUserPassword, NewUser, User, UserEmail, UserID, UserName, UserPasswordSalt,
+};
 use crate::schema::users::dsl::*;
 use crate::services::Connection;
 use diesel::{insert_into, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
-use secrecy::Secret;
-use uuid::Uuid;
 
 #[tracing::instrument("Get user by id", skip(conn, user_id))]
 pub fn get_user_by_id(conn: &Connection, user_id: &UserID) -> Result<Option<User>, anyhow::Error> {
@@ -24,7 +24,7 @@ pub fn get_user_by_name(
 }
 
 pub fn insert_new_user(conn: &Connection, new_user: &NewUser) -> Result<User, anyhow::Error> {
-    let salt  = UserPasswordSalt::generate_random();
+    let salt = UserPasswordSalt::generate_random();
     let hashed_password = HashedUserPassword::parse(&new_user.password, &salt);
 
     let user = User {

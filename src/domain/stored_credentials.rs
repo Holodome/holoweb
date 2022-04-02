@@ -4,5 +4,5 @@ use crate::domain::{HashedUserPassword, UserName, UserPasswordSalt};
 pub struct StoredCredentials {
     pub name: UserName,
     pub password: HashedUserPassword,
-    pub salt: UserPasswordSalt
+    pub salt: UserPasswordSalt,
 }

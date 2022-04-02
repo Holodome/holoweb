@@ -15,7 +15,8 @@ pub struct HashedUserPassword {
 
 impl HashedUserPassword {
     pub fn parse(password: &UserPassword, salt: &UserPasswordSalt) -> Self {
-        let new_password_string = salt.as_ref().expose_secret().to_owned() + salt.as_ref().expose_secret();
+        let new_password_string =
+            password.as_ref().expose_secret().to_owned() + salt.as_ref().expose_secret();
         let password_hash = sha3::Sha3_256::digest(new_password_string.as_bytes());
         let password_hash = format!("{:x}", password_hash);
         Self {

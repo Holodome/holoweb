@@ -9,13 +9,13 @@ use uuid::Uuid;
 #[derive(Debug, Clone, diesel::AsExpression)]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct UserPasswordSalt {
-    s: Secret<String>
+    s: Secret<String>,
 }
 
 impl UserPasswordSalt {
     pub fn generate_random() -> Self {
         Self {
-            s: Secret::new(Uuid::new_v4().to_string())
+            s: Secret::new(Uuid::new_v4().to_string()),
         }
     }
 }

@@ -15,7 +15,6 @@ pub async fn validate_credentials(
     credentials: Credentials,
     pool: &Pool,
 ) -> Result<UserName, AuthError> {
-
     if let Some(stored) = get_stored_credentials(credentials.name, pool).await? {
         let hashed_password = HashedUserPassword::parse(&credentials.password, &stored.salt);
         if hashed_password == stored.password {
