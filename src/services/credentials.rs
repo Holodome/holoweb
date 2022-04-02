@@ -1,4 +1,4 @@
-use crate::domain::{Credentials, UserName};
+use crate::domain::{StoredCredentials, UserName};
 use crate::startup::Pool;
 
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
@@ -7,12 +7,12 @@ use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 pub async fn get_stored_credentials(
     username: UserName,
     pool: &Pool,
-) -> Result<Option<Credentials>, anyhow::Error> {
+) -> Result<Option<StoredCredentials>, anyhow::Error> {
     use crate::schema::users::dsl::*;
     let conn = pool.get()?;
     Ok(users
         .filter(name.eq(username.as_ref().as_str()))
         .select((name, password))
-        .first::<Credentials>(&conn)
+        .first::<StoredCredentials>(&conn)
         .optional()?)
 }

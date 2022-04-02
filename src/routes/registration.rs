@@ -93,13 +93,13 @@ pub async fn registration(
         return Err(registration_redirect(RegistrationError::TakenName));
     }
 
-    match insert_new_user(&conn, new_user) {
+    match insert_new_user(&conn, &new_user) {
         Ok(user) => {
             session.renew();
             session
                 .insert_user_name(user.name)
                 .map_err(|e| registration_redirect(RegistrationError::UnexpectedError(e.into())))?;
-            Ok(see_other("/home"))
+            Ok(see_other("/"))
         }
         Err(e) => Err(registration_redirect(RegistrationError::UnexpectedError(e))),
     }

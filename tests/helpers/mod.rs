@@ -41,6 +41,7 @@ impl TestApp {
             .await
             .expect("Failed to build application");
         let address = format!("http://localhost:{}", app.port());
+
         let _ = tokio::spawn(app.run_until_stopped());
 
         let client = reqwest::Client::builder()
@@ -81,6 +82,18 @@ impl TestApp {
     {
         self.api_client
             .post(format!("{}/login", &self.address))
+            .form(body)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn post_registration<Body>(&self, body: &Body) -> reqwest::Response
+    where
+        Body: serde::Serialize,
+    {
+        self.api_client
+            .post(format!("{}/registration", &self.address))
             .form(body)
             .send()
             .await

@@ -69,7 +69,7 @@ pub async fn login(
             session
                 .insert_user_name(user_name)
                 .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
-            Ok(see_other("/home"))
+            Ok(see_other("/"))
         }
         Err(e) => {
             let e = match e {

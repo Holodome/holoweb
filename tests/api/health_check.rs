@@ -1,6 +1,6 @@
 use crate::helpers::TestApp;
 
-#[actix_web::test]
+#[tokio::test]
 async fn health_check_works() {
     let app = TestApp::spawn().await;
     let client = reqwest::Client::new();

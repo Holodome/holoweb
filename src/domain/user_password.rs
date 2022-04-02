@@ -26,39 +26,6 @@ pub struct UserPassword {
     s: Secret<String>,
 }
 
-impl PartialEq<UserPassword> for UserPassword {
-    fn eq(&self, other: &UserPassword) -> bool {
-        self.as_ref()
-            .expose_secret()
-            .eq(other.as_ref().expose_secret())
-    }
-}
-
-impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserPassword {
-    type Row = <String as diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite>>::Row;
-
-    fn build(row: Self::Row) -> Self {
-        UserPassword {
-            s: Secret::new(row),
-        }
-    }
-}
-
-impl FromSql<diesel::sql_types::Text, Sqlite> for UserPassword {
-    fn from_sql(
-        bytes: Option<&<Sqlite as Backend>::RawValue>,
-    ) -> diesel::deserialize::Result<Self> {
-        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
-            .map(|s| UserPassword { s: Secret::new(s) })
-    }
-}
-
-impl ToSql<diesel::sql_types::Text, Sqlite> for UserPassword {
-    fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
-        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(self.s.expose_secret(), out)
-    }
-}
-
 impl UserPassword {
     pub fn parse(s: Secret<String>) -> Result<UserPassword, PasswordError> {
         {

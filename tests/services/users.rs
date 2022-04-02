@@ -1,5 +1,5 @@
 use claim::{assert_ok, assert_some_eq};
-use holosite::domain::NewUser;
+use holosite::domain::{HashedUserPassword, NewUser};
 use holosite::services::{get_user_by_id, get_user_by_name, insert_new_user};
 use secrecy::{ExposeSecret, Secret};
 
@@ -12,13 +12,11 @@ fn insert_user_works() {
     let new_user = NewUser::parse(name.to_string(), Secret::new(password.to_string()))
         .expect("Failed to create NewUser");
 
-    let res = insert_new_user(&conn, new_user);
+    let res = insert_new_user(&conn, &new_user);
     assert_ok!(&res);
     assert_eq!(res.as_ref().unwrap().name.as_ref(), name);
-    assert_eq!(
-        res.as_ref().unwrap().password.as_ref().expose_secret(),
-        password
-    );
+    let hashed_password = HashedUserPassword::parse(&new_user.password);
+    assert_eq!(hashed_password, res.as_ref().unwrap().password);
 }
 
 #[test]
@@ -30,7 +28,7 @@ fn insert_and_get_user_by_name_and_id_works() {
     let new_user = NewUser::parse(name.to_string(), Secret::new(password.to_string()))
         .expect("Failed to create NewUser");
 
-    let res = insert_new_user(&conn, new_user);
+    let res = insert_new_user(&conn, &new_user);
     assert_ok!(&res);
     let insert_user = res.unwrap();
 
