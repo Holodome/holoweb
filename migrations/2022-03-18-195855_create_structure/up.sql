@@ -16,6 +16,7 @@ create table blog_posts (
     brief text unique not null,
     contents text not null,
     author_id varchar not null,
+    created_at text not null,
 
     foreign key (author_id) references users(id)
 );
