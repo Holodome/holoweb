@@ -4,8 +4,8 @@ use crate::schema::blog_posts;
 #[derive(diesel::AsChangeset)]
 #[table_name = "blog_posts"]
 pub struct UpdateBlogPost {
-    id: BlogPostID,
-    title: Option<String>,
-    brief: Option<String>,
-    contents: Option<String>,
+    pub id: BlogPostID,
+    pub title: Option<String>,
+    pub brief: Option<String>,
+    pub contents: Option<String>,
 }

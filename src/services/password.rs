@@ -48,7 +48,7 @@ pub fn change_password(
         password_salt: None,
         is_banned: None,
     };
-    update_user(pool, changeset)?;
+    update_user(pool, &changeset)?;
     Ok(())
 }
 
@@ -69,6 +69,6 @@ pub fn change_name(
         password_salt: None,
         is_banned: None,
     };
-    update_user(pool, changeset)?;
+    update_user(pool, &changeset)?;
     Ok(())
 }
