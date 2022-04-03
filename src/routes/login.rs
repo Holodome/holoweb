@@ -71,7 +71,7 @@ pub async fn login(
         .map_err(|e| login_redirect(LoginError::InvalidCredentials(e)))?;
 
     tracing::Span::current().record("user_name", &tracing::field::display(&credentials.name));
-    match validate_credentials(credentials, &pool).await {
+    match validate_credentials(credentials, &pool) {
         Ok(user_name) => {
             tracing::Span::current().record("user_name", &tracing::field::display(&user_name));
             session.renew();

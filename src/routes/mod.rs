@@ -1,4 +1,5 @@
 mod account;
+mod change_name;
 mod change_password;
 mod health_check;
 mod home;
@@ -7,6 +8,7 @@ mod logout;
 mod registration;
 
 pub use account::*;
+pub use change_name::*;
 pub use change_password::*;
 pub use health_check::*;
 pub use home::*;

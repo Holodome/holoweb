@@ -90,17 +90,14 @@ pub async fn registration(
     let new_user: NewUser =
         RegistrationFormData::try_into(form.0).map_err(registration_redirect)?;
 
-    let conn = pool
-        .get()
-        .map_err(|e| registration_redirect(RegistrationError::UnexpectedError(e.into())))?;
-    if get_user_by_name(&conn, &new_user.name)
+    if get_user_by_name(&pool, &new_user.name)
         .map_err(|e| registration_redirect(e.into()))?
         .is_some()
     {
         return Err(registration_redirect(RegistrationError::TakenName));
     }
 
-    match insert_new_user(&conn, &new_user) {
+    match insert_new_user(&pool, &new_user) {
         Ok(user) => {
             session.renew();
             session

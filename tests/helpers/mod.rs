@@ -98,6 +98,10 @@ impl TestApp {
         self.post("change_password", body).await
     }
 
+    pub async fn post_change_name(&self, body: &impl serde::Serialize) -> reqwest::Response {
+        self.post("change_name", body).await
+    }
+
     pub async fn get_home_page(&self) -> reqwest::Response {
         self.get_page("").await
     }
@@ -116,6 +120,14 @@ impl TestApp {
 
     pub async fn get_change_password_page_html(&self) -> String {
         self.get_change_password().await.text().await.unwrap()
+    }
+
+    pub async fn get_change_name(&self) -> reqwest::Response {
+        self.get_page("change_name").await
+    }
+
+    pub async fn get_change_name_page_html(&self) -> String {
+        self.get_change_name().await.text().await.unwrap()
     }
 
     async fn get_page(&self, rel_address: &str) -> reqwest::Response {
@@ -160,9 +172,4 @@ pub fn get_connection_pool(path: &str) -> Pool {
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
     assert_eq!(response.status().as_u16(), 303);
     assert_eq!(response.headers().get("Location").unwrap(), location);
-}
-
-pub fn get_new_connection() -> Pool {
-    let c = get_config();
-    get_connection_pool(&c.database_path)
 }

@@ -2,4 +2,3 @@
 extern crate diesel_migrations;
 mod api;
 mod helpers;
-mod services;
