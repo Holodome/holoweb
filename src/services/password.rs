@@ -41,9 +41,9 @@ pub async fn change_password(
 ) -> Result<(), anyhow::Error> {
     let conn = pool.get()?;
     let user = get_user_by_name(&conn, user_name)?
-        .ok_or(anyhow::anyhow!("Failed to get user with given name"))?;
+        .ok_or_else(|| anyhow::anyhow!("Failed to get user with given name"))?;
     let id = user.id;
-    let password = HashedUserPassword::parse(&password, &user.password_salt);
+    let password = HashedUserPassword::parse(password, &user.password_salt);
     let changeset = UpdateUser {
         id,
         name: None,
