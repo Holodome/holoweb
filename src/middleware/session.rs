@@ -1,4 +1,4 @@
-use crate::domain::UserName;
+use crate::domain::users::UserName;
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
@@ -18,8 +18,11 @@ impl Session {
             .insert(Self::USER_NAME_KEY, user_name.as_ref().to_string())
     }
 
-    pub fn get_user_name(&self) -> Result<Option<String>, serde_json::Error> {
-        self.0.get(Self::USER_NAME_KEY)
+    pub fn get_user_name(&self) -> Result<Option<UserName>, serde_json::Error> {
+        Ok(self
+            .0
+            .get(Self::USER_NAME_KEY)?
+            .map(|name| UserName::parse(name).expect("Failed to deserialize user name")))
     }
 
     pub fn log_out(self) {

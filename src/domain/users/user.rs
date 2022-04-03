@@ -1,4 +1,5 @@
-use crate::domain::{HashedUserPassword, UserEmail, UserID, UserName, UserPasswordSalt};
+use crate::domain::users::hashed_user_password::HashedUserPassword;
+use crate::domain::users::{UserEmail, UserID, UserName, UserPasswordSalt};
 use crate::schema::users;
 
 #[derive(Debug, diesel::Queryable, diesel::Insertable, PartialEq)]

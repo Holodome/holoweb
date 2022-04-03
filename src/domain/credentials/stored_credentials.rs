@@ -1,4 +1,5 @@
-use crate::domain::{HashedUserPassword, UserName, UserPasswordSalt};
+use crate::domain::users::hashed_user_password::HashedUserPassword;
+use crate::domain::users::{UserName, UserPasswordSalt};
 
 #[derive(Debug, Clone, diesel::Queryable)]
 pub struct StoredCredentials {

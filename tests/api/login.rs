@@ -87,4 +87,28 @@ async fn registration_logout_login_works() {
     });
     let response = app.post_login(&login_body).await;
     assert_is_redirect_to(&response, "/");
+
+    let home = app.get_home_page_html().await;
+    assert!(home.contains("Log out"));
+    assert!(home.contains("Account"));
+}
+
+#[tokio::test]
+async fn registration_with_invalid_password_and_not_equal_repeat_is_password_error() {
+    let app = TestApp::spawn().await;
+
+    let login_body = serde_json::json!({
+        "name": "ValidName",
+        "password": "aaaa",
+        "repeat_password": ""
+    });
+    let response = app.post_registration(&login_body).await;
+
+    assert_is_redirect_to(&response, "/registration");
+
+    let html_page = app.get_registration_page_html().await;
+    assert!(html_page.contains("Invalid password"));
+
+    let html_page = app.get_registration_page_html().await;
+    assert!(!html_page.contains("Invalid password"));
 }

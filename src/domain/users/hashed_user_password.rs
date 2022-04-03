@@ -1,4 +1,4 @@
-use crate::domain::{UserPassword, UserPasswordSalt};
+use crate::domain::users::{UserPassword, UserPasswordSalt};
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};

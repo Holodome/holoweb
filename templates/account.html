@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="ui middle aligned center aligned grid" style="margin-top: 50px">
+  <div class="ui large segment">
+    <h2 class="ui center aligned header">
+      Account
+    </h2>
+
+    <div class="ui divided list">
+      <div class="item">
+        <div class="ui horizontal label">
+          Name
+        </div>
+        {{ user_name }}
+      </div>
+      <a class="ui negative basic button" href="/change_password">
+        Change password
+      </a>
+      <a class="ui negative basic button" href="/change_name">
+        Change password
+      </a>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

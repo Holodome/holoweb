@@ -1,6 +1,4 @@
-use crate::domain::user_name::UserName;
-use crate::domain::user_password::PasswordError;
-use crate::domain::UserPassword;
+use crate::domain::users::{PasswordError, UserName, UserPassword};
 use secrecy::Secret;
 
 #[derive(thiserror::Error, Debug)]

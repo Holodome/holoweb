@@ -1,12 +1,13 @@
 use crate::config::Settings;
+use crate::middleware::reject_anonymous_users;
 use crate::routes::{
-    health_check, home, login, login_form, logout, registration, registration_form,
+    account, change_name, change_name_form, change_password, change_password_form, health_check,
+    home, login, login_form, logout, registration, registration_form,
 };
-use crate::services::reject_anonymous_users;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
-use actix_web::{guard, web, App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
 use actix_web_lab::middleware::from_fn;
@@ -83,10 +84,18 @@ async fn run(
             )
             .service(
                 web::resource("/logout")
-                    .guard(guard::Get())
                     .wrap(from_fn(reject_anonymous_users))
                     .to(logout),
             )
+            .service(
+                web::resource("/account")
+                    .wrap(from_fn(reject_anonymous_users))
+                    .to(account),
+            )
+            .service(change_password)
+            .service(change_password_form)
+            .service(change_name)
+            .service(change_name_form)
     })
     .listen(listener)?
     .run();

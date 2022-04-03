@@ -1,8 +1,9 @@
-use crate::domain::Credentials;
+use crate::domain::credentials::Credentials;
+use crate::domain::users::UserName;
+use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
-use crate::session::Session;
 use crate::startup::Pool;
-use crate::utils::see_other;
+use crate::utils::{e500, extract_errors, extract_infos, see_other};
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
@@ -16,16 +17,24 @@ use std::fmt::Formatter;
 #[template(path = "login.html")]
 struct LoginTemplate {
     errors: Vec<String>,
+    infos: Vec<String>,
+    current_user_name: Option<UserName>,
 }
 
-#[tracing::instrument(skip(flash_messages))]
-pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
-    let errors = flash_messages
-        .iter()
-        .map(|m| m.content().to_string())
-        .collect::<Vec<_>>();
-    let s = LoginTemplate { errors }.render().unwrap();
-    HttpResponse::Ok().content_type(ContentType::html()).body(s)
+#[tracing::instrument(skip(flash_messages, session))]
+pub async fn login_form(
+    flash_messages: IncomingFlashMessages,
+    session: Session,
+) -> actix_web::Result<HttpResponse> {
+    let current_user_name = session.get_user_name().map_err(e500)?;
+    let s = LoginTemplate {
+        errors: extract_errors(&flash_messages),
+        infos: extract_infos(&flash_messages),
+        current_user_name,
+    }
+    .render()
+    .unwrap();
+    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
 }
 
 #[derive(thiserror::Error)]
@@ -62,7 +71,7 @@ pub async fn login(
         .map_err(|e| login_redirect(LoginError::InvalidCredentials(e)))?;
 
     tracing::Span::current().record("user_name", &tracing::field::display(&credentials.name));
-    match validate_credentials(credentials, &pool).await {
+    match validate_credentials(credentials, &pool) {
         Ok(user_name) => {
             tracing::Span::current().record("user_name", &tracing::field::display(&user_name));
             session.renew();

@@ -65,35 +65,85 @@ impl TestApp {
     }
 
     pub async fn get_login_page(&self) -> reqwest::Response {
-        self.api_client
-            .get(format!("{}/login", &self.address))
-            .send()
-            .await
-            .expect("Failed to execute request")
+        self.get_page("login").await
     }
 
     pub async fn get_login_page_html(&self) -> String {
         self.get_login_page().await.text().await.unwrap()
     }
 
+    pub async fn get_registration_page(&self) -> reqwest::Response {
+        self.get_page("registration").await
+    }
+
+    pub async fn get_registration_page_html(&self) -> String {
+        self.get_registration_page().await.text().await.unwrap()
+    }
+
     pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
     where
         Body: serde::Serialize,
     {
-        self.api_client
-            .post(format!("{}/login", &self.address))
-            .form(body)
-            .send()
-            .await
-            .expect("Failed to execute request")
+        self.post("login", body).await
     }
 
     pub async fn post_registration<Body>(&self, body: &Body) -> reqwest::Response
     where
         Body: serde::Serialize,
     {
+        self.post("registration", body).await
+    }
+
+    pub async fn post_change_password(&self, body: &impl serde::Serialize) -> reqwest::Response {
+        self.post("change_password", body).await
+    }
+
+    pub async fn post_change_name(&self, body: &impl serde::Serialize) -> reqwest::Response {
+        self.post("change_name", body).await
+    }
+
+    pub async fn get_home_page(&self) -> reqwest::Response {
+        self.get_page("").await
+    }
+
+    pub async fn get_home_page_html(&self) -> String {
+        self.get_home_page().await.text().await.unwrap()
+    }
+
+    pub async fn get_account_page_html(&self) -> String {
+        self.get_page("account").await.text().await.unwrap()
+    }
+
+    pub async fn get_change_password(&self) -> reqwest::Response {
+        self.get_page("change_password").await
+    }
+
+    pub async fn get_change_password_page_html(&self) -> String {
+        self.get_change_password().await.text().await.unwrap()
+    }
+
+    pub async fn get_change_name(&self) -> reqwest::Response {
+        self.get_page("change_name").await
+    }
+
+    pub async fn get_change_name_page_html(&self) -> String {
+        self.get_change_name().await.text().await.unwrap()
+    }
+
+    async fn get_page(&self, rel_address: &str) -> reqwest::Response {
         self.api_client
-            .post(format!("{}/registration", &self.address))
+            .get(format!("{}/{}", &self.address, rel_address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    async fn post<Body>(&self, rel_addr: &str, body: &Body) -> reqwest::Response
+    where
+        Body: serde::Serialize,
+    {
+        self.api_client
+            .post(format!("{}/{}", &self.address, rel_addr))
             .form(body)
             .send()
             .await
@@ -122,9 +172,4 @@ pub fn get_connection_pool(path: &str) -> Pool {
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
     assert_eq!(response.status().as_u16(), 303);
     assert_eq!(response.headers().get("Location").unwrap(), location);
-}
-
-pub fn get_new_connection() -> Pool {
-    let c = get_config();
-    get_connection_pool(&c.database_path)
 }

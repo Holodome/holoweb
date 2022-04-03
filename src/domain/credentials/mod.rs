@@ -1,4 +1,8 @@
-use crate::domain::{UserName, UserPassword};
+mod stored_credentials;
+
+pub use stored_credentials::*;
+
+use crate::domain::users::{UserName, UserPassword};
 use secrecy::Secret;
 
 #[derive(Debug, Clone, diesel::Queryable)]
