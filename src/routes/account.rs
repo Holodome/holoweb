@@ -1,10 +1,9 @@
 use crate::domain::users::UserName;
 use crate::middleware::Session;
-use actix_web::error::ErrorInternalServerError;
+use crate::utils::e500;
 use actix_web::http::header::ContentType;
 use actix_web::HttpResponse;
 use askama::Template;
-use crate::utils::e500;
 
 #[derive(Template)]
 #[template(path = "account.html")]

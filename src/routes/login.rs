@@ -4,7 +4,7 @@ use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
 use crate::utils::{e500, extract_errors, extract_infos, see_other};
-use actix_web::error::{ErrorInternalServerError, InternalError};
+use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};

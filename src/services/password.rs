@@ -1,7 +1,7 @@
 use crate::domain::credentials::Credentials;
 use crate::domain::users::hashed_user_password::HashedUserPassword;
-use crate::domain::users::UserName;
-use crate::services::get_stored_credentials;
+use crate::domain::users::{UpdateUser, UserName, UserPassword};
+use crate::services::{get_stored_credentials, get_user_by_name, update_user};
 use crate::startup::Pool;
 
 #[derive(thiserror::Error, Debug)]
@@ -31,4 +31,27 @@ pub async fn validate_credentials(
             "No user with such name found"
         )))
     }
+}
+
+#[tracing::instrument(name = "Change password", skip(pool, password))]
+pub async fn change_password(
+    pool: &Pool,
+    user_name: &UserName,
+    password: &UserPassword,
+) -> Result<(), anyhow::Error> {
+    let conn = pool.get()?;
+    let user = get_user_by_name(&conn, user_name)?
+        .ok_or(anyhow::anyhow!("Failed to get user with given name"))?;
+    let id = user.id;
+    let password = HashedUserPassword::parse(&password, &user.password_salt);
+    let changeset = UpdateUser {
+        id,
+        name: None,
+        email: None,
+        password: Some(password),
+        password_salt: None,
+        is_banned: None,
+    };
+    update_user(&conn, changeset)?;
+    Ok(())
 }

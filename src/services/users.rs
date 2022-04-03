@@ -1,8 +1,10 @@
 use crate::domain::users::hashed_user_password::HashedUserPassword;
-use crate::domain::users::{NewUser, User, UserEmail, UserID, UserName, UserPasswordSalt};
+use crate::domain::users::{
+    NewUser, UpdateUser, User, UserEmail, UserID, UserName, UserPasswordSalt,
+};
 use crate::schema::users::dsl::*;
 use crate::services::Connection;
-use diesel::{insert_into, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
+use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
 #[tracing::instrument("Get user by id", skip(conn, user_id))]
 pub fn get_user_by_id(conn: &Connection, user_id: &UserID) -> Result<Option<User>, anyhow::Error> {
@@ -43,4 +45,11 @@ pub fn insert_new_user(conn: &Connection, new_user: &NewUser) -> Result<User, an
     insert_into(users).values(&user).execute(conn)?;
 
     Ok(user)
+}
+
+pub fn update_user(conn: &Connection, changeset: UpdateUser) -> Result<(), anyhow::Error> {
+    update(users.filter(id.eq(&changeset.id)))
+        .set(&changeset)
+        .execute(conn)?;
+    Ok(())
 }
