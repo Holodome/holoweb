@@ -29,9 +29,7 @@ impl ToSql<diesel::sql_types::Text, Sqlite> for UserID {
 
 impl UserID {
     pub fn new(s: String) -> Self {
-        Self {
-            s
-        }
+        Self { s }
     }
 
     pub fn generate_random() -> Self {

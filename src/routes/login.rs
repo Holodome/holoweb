@@ -1,9 +1,9 @@
 use crate::domain::credentials::Credentials;
-use crate::domain::users::{UserID, UserName};
+use crate::domain::users::{UserID};
 use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
-use crate::utils::{e500, extract_errors, extract_infos, see_other};
+use crate::utils::{extract_errors, extract_infos, see_other};
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
@@ -24,7 +24,7 @@ struct LoginTemplate {
 #[tracing::instrument(skip(flash_messages))]
 pub async fn login_form(
     flash_messages: IncomingFlashMessages,
-    user_id: web::ReqData<UserID>
+    user_id: web::ReqData<UserID>,
 ) -> actix_web::Result<HttpResponse> {
     let s = LoginTemplate {
         errors: extract_errors(&flash_messages),

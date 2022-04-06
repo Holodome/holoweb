@@ -6,5 +6,5 @@ pub struct StoredCredentials {
     pub name: UserName,
     pub password: HashedUserPassword,
     pub salt: UserPasswordSalt,
-    pub user_id: UserID
+    pub user_id: UserID,
 }

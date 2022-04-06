@@ -1,14 +1,14 @@
 use crate::domain::blog_posts::{BlogPost, NewBlogPost};
-use crate::domain::users::{UserID, UserName};
+use crate::domain::users::{UserID};
 use crate::middleware::reject_anonymous_users;
-use crate::services::{get_all_blog_posts, get_user_by_id, get_user_by_name, Page};
+use crate::services::{get_all_blog_posts, Page};
 use crate::startup::Pool;
 use crate::utils::see_other;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header::ContentType;
 use actix_web::{route, web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
-use actix_web_lab::web::redirect;
+
 use askama::Template;
 
 #[derive(Template)]
@@ -92,6 +92,6 @@ pub async fn create_blog_post(
         contents: form.0.contents,
         author_id: user_id.into_inner(),
     };
-    crate::services::insert_new_blog_post(&pool, &new_blog_post).map_err(ErrorInternalServerError);
+    crate::services::insert_new_blog_post(&pool, &new_blog_post).map_err(ErrorInternalServerError)?;
     Ok(see_other("/blog_posts"))
 }

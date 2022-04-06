@@ -1,4 +1,4 @@
-use crate::domain::users::{UserID, UserName};
+use crate::domain::users::{UserID};
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
@@ -19,10 +19,7 @@ impl Session {
     }
 
     pub fn get_user_id(&self) -> Result<Option<UserID>, serde_json::Error> {
-        Ok(self
-            .0
-            .get(Self::USER_ID_KEY)?
-            .map(|name| UserID::new(name)))
+        Ok(self.0.get(Self::USER_ID_KEY)?.map(|name| UserID::new(name)))
     }
 
     pub fn log_out(self) {

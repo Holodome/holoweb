@@ -1,9 +1,9 @@
 use crate::domain::credentials::Credentials;
 use crate::domain::users::{UserID, UserName, UserPassword};
-use crate::middleware::{reject_anonymous_users, Session};
+use crate::middleware::{reject_anonymous_users};
 use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
-use crate::utils::{e500, extract_errors, extract_infos, see_other};
+use crate::utils::{extract_errors, extract_infos, see_other};
 use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
 use actix_web::{route, web, HttpResponse};
@@ -28,7 +28,7 @@ struct PageTemplate {
 )]
 pub async fn change_password_form(
     flash_messages: IncomingFlashMessages,
-    user_id: web::ReqData<UserID>
+    user_id: web::ReqData<UserID>,
 ) -> actix_web::Result<HttpResponse> {
     let s = PageTemplate {
         errors: extract_errors(&flash_messages),

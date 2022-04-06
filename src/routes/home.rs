@@ -1,9 +1,9 @@
-use crate::domain::users::{UserID, UserName};
-use crate::middleware::Session;
+use crate::domain::users::{UserID};
+
 use crate::utils::{extract_errors, extract_infos};
-use actix_web::error::ErrorInternalServerError;
+
 use actix_web::http::header::ContentType;
-use actix_web::{HttpResponse, web};
+use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 
@@ -18,7 +18,7 @@ struct HomeTemplate {
 #[tracing::instrument(skip(flash_messages))]
 pub async fn home(
     flash_messages: IncomingFlashMessages,
-    user_id: web::ReqData<UserID>
+    user_id: web::ReqData<UserID>,
 ) -> actix_web::Result<HttpResponse> {
     let s = HomeTemplate {
         errors: extract_errors(&flash_messages),
