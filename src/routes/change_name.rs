@@ -1,7 +1,7 @@
 use crate::domain::credentials::Credentials;
 use crate::domain::users::{UserID, UserName, UserPassword};
-use crate::middleware::{reject_anonymous_users};
-use crate::services::{get_user_by_name, validate_credentials, AuthError};
+use crate::middleware::{require_login, Session};
+use crate::services::{get_user_by_id, get_user_by_name, validate_credentials, AuthError};
 use crate::startup::Pool;
 use crate::utils::{extract_errors, extract_infos, see_other};
 use actix_web::error::InternalError;
@@ -21,19 +21,16 @@ struct PageTemplate {
     current_user_id: Option<UserID>,
 }
 
-#[route(
-    "/change_name",
-    method = "GET",
-    wrap = "from_fn(reject_anonymous_users)"
-)]
+#[route("/change_name", method = "GET", wrap = "from_fn(require_login)")]
 pub async fn change_name_form(
     flash_messages: IncomingFlashMessages,
-    user_id: web::ReqData<UserID>,
+    session: Session,
 ) -> actix_web::Result<HttpResponse> {
+    let user_id = session.get_user_id().unwrap().unwrap();
     let s = PageTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
-        current_user_id: Some(user_id.into_inner()),
+        current_user_id: Some(user_id),
     }
     .render()
     .unwrap();
@@ -66,18 +63,19 @@ impl std::fmt::Debug for ChangeNameError {
     }
 }
 
-#[route(
-    "/change_name",
-    method = "POST",
-    wrap = "from_fn(reject_anonymous_users)"
-)]
-#[tracing::instrument(skip(form, pool))]
+#[route("/change_name", method = "POST", wrap = "from_fn(require_login)")]
+#[tracing::instrument(skip(form, pool, session))]
 pub async fn change_name(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
-    user_name: web::ReqData<UserName>,
+    session: Session,
 ) -> Result<HttpResponse, InternalError<ChangeNameError>> {
-    let user_name = user_name.into_inner();
+    let user_id = session.get_user_id().unwrap().unwrap();
+
+    let user_name = get_user_by_id(&pool, &user_id)
+        .map_err(|e| redirect(ChangeNameError::UnexpectedError(e)))?
+        .unwrap()
+        .name;
     let credentials = Credentials {
         name: user_name.clone(),
         password: UserPassword::parse(form.current_password.clone())

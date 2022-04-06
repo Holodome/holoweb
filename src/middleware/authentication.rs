@@ -3,9 +3,9 @@ use crate::utils::{e500, see_other};
 use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::InternalError;
-use actix_web::{FromRequest, HttpMessage};
+use actix_web::FromRequest;
 
-pub async fn reject_anonymous_users(
+pub async fn require_login(
     mut req: ServiceRequest,
     next: actix_web_lab::middleware::Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, actix_web::Error> {
@@ -15,10 +15,7 @@ pub async fn reject_anonymous_users(
     }?;
 
     match session.get_user_id().map_err(e500)? {
-        Some(user_name) => {
-            req.extensions_mut().insert(user_name);
-            next.call(req).await
-        }
+        Some(_) => next.call(req).await,
         None => {
             let response = see_other("/login");
             let e = anyhow::anyhow!("The user has not logged in");
