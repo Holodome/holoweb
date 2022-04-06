@@ -13,7 +13,7 @@ pub fn get_stored_credentials(
     let conn = pool.get()?;
     Ok(users
         .filter(name.eq(username.as_ref().as_str()))
-        .select((name, password, password_salt))
+        .select((name, password, password_salt, id))
         .first::<StoredCredentials>(&conn)
         .optional()?)
 }

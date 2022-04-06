@@ -1,4 +1,4 @@
-use crate::domain::users::UserName;
+use crate::domain::users::{UserID, UserName};
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
@@ -7,22 +7,22 @@ use std::future::{ready, Ready};
 pub struct Session(actix_session::Session);
 
 impl Session {
-    const USER_NAME_KEY: &'static str = "user_name";
+    const USER_ID_KEY: &'static str = "user_id";
 
     pub fn renew(&self) {
         self.0.renew();
     }
 
-    pub fn insert_user_name(&self, user_name: UserName) -> Result<(), serde_json::Error> {
+    pub fn insert_user_id(&self, user_id: UserID) -> Result<(), serde_json::Error> {
         self.0
-            .insert(Self::USER_NAME_KEY, user_name.as_ref().to_string())
+            .insert(Self::USER_ID_KEY, user_id.as_ref().to_string())
     }
 
-    pub fn get_user_name(&self) -> Result<Option<UserName>, serde_json::Error> {
+    pub fn get_user_id(&self) -> Result<Option<UserID>, serde_json::Error> {
         Ok(self
             .0
-            .get(Self::USER_NAME_KEY)?
-            .map(|name| UserName::parse(name).expect("Failed to deserialize user name")))
+            .get(Self::USER_ID_KEY)?
+            .map(|name| UserID::new(name)))
     }
 
     pub fn log_out(self) {

@@ -1,8 +1,10 @@
-use crate::domain::blog_posts::BlogPost;
-use crate::domain::users::UserName;
+use crate::domain::blog_posts::{BlogPost, NewBlogPost};
+use crate::domain::users::{UserID, UserName};
 use crate::middleware::reject_anonymous_users;
-use crate::services::{get_all_blog_posts, Page};
+use crate::services::{get_all_blog_posts, get_user_by_id, get_user_by_name, Page};
 use crate::startup::Pool;
+use crate::utils::see_other;
+use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header::ContentType;
 use actix_web::{route, web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
@@ -12,7 +14,7 @@ use askama::Template;
 #[derive(Template)]
 #[template(path = "blog_posts.html")]
 struct BlogPostsTemplate<'a> {
-    current_user_name: Option<&'a UserName>,
+    current_user_id: Option<&'a UserID>,
     page: Page,
     blog_posts: Vec<BlogPost>,
 }
@@ -27,14 +29,14 @@ pub struct QueryParams {
 pub async fn blog_posts(
     pool: web::Data<Pool>,
     query: web::Query<QueryParams>,
-    current_user_name: Option<web::ReqData<UserName>>,
+    current_user_id: Option<web::ReqData<UserID>>,
 ) -> actix_web::Result<HttpResponse> {
     let page = query.0.page.unwrap_or_default();
     let blog_posts =
         get_all_blog_posts(&pool, &page).map_err(actix_web::error::ErrorInternalServerError)?;
 
     let s = BlogPostsTemplate {
-        current_user_name: current_user_name.as_deref(),
+        current_user_id: current_user_id.as_deref(),
         page,
         blog_posts,
     }
@@ -46,7 +48,7 @@ pub async fn blog_posts(
 #[derive(Template)]
 #[template(path = "create_blog_post.html")]
 struct CreateBlogPostTemplate {
-    current_user_name: Option<UserName>,
+    current_user_id: Option<UserID>,
 }
 
 #[route(
@@ -56,10 +58,10 @@ struct CreateBlogPostTemplate {
 )]
 #[tracing::instrument("Create new blog post form")]
 pub async fn create_blog_post_form(
-    current_user_name: web::ReqData<UserName>,
+    current_user_id: web::ReqData<UserID>,
 ) -> actix_web::Result<HttpResponse> {
     let s = CreateBlogPostTemplate {
-        current_user_name: Some(current_user_name.into_inner()),
+        current_user_id: Some(current_user_id.into_inner()),
     }
     .render()
     .unwrap();
@@ -70,17 +72,26 @@ pub async fn create_blog_post_form(
 pub struct CreateBlogPostFormData {
     title: String,
     brief: String,
-    contents: String
+    contents: String,
 }
 
-#[route("/create_blog_post", method="GET", wrap="from_fn(reject_anonymous_users)")]
+#[route(
+    "/create_blog_post",
+    method = "POST",
+    wrap = "from_fn(reject_anonymous_users)"
+)]
 #[tracing::instrument("Create new blog post", skip(pool, form))]
 pub async fn create_blog_post(
     form: web::Form<CreateBlogPostFormData>,
     pool: web::Data<Pool>,
-    user_name: web::ReqData<UserName>,
+    user_id: web::ReqData<UserID>,
 ) -> actix_web::Result<HttpResponse> {
-    let user_name = user_name.into_inner();
-
-    Ok()
+    let new_blog_post = NewBlogPost {
+        title: form.0.title,
+        brief: form.0.brief,
+        contents: form.0.contents,
+        author_id: user_id.into_inner(),
+    };
+    crate::services::insert_new_blog_post(&pool, &new_blog_post).map_err(ErrorInternalServerError);
+    Ok(see_other("/blog_posts"))
 }

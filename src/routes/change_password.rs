@@ -1,5 +1,5 @@
 use crate::domain::credentials::Credentials;
-use crate::domain::users::{UserName, UserPassword};
+use crate::domain::users::{UserID, UserName, UserPassword};
 use crate::middleware::{reject_anonymous_users, Session};
 use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
@@ -18,7 +18,7 @@ use std::fmt::Formatter;
 struct PageTemplate {
     errors: Vec<String>,
     infos: Vec<String>,
-    current_user_name: Option<UserName>,
+    current_user_id: Option<UserID>,
 }
 
 #[route(
@@ -28,13 +28,12 @@ struct PageTemplate {
 )]
 pub async fn change_password_form(
     flash_messages: IncomingFlashMessages,
-    session: Session,
+    user_id: web::ReqData<UserID>
 ) -> actix_web::Result<HttpResponse> {
-    let current_user_name = session.get_user_name().map_err(e500)?;
     let s = PageTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
-        current_user_name,
+        current_user_id: Some(user_id.into_inner()),
     }
     .render()
     .unwrap();

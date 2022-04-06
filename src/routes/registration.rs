@@ -1,4 +1,4 @@
-use crate::domain::users::{NewUser, NewUserError, PasswordError, UserName};
+use crate::domain::users::{NewUser, NewUserError, PasswordError, UserID, UserName};
 use crate::middleware::Session;
 use crate::services::{get_user_by_name, insert_new_user};
 use crate::startup::Pool;
@@ -15,19 +15,17 @@ use std::fmt::Formatter;
 #[template(path = "registration.html")]
 struct RegistrationTemplate {
     errors: Vec<String>,
-    current_user_name: Option<UserName>,
+    current_user_id: Option<UserID>,
 }
 
-#[tracing::instrument(skip(flash_messages, session))]
+#[tracing::instrument(skip(flash_messages))]
 pub async fn registration_form(
     flash_messages: IncomingFlashMessages,
-    session: Session,
+    current_user_id: web::ReqData<UserID>
 ) -> Result<HttpResponse, actix_web::Error> {
-    let current_user_name = session.get_user_name().map_err(e500)?;
-
     let s = RegistrationTemplate {
         errors: extract_errors(&flash_messages),
-        current_user_name,
+        current_user_id: Some(current_user_id.into_inner()),
     }
     .render()
     .unwrap();
@@ -101,7 +99,7 @@ pub async fn registration(
         Ok(user) => {
             session.renew();
             session
-                .insert_user_name(user.name)
+                .insert_user_id(user.id)
                 .map_err(|e| registration_redirect(RegistrationError::UnexpectedError(e.into())))?;
             Ok(see_other("/"))
         }

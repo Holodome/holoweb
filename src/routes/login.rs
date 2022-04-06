@@ -1,5 +1,5 @@
 use crate::domain::credentials::Credentials;
-use crate::domain::users::UserName;
+use crate::domain::users::{UserID, UserName};
 use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
@@ -18,19 +18,18 @@ use std::fmt::Formatter;
 struct LoginTemplate {
     errors: Vec<String>,
     infos: Vec<String>,
-    current_user_name: Option<UserName>,
+    current_user_id: Option<UserID>,
 }
 
-#[tracing::instrument(skip(flash_messages, session))]
+#[tracing::instrument(skip(flash_messages))]
 pub async fn login_form(
     flash_messages: IncomingFlashMessages,
-    session: Session,
+    user_id: web::ReqData<UserID>
 ) -> actix_web::Result<HttpResponse> {
-    let current_user_name = session.get_user_name().map_err(e500)?;
     let s = LoginTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
-        current_user_name,
+        current_user_id: Some(user_id.into_inner()),
     }
     .render()
     .unwrap();
@@ -70,13 +69,11 @@ pub async fn login(
     let credentials = Credentials::parse(form.0.name, form.0.password)
         .map_err(|e| login_redirect(LoginError::InvalidCredentials(e)))?;
 
-    tracing::Span::current().record("user_name", &tracing::field::display(&credentials.name));
     match validate_credentials(credentials, &pool) {
-        Ok(user_name) => {
-            tracing::Span::current().record("user_name", &tracing::field::display(&user_name));
+        Ok(user_id) => {
             session.renew();
             session
-                .insert_user_name(user_name)
+                .insert_user_id(user_id)
                 .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
             Ok(see_other("/"))
         }

@@ -28,6 +28,12 @@ impl ToSql<diesel::sql_types::Text, Sqlite> for UserID {
 }
 
 impl UserID {
+    pub fn new(s: String) -> Self {
+        Self {
+            s
+        }
+    }
+
     pub fn generate_random() -> Self {
         Self {
             s: Uuid::new_v4().to_string(),

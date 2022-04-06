@@ -1,27 +1,34 @@
-use crate::domain::users::UserName;
-use crate::middleware::Session;
+use crate::domain::users::{UserID, UserName};
+use crate::services::get_user_by_id;
 use crate::utils::e500;
+use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header::ContentType;
-use actix_web::HttpResponse;
+use actix_web::{web, HttpResponse, route};
+use actix_web::error::DispatchError::InternalError;
 use askama::Template;
+use crate::startup::Pool;
+use actix_web_lab::middleware::from_fn;
+use crate::middleware::{reject_anonymous_users, Session};
+
 
 #[derive(Template)]
 #[template(path = "account.html")]
 struct AccountPage<'a> {
-    current_user_name: &'a Option<UserName>,
-    user_name: &'a str,
+    current_user_id: Option<&'a UserID>,
+    user_name: &'a UserName,
 }
 
-#[tracing::instrument(skip(session))]
-pub async fn account(session: Session) -> actix_web::Result<HttpResponse> {
-    let current_user_name = session.get_user_name().map_err(e500)?;
-    let user_name = current_user_name
-        .as_ref()
-        .expect("Failed to get user")
-        .as_ref()
-        .as_str();
+#[tracing::instrument(skip(pool))]
+#[route("/account", method = "GET", wrap = "from_fn(reject_anonymous_users)")]
+pub async fn account(
+    pool: web::Data<Pool>,
+    user_id: web::ReqData<UserID>,
+) -> actix_web::Result<HttpResponse> {
+    let user_name = &get_user_by_id(&pool, &user_id)
+        .map_err(ErrorInternalServerError)?
+        .ok_or_else(|| ErrorInternalServerError(""))?.name;
     let s = AccountPage {
-        current_user_name: &current_user_name,
+        current_user_id: Some(&user_id.into_inner()),
         user_name,
     }
     .render()

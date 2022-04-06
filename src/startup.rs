@@ -2,8 +2,8 @@ use crate::config::Settings;
 use crate::middleware::reject_anonymous_users;
 use crate::routes::{
     account, blog_posts, change_name, change_name_form, change_password, change_password_form,
-    create_blog_post, health_check, home, login, login_form, logout, registration,
-    registration_form,
+    create_blog_post, create_blog_post_form, health_check, home, login, login_form, logout,
+    registration, registration_form,
 };
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
@@ -88,11 +88,7 @@ async fn run(
                     .wrap(from_fn(reject_anonymous_users))
                     .to(logout),
             )
-            .service(
-                web::resource("/account")
-                    .wrap(from_fn(reject_anonymous_users))
-                    .to(account),
-            )
+            .service(account)
             .service(change_password)
             .service(change_password_form)
             .service(change_name)

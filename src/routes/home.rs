@@ -1,9 +1,9 @@
-use crate::domain::users::UserName;
+use crate::domain::users::{UserID, UserName};
 use crate::middleware::Session;
 use crate::utils::{extract_errors, extract_infos};
 use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header::ContentType;
-use actix_web::HttpResponse;
+use actix_web::{HttpResponse, web};
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 
@@ -12,19 +12,18 @@ use askama::Template;
 struct HomeTemplate {
     errors: Vec<String>,
     infos: Vec<String>,
-    current_user_name: Option<UserName>,
+    current_user_id: Option<UserID>,
 }
 
-#[tracing::instrument(skip(session, flash_messages))]
+#[tracing::instrument(skip(flash_messages))]
 pub async fn home(
-    session: Session,
     flash_messages: IncomingFlashMessages,
+    user_id: web::ReqData<UserID>
 ) -> actix_web::Result<HttpResponse> {
-    let current_user_name = session.get_user_name().map_err(ErrorInternalServerError)?;
     let s = HomeTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
-        current_user_name,
+        current_user_id: Some(user_id.into_inner()),
     }
     .render()
     .unwrap();
