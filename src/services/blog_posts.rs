@@ -1,5 +1,7 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
+use crate::domain::users::UserID;
 use crate::schema::blog_posts::dsl::*;
+use crate::services::Page;
 use crate::startup::Pool;
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
@@ -53,4 +55,25 @@ pub fn update_blog_post(pool: &Pool, changeset: &UpdateBlogPost) -> Result<(), a
         .set(changeset)
         .execute(&conn)?;
     Ok(())
+}
+
+pub fn get_blog_posts_of_author(
+    pool: &Pool,
+    author: UserID,
+    page: &Page,
+) -> Result<Vec<BlogPost>, anyhow::Error> {
+    let conn = pool.get()?;
+    Ok(blog_posts
+        .filter(author_id.eq(author))
+        .offset((page.number * page.size) as i64)
+        .limit(page.size as i64)
+        .load::<BlogPost>(&conn)?)
+}
+
+pub fn get_all_blog_posts(pool: &Pool, page: &Page) -> Result<Vec<BlogPost>, anyhow::Error> {
+    let conn = pool.get()?;
+    Ok(blog_posts
+        .offset((page.number * page.size) as i64)
+        .limit(page.size as i64)
+        .load::<BlogPost>(&conn)?)
 }

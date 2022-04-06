@@ -22,7 +22,7 @@ struct PageTemplate {
 }
 
 #[route(
-    "change_name",
+    "/change_name",
     method = "GET",
     wrap = "from_fn(reject_anonymous_users)"
 )]
