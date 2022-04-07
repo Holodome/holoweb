@@ -3,8 +3,7 @@ use crate::domain::users::UserID;
 use crate::middleware::{require_login, Session};
 use crate::services::{get_all_blog_posts, Page};
 use crate::startup::Pool;
-use crate::utils::see_other;
-use actix_web::error::ErrorInternalServerError;
+use crate::utils::{e500, see_other};
 use actix_web::http::header::ContentType;
 use actix_web::{route, web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
@@ -35,7 +34,7 @@ pub async fn blog_posts(
 
     let page = query.0.page.unwrap_or_default();
     let blog_posts =
-        get_all_blog_posts(&pool, &page).map_err(actix_web::error::ErrorInternalServerError)?;
+        get_all_blog_posts(&pool, &page).map_err(e500)?;
 
     let s = BlogPostsTemplate {
         current_user_id: user_id,
@@ -86,6 +85,6 @@ pub async fn create_blog_post(
         author_id: user_id.into_inner(),
     };
     crate::services::insert_new_blog_post(&pool, &new_blog_post)
-        .map_err(ErrorInternalServerError)?;
+        .map_err(e500)?;
     Ok(see_other("/blog_posts"))
 }

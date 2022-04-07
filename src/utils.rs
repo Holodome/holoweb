@@ -2,6 +2,17 @@ use actix_web::http::header::LOCATION;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::{IncomingFlashMessages, Level};
 
+/// Mapper to InternalServerError. This is preferred way to unwrap result returning functions.
+/// Preserves error cause for logging.
+///
+/// # Examples
+///
+/// ```
+/// use actix_web::HttpResponse;
+/// use holosite::utils::e500;
+/// let res: Result<HttpResponse, anyhow::Error> = Err(anyhow::anyhow!("Error"));
+/// let resp: HttpResponse = res.map_err(e500)?;
+/// ```
 pub fn e500<E>(e: E) -> actix_web::Error
 where
     E: std::fmt::Debug + std::fmt::Display + 'static,
@@ -9,12 +20,14 @@ where
     actix_web::error::ErrorInternalServerError(e)
 }
 
+/// Helper function used to generate redirection response.
 pub fn see_other(location: &str) -> HttpResponse {
     HttpResponse::SeeOther()
         .insert_header((LOCATION, location))
         .finish()
 }
 
+/// Used to generate error string representation, preserving all child error types.
 pub fn error_chain_fmt(
     e: &impl std::error::Error,
     f: &mut std::fmt::Formatter<'_>,
