@@ -1,41 +1,14 @@
 use crate::domain::credentials::Credentials;
-use crate::domain::users::{UserID, UserPassword};
-use crate::middleware::{require_login, Session};
+use crate::domain::users::UserPassword;
+use crate::middleware::Session;
 use crate::services::{get_user_by_id, validate_credentials, AuthError};
 use crate::startup::Pool;
-use crate::utils::{extract_errors, extract_infos, see_other};
+use crate::utils::see_other;
 use actix_web::error::InternalError;
-use actix_web::http::header::ContentType;
-use actix_web::{route, web, HttpResponse};
-use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
-use actix_web_lab::middleware::from_fn;
-use askama::Template;
+use actix_web::{web, HttpResponse};
+use actix_web_flash_messages::FlashMessage;
 use secrecy::{ExposeSecret, Secret};
 use std::fmt::Formatter;
-
-#[derive(Template)]
-#[template(path = "change_password.html")]
-struct PageTemplate {
-    errors: Vec<String>,
-    infos: Vec<String>,
-    current_user_id: Option<UserID>,
-}
-
-#[route("/change_password", method = "GET", wrap = "from_fn(require_login)")]
-pub async fn change_password_form(
-    flash_messages: IncomingFlashMessages,
-    session: Session,
-) -> actix_web::Result<HttpResponse> {
-    let user_id = session.get_user_id().unwrap().unwrap();
-    let s = PageTemplate {
-        errors: extract_errors(&flash_messages),
-        infos: extract_infos(&flash_messages),
-        current_user_id: Some(user_id),
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
-}
 
 #[derive(serde::Deserialize)]
 pub struct FormData {
@@ -64,7 +37,6 @@ impl std::fmt::Debug for ChangePasswordError {
     }
 }
 
-#[route("/change_password", method = "POST", wrap = "from_fn(require_login)")]
 #[tracing::instrument(skip(form, pool, session))]
 pub async fn change_password(
     form: web::Form<FormData>,

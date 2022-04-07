@@ -1,9 +1,5 @@
 use crate::config::Settings;
-use crate::routes::{
-    account, blog_posts, change_name, change_name_form, change_password, change_password_form,
-    create_blog_post, create_blog_post_form, health_check, home, login, login_form, logout,
-    registration, registration_form,
-};
+use crate::routes::configure;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
@@ -69,21 +65,7 @@ async fn run(
             .app_data(web::Data::new(pool.clone()))
             .app_data(web::Data::new(hmac_secret.clone()))
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
-            .route("/health_check", web::get().to(health_check))
-            .route("/", web::get().to(home))
-            .service(login)
-            .service(login_form)
-            .service(logout)
-            .service(registration)
-            .service(registration_form)
-            .service(account)
-            .service(change_password)
-            .service(change_password_form)
-            .service(change_name)
-            .service(change_name_form)
-            .service(blog_posts)
-            .service(create_blog_post_form)
-            .service(create_blog_post)
+            .configure(crate::routes::configure)
     })
     .listen(listener)?
     .run();
