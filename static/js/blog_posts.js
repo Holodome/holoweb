@@ -3,10 +3,6 @@ get_query = () => {
     return Object.fromEntries(urlSearchParams.entries());
 }
 
-set_pagination_param = (params, n) => {
-    params["size"] = n;
-}
-
 redirect_on_same_page_with_query = query => {
     window.location.href = window.location.origin + window.location.pathname +
         "?" + new URLSearchParams(query).toString();
@@ -15,7 +11,7 @@ redirect_on_same_page_with_query = query => {
 pagination_function = n => {
     return () => {
         let query = get_query();
-        set_pagination_param(query, n);
+        query["size"] = n;
         redirect_on_same_page_with_query(query);
     };
 }

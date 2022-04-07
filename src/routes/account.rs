@@ -9,13 +9,6 @@ use actix_web::{route, web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
 use askama::Template;
 
-#[derive(Template)]
-#[template(path = "account.html")]
-struct AccountPage {
-    current_user_id: Option<UserID>,
-    user_name: UserName,
-}
-
 #[tracing::instrument(skip(pool, session))]
 #[route("/account", method = "GET", wrap = "from_fn(require_login)")]
 pub async fn account(pool: web::Data<Pool>, session: Session) -> actix_web::Result<HttpResponse> {
@@ -31,4 +24,11 @@ pub async fn account(pool: web::Data<Pool>, session: Session) -> actix_web::Resu
     .render()
     .unwrap();
     Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+}
+
+#[derive(Template)]
+#[template(path = "account.html")]
+struct AccountPage {
+    current_user_id: Option<UserID>,
+    user_name: UserName,
 }
