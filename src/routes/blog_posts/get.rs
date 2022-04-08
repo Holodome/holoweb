@@ -1,6 +1,6 @@
-use crate::domain::blog_posts::BlogPost;
+use crate::domain::blog_posts::{BlogPost, BlogPostID};
 use crate::domain::users::UserID;
-use crate::services::{get_all_blog_posts, Page};
+use crate::services::{get_all_blog_posts, get_blog_post_by_id, Page};
 use crate::startup::Pool;
 use crate::utils::e500;
 use actix_web::http::header::ContentType;
@@ -21,7 +21,7 @@ pub struct QueryParams {
 }
 
 #[tracing::instrument("All blog posts", skip(pool, query))]
-pub async fn blog_posts(
+pub async fn all_blog_posts(
     pool: web::Data<Pool>,
     query: web::Query<QueryParams>,
     user_id: Option<UserID>,
@@ -33,6 +33,32 @@ pub async fn blog_posts(
         current_user_id: user_id,
         page,
         blog_posts,
+    }
+    .render()
+    .unwrap();
+    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+}
+
+#[derive(Template)]
+#[template(path = "blog_post.html")]
+struct BlogPostTemplate {
+    current_user_id: Option<UserID>,
+    blog_post: BlogPost,
+}
+
+pub async fn blog_post(
+    pool: web::Data<Pool>,
+    params: web::Path<(BlogPostID)>,
+    user_id: Option<UserID>,
+) -> actix_web::Result<HttpResponse> {
+    let blog_post_id = params.into_inner();
+    let blog_post = get_blog_post_by_id(&pool, &blog_post_id)
+        .map_err(e500)?
+        .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
+
+    let s = BlogPostTemplate {
+        current_user_id: user_id,
+        blog_post,
     }
     .render()
     .unwrap();

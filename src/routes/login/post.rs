@@ -34,7 +34,7 @@ pub struct FormData {
 }
 
 #[tracing::instrument("Login", skip(form, pool, session))]
-pub(super) async fn login(
+pub async fn login(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
     session: Session,

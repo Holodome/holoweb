@@ -1,12 +1,13 @@
 use actix_web::web;
-mod get;
-
 mod create;
+mod edit;
+mod get;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/blog_posts")
-            .service(web::resource("/").route(web::get().to(get::blog_posts)))
+            .service(web::resource("/{post_id}").route(web::get().to(get::blog_post)))
+            .service(web::resource("/all").route(web::get().to(get::all_blog_posts)))
             .configure(create::configure),
     );
 }

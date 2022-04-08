@@ -14,7 +14,7 @@ struct LoginTemplate {
 }
 
 #[tracing::instrument(skip(flash_messages))]
-pub(super) async fn login_form(
+pub async fn login_form(
     flash_messages: IncomingFlashMessages,
     user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
