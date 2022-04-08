@@ -14,14 +14,11 @@ impl Session {
     }
 
     pub fn insert_user_id(&self, user_id: UserID) -> Result<(), serde_json::Error> {
-        tracing::error!("Inserted: {:?}", &user_id);
         self.0.insert(Self::USER_ID_KEY, user_id)
     }
 
     pub fn get_user_id(&self) -> Result<Option<UserID>, serde_json::Error> {
-        tracing::error!("Get user id");
         let r = self.0.get(Self::USER_ID_KEY)?;
-        tracing::error!("Got {:?}", &r);
         Ok(r)
     }
 

@@ -1,5 +1,4 @@
 use crate::config::Settings;
-use crate::routes::configure;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;

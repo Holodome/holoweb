@@ -65,7 +65,7 @@ impl TestApp {
     }
 
     pub async fn get_login_page(&self) -> reqwest::Response {
-        self.get_page("login").await
+        self.get_page("/login").await
     }
 
     pub async fn get_login_page_html(&self) -> String {
@@ -73,7 +73,7 @@ impl TestApp {
     }
 
     pub async fn get_registration_page(&self) -> reqwest::Response {
-        self.get_page("registration").await
+        self.get_page("/registration").await
     }
 
     pub async fn get_registration_page_html(&self) -> String {
@@ -84,26 +84,26 @@ impl TestApp {
     where
         Body: serde::Serialize,
     {
-        self.post("login", body).await
+        self.post("/login", body).await
     }
 
     pub async fn post_registration<Body>(&self, body: &Body) -> reqwest::Response
     where
         Body: serde::Serialize,
     {
-        self.post("registration", body).await
+        self.post("/registration", body).await
     }
 
     pub async fn post_change_password(&self, body: &impl serde::Serialize) -> reqwest::Response {
-        self.post("change_password", body).await
+        self.post("/account/change_password", body).await
     }
 
     pub async fn post_change_name(&self, body: &impl serde::Serialize) -> reqwest::Response {
-        self.post("change_name", body).await
+        self.post("/account/change_name", body).await
     }
 
     pub async fn get_home_page(&self) -> reqwest::Response {
-        self.get_page("").await
+        self.get_page("/").await
     }
 
     pub async fn get_home_page_html(&self) -> String {
@@ -111,11 +111,11 @@ impl TestApp {
     }
 
     pub async fn get_account_page_html(&self) -> String {
-        self.get_page("account").await.text().await.unwrap()
+        self.get_page("/account/home").await.text().await.unwrap()
     }
 
     pub async fn get_change_password(&self) -> reqwest::Response {
-        self.get_page("change_password").await
+        self.get_page("/account/change_password").await
     }
 
     pub async fn get_change_password_page_html(&self) -> String {
@@ -123,7 +123,7 @@ impl TestApp {
     }
 
     pub async fn get_change_name(&self) -> reqwest::Response {
-        self.get_page("change_name").await
+        self.get_page("/account/change_name").await
     }
 
     pub async fn get_change_name_page_html(&self) -> String {
@@ -132,7 +132,7 @@ impl TestApp {
 
     async fn get_page(&self, rel_address: &str) -> reqwest::Response {
         self.api_client
-            .get(format!("{}/{}", &self.address, rel_address))
+            .get(format!("{}{}", &self.address, rel_address))
             .send()
             .await
             .expect("Failed to execute request")
@@ -143,7 +143,7 @@ impl TestApp {
         Body: serde::Serialize,
     {
         self.api_client
-            .post(format!("{}/{}", &self.address, rel_addr))
+            .post(format!("{}{}", &self.address, rel_addr))
             .form(body)
             .send()
             .await

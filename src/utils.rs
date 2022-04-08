@@ -10,8 +10,11 @@ use actix_web_flash_messages::{IncomingFlashMessages, Level};
 /// ```
 /// use actix_web::HttpResponse;
 /// use holosite::utils::e500;
-/// let res: Result<HttpResponse, anyhow::Error> = Err(anyhow::anyhow!("Error"));
-/// let resp: HttpResponse = res.map_err(e500)?;
+/// fn route() -> actix_web::Result<HttpResponse> {
+///     let res: Result<HttpResponse, anyhow::Error> = Err(anyhow::anyhow!("Error"));
+///     let resp: HttpResponse = res.map_err(e500)?;
+///     Ok(resp)
+/// }
 /// ```
 pub fn e500<E>(e: E) -> actix_web::Error
 where
