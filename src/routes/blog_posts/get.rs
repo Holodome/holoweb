@@ -1,6 +1,5 @@
 use crate::domain::blog_posts::BlogPost;
 use crate::domain::users::UserID;
-use crate::middleware::Session;
 use crate::services::{get_all_blog_posts, Page};
 use crate::startup::Pool;
 use crate::utils::e500;
@@ -21,14 +20,12 @@ pub struct QueryParams {
     pub page: Option<Page>,
 }
 
-#[tracing::instrument("All blog posts", skip(pool, query, session))]
+#[tracing::instrument("All blog posts", skip(pool, query))]
 pub async fn blog_posts(
     pool: web::Data<Pool>,
     query: web::Query<QueryParams>,
-    session: Session,
+    user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
-    let user_id = session.get_user_id().unwrap();
-
     let page = query.0.page.unwrap_or_default();
     let blog_posts = get_all_blog_posts(&pool, &page).map_err(e500)?;
 

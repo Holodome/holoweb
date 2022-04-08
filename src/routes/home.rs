@@ -2,7 +2,6 @@ use crate::domain::users::UserID;
 
 use crate::utils::{extract_errors, extract_infos};
 
-use crate::middleware::Session;
 use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::IncomingFlashMessages;
@@ -20,12 +19,11 @@ struct HomeTemplate {
     current_user_id: Option<UserID>,
 }
 
-#[tracing::instrument(skip(flash_messages, session))]
+#[tracing::instrument(skip(flash_messages))]
 pub async fn home(
     flash_messages: IncomingFlashMessages,
-    session: Session,
+    user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
-    let user_id = session.get_user_id().unwrap();
     let s = HomeTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),

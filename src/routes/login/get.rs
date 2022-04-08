@@ -1,5 +1,4 @@
 use crate::domain::users::UserID;
-use crate::middleware::Session;
 use crate::utils::{extract_errors, extract_infos};
 use actix_web::http::header::ContentType;
 use actix_web::HttpResponse;
@@ -14,12 +13,11 @@ struct LoginTemplate {
     current_user_id: Option<UserID>,
 }
 
-#[tracing::instrument(skip(flash_messages, session))]
+#[tracing::instrument(skip(flash_messages))]
 pub(super) async fn login_form(
     flash_messages: IncomingFlashMessages,
-    session: Session,
+    user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
-    let user_id = session.get_user_id().unwrap();
     let s = LoginTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),

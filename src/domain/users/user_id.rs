@@ -1,14 +1,14 @@
+use crate::middleware::Session;
+use actix_web::dev::Payload;
+use actix_web::error::{ErrorBadRequest, ErrorForbidden};
+use actix_web::{FromRequest, HttpRequest};
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
-use std::io::Write;
-use actix_web::{FromRequest, HttpRequest};
-use actix_web::dev::Payload;
-use actix_web::error::ErrorBadRequest;
 use futures_util::future::{err, ok, Ready};
+use std::io::Write;
 use uuid::Uuid;
-use crate::middleware::Session;
 
 #[derive(
     Debug,
@@ -62,9 +62,9 @@ impl FromRequest for UserID {
         match session.get_user_id() {
             Ok(id) => match id {
                 Some(id) => ok(id),
-                None => err(ErrorBadRequest(""))
+                None => err(ErrorForbidden("User is not authenticated")),
             },
-            Err(e) => err(ErrorBadRequest(e))
+            Err(e) => err(ErrorBadRequest(e)),
         }
     }
 }

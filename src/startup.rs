@@ -9,7 +9,6 @@ use diesel::r2d2::{self, ConnectionManager};
 use diesel::SqliteConnection;
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
-use actix_web_lab::middleware::from_fn;
 use tracing_actix_web::TracingLogger;
 
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;

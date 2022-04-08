@@ -1,6 +1,5 @@
 use crate::domain::credentials::Credentials;
-use crate::domain::users::{UserName, UserPassword};
-use crate::middleware::Session;
+use crate::domain::users::{UserID, UserName, UserPassword};
 use crate::services::{get_user_by_id, get_user_by_name, validate_credentials, AuthError};
 use crate::startup::Pool;
 use crate::utils::see_other;
@@ -36,14 +35,12 @@ impl std::fmt::Debug for ChangeNameError {
     }
 }
 
-#[tracing::instrument(skip(form, pool, session))]
+#[tracing::instrument(skip(form, pool))]
 pub async fn change_name(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
-    session: Session,
+    user_id: UserID,
 ) -> Result<HttpResponse, InternalError<ChangeNameError>> {
-    let user_id = session.get_user_id().unwrap().unwrap();
-
     let user_name = get_user_by_id(&pool, &user_id)
         .map_err(|e| redirect(ChangeNameError::UnexpectedError(e)))?
         .unwrap()

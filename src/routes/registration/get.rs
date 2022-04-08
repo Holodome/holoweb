@@ -1,5 +1,4 @@
 use crate::domain::users::UserID;
-use crate::middleware::Session;
 use crate::utils::extract_errors;
 use actix_web::http::header::ContentType;
 use actix_web::HttpResponse;
@@ -13,13 +12,11 @@ struct RegistrationTemplate {
     current_user_id: Option<UserID>,
 }
 
-#[tracing::instrument(skip(flash_messages, session))]
+#[tracing::instrument(skip(flash_messages))]
 pub async fn registration_form(
     flash_messages: IncomingFlashMessages,
-    session: Session,
+    user_id: Option<UserID>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let user_id = session.get_user_id().unwrap();
-
     let s = RegistrationTemplate {
         errors: extract_errors(&flash_messages),
         current_user_id: user_id,

@@ -1,6 +1,5 @@
 use crate::domain::credentials::Credentials;
-use crate::domain::users::UserPassword;
-use crate::middleware::Session;
+use crate::domain::users::{UserID, UserPassword};
 use crate::services::{get_user_by_id, validate_credentials, AuthError};
 use crate::startup::Pool;
 use crate::utils::see_other;
@@ -37,14 +36,12 @@ impl std::fmt::Debug for ChangePasswordError {
     }
 }
 
-#[tracing::instrument(skip(form, pool, session))]
+#[tracing::instrument(skip(form, pool))]
 pub async fn change_password(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
-    session: Session,
+    user_id: UserID,
 ) -> Result<HttpResponse, InternalError<ChangePasswordError>> {
-    let user_id = session.get_user_id().unwrap().unwrap();
-
     let user_name = get_user_by_id(&pool, &user_id)
         .map_err(|e| redirect(ChangePasswordError::UnexpectedError(e)))?
         .unwrap()

@@ -19,7 +19,7 @@ pub async fn require_login(
             println!("require_login {:?}", id);
             req.extensions_mut().insert(id);
             next.call(req).await
-        },
+        }
         None => {
             let response = see_other("/login");
             let e = anyhow::anyhow!("The user has not logged in");

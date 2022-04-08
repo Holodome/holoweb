@@ -1,5 +1,4 @@
 use crate::domain::users::UserID;
-use crate::middleware::Session;
 use actix_web::http::header::ContentType;
 use actix_web::HttpResponse;
 use askama::Template;
@@ -10,9 +9,8 @@ struct CreateBlogPostTemplate {
     current_user_id: Option<UserID>,
 }
 
-#[tracing::instrument("Create new blog post form", skip(session))]
-pub async fn create_blog_post_form(session: Session) -> actix_web::Result<HttpResponse> {
-    let user_id = session.get_user_id().unwrap().unwrap();
+#[tracing::instrument("Create new blog post form")]
+pub async fn create_blog_post_form(user_id: UserID) -> actix_web::Result<HttpResponse> {
     let s = CreateBlogPostTemplate {
         current_user_id: Some(user_id),
     }

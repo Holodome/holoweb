@@ -1,5 +1,4 @@
 use crate::domain::users::{UserID, UserName};
-use crate::middleware::Session;
 use crate::services::get_user_by_id;
 use crate::startup::Pool;
 use crate::utils::e500;
@@ -7,18 +6,12 @@ use actix_web::http::header::ContentType;
 use actix_web::{web, HttpResponse};
 use askama::Template;
 
-#[tracing::instrument(skip(pool, session))]
-pub async fn account(pool: web::Data<Pool>, session: Session, a: UserID, b: Option<UserID>) -> actix_web::Result<HttpResponse> {
-    let user_id = session.get_user_id().unwrap().unwrap();
-    println!("From seesion: {:?}", &user_id);
+#[tracing::instrument(skip(pool))]
+pub async fn account(pool: web::Data<Pool>, user_id: UserID) -> actix_web::Result<HttpResponse> {
     let user_name = get_user_by_id(&pool, &user_id)
         .map_err(e500)?
-        .ok_or_else(|| e500("Failed to get user id"))?
+        .ok_or_else(|| e500("Failed to get user name"))?
         .name;
-
-    println!("Automatic 1 {:?}", a);
-    println!("Automatic 2 {:?}", b);
-
 
     let s = AccountPage {
         current_user_id: Some(user_id),
