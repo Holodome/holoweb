@@ -3,7 +3,7 @@ use crate::utils::{e500, see_other};
 use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::InternalError;
-use actix_web::FromRequest;
+use actix_web::{FromRequest, HttpMessage};
 
 pub async fn require_login(
     mut req: ServiceRequest,
@@ -15,7 +15,11 @@ pub async fn require_login(
     }?;
 
     match session.get_user_id().map_err(e500)? {
-        Some(_) => next.call(req).await,
+        Some(id) => {
+            println!("require_login {:?}", id);
+            req.extensions_mut().insert(id);
+            next.call(req).await
+        },
         None => {
             let response = see_other("/login");
             let e = anyhow::anyhow!("The user has not logged in");

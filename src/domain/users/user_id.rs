@@ -3,7 +3,12 @@ use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
 use std::io::Write;
+use actix_web::{FromRequest, HttpRequest};
+use actix_web::dev::Payload;
+use actix_web::error::ErrorBadRequest;
+use futures_util::future::{err, ok, Ready};
 use uuid::Uuid;
+use crate::middleware::Session;
 
 #[derive(
     Debug,
@@ -45,5 +50,21 @@ impl UserID {
 impl AsRef<String> for UserID {
     fn as_ref(&self) -> &String {
         &self.s
+    }
+}
+
+impl FromRequest for UserID {
+    type Error = <actix_session::Session as FromRequest>::Error;
+    type Future = Ready<Result<UserID, Self::Error>>;
+
+    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
+        let session = Session::from_request_sync(req);
+        match session.get_user_id() {
+            Ok(id) => match id {
+                Some(id) => ok(id),
+                None => err(ErrorBadRequest(""))
+            },
+            Err(e) => err(ErrorBadRequest(e))
+        }
     }
 }

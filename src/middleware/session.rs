@@ -19,11 +19,16 @@ impl Session {
 
     pub fn get_user_id(&self) -> Result<Option<UserID>, serde_json::Error> {
         let r = self.0.get(Self::USER_ID_KEY)?;
+        println!("get user id {:?}", &r);
         Ok(r)
     }
 
     pub fn log_out(self) {
         self.0.purge();
+    }
+
+    pub fn from_request_sync(req: &HttpRequest) -> Self {
+        Session(req.get_session())
     }
 }
 
@@ -32,6 +37,6 @@ impl FromRequest for Session {
     type Future = Ready<Result<Session, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
-        ready(Ok(Session(req.get_session())))
+        ready(Ok(Session::from_request_sync(req)))
     }
 }

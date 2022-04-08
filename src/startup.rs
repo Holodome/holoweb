@@ -9,6 +9,7 @@ use diesel::r2d2::{self, ConnectionManager};
 use diesel::SqliteConnection;
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
+use actix_web_lab::middleware::from_fn;
 use tracing_actix_web::TracingLogger;
 
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
@@ -62,7 +63,6 @@ async fn run(
                 secret_key.clone(),
             ))
             .app_data(web::Data::new(pool.clone()))
-            .app_data(web::Data::new(hmac_secret.clone()))
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .configure(crate::routes::configure)
     })
