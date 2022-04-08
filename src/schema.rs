@@ -5,6 +5,7 @@ table! {
         brief -> Text,
         contents -> Text,
         author_id -> Text,
+        created_at -> Text,
     }
 }
 

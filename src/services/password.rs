@@ -1,6 +1,6 @@
 use crate::domain::credentials::Credentials;
 use crate::domain::users::hashed_user_password::HashedUserPassword;
-use crate::domain::users::{UpdateUser, UserName, UserPassword};
+use crate::domain::users::{UpdateUser, UserID, UserName, UserPassword};
 use crate::services::{get_stored_credentials, get_user_by_name, update_user};
 use crate::startup::Pool;
 
@@ -13,11 +13,11 @@ pub enum AuthError {
 }
 
 #[tracing::instrument(name = "Validate credentials", skip(credentials, pool))]
-pub fn validate_credentials(credentials: Credentials, pool: &Pool) -> Result<UserName, AuthError> {
+pub fn validate_credentials(credentials: Credentials, pool: &Pool) -> Result<UserID, AuthError> {
     if let Some(stored) = get_stored_credentials(credentials.name, pool)? {
         let hashed_password = HashedUserPassword::parse(&credentials.password, &stored.salt);
         if hashed_password == stored.password {
-            Ok(stored.name)
+            Ok(stored.user_id)
         } else {
             Err(AuthError::InvalidCredentials(anyhow::anyhow!(
                 "Passwords don't match"
@@ -48,7 +48,7 @@ pub fn change_password(
         password_salt: None,
         is_banned: None,
     };
-    update_user(pool, changeset)?;
+    update_user(pool, &changeset)?;
     Ok(())
 }
 
@@ -69,6 +69,6 @@ pub fn change_name(
         password_salt: None,
         is_banned: None,
     };
-    update_user(pool, changeset)?;
+    update_user(pool, &changeset)?;
     Ok(())
 }

@@ -107,6 +107,7 @@ async fn registration_with_invalid_password_and_not_equal_repeat_is_password_err
     assert_is_redirect_to(&response, "/registration");
 
     let html_page = app.get_registration_page_html().await;
+    println!("{:?}", &html_page);
     assert!(html_page.contains("Invalid password"));
 
     let html_page = app.get_registration_page_html().await;

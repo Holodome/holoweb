@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="ui raised very padded text container segment">
+  <div class="ui middle aligned center aligned grid">
+    <div class="column">
+      <div class="ui image header">
+        <div class="content">
+          Create blog post
+        </div>
+      </div>
+      <form class="ui large form" action="/create_blog_post" method="post">
+        <div class="ui stacked segment">
+          <div class="field">
+            <div class="ui input">
+              <input type="text" name="title" placeholder="Title">
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui input">
+              <input type="text" name="breif" placeholder="Breif">
+            </div>
+          </div>
+          <div class="field">
+            <label>Contents</label>
+            <textarea></textarea>
+          </div>
+          <button class="ui fluid large submit button" type="submit">Change</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}

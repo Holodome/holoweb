@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="/static/js/blog_posts.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="ui middle aligned center aligned grid" style="margin-top: 50px">
+  <div class="ui text container">
+    <div class="ui menu">
+      <div class="right menu">
+        <div class="ui right aligned item">
+          <div class="ui tiny buttons">
+            <button class="ui button" id="paginate_10">10</button>
+            <button class="ui button" id="paginate_20">20</button>
+            <button class="ui button" id="paginate_40">40</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ui four cards"
+       style="width: 70%; margin-left: 15%; display: flex;">
+    {% for blog_post in blog_posts %}
+      {% if loop.index <= page.size %}
+        <div class="center aligned card">
+          <div class="content">
+            <a class="header" href="/blog_posts/{{blog_post.id}}"> {{ blog_post.title }} </a>
+            <div class="meta">
+              <p> {{ blog_post.brief }} </p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

@@ -12,10 +12,11 @@ create table users (
 
 create table blog_posts (
     id varchar primary key not null,
-    title text unique not null,
-    brief text unique not null,
+    title text not null,
+    brief text not null,
     contents text not null,
     author_id varchar not null,
+    created_at text not null,
 
     foreign key (author_id) references users(id)
 );

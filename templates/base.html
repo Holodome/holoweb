@@ -6,10 +6,10 @@
 
     <link rel="stylesheet" href="/static/semantic.min.css" type="text/css">
     <script
-            src="/static/scripts/jquery-3.1.1.min.js"
+            src="/static/lib/jquery-3.1.1.min.js"
             integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
             crossorigin="anonymous"></script>
-    <script src="/static/scripts/semantic.min.js"></script>
+    <script src="/static/lib/semantic.min.js"></script>
     {% block head %}
     {% endblock %}
 </head>
@@ -22,8 +22,8 @@
                 <a class="item" href="/">Home</a>
                 <a class="item" href="/blog_posts">Posts</a>
                 <div class="right item">
-                    {% if let Some(current_user_name) = current_user_name %}
-                    <a class="ui inverted button" href="/account">Account</a>
+                    {% if current_user_id.is_some() %}
+                    <a class="ui inverted button" href="/account/home">Account</a>
                     <a class="ui inverted button" href="/logout">Log out</a>
                     {% else %}
                     <a class="ui inverted button" href="/login">Log in</a>

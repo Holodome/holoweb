@@ -1,45 +1,13 @@
 use crate::domain::credentials::Credentials;
-use crate::domain::users::{UserName, UserPassword};
-use crate::middleware::{reject_anonymous_users, Session};
-use crate::services::{validate_credentials, AuthError};
+use crate::domain::users::{UserID, UserPassword};
+use crate::services::{get_user_by_id, validate_credentials, AuthError};
 use crate::startup::Pool;
-use crate::utils::{e500, extract_errors, extract_infos, see_other};
+use crate::utils::see_other;
 use actix_web::error::InternalError;
-use actix_web::http::header::ContentType;
-use actix_web::{route, web, HttpResponse};
-use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
-use actix_web_lab::middleware::from_fn;
-use askama::Template;
+use actix_web::{web, HttpResponse};
+use actix_web_flash_messages::FlashMessage;
 use secrecy::{ExposeSecret, Secret};
 use std::fmt::Formatter;
-
-#[derive(Template)]
-#[template(path = "change_password.html")]
-struct PageTemplate {
-    errors: Vec<String>,
-    infos: Vec<String>,
-    current_user_name: Option<UserName>,
-}
-
-#[route(
-    "change_password",
-    method = "GET",
-    wrap = "from_fn(reject_anonymous_users)"
-)]
-pub async fn change_password_form(
-    flash_messages: IncomingFlashMessages,
-    session: Session,
-) -> actix_web::Result<HttpResponse> {
-    let current_user_name = session.get_user_name().map_err(e500)?;
-    let s = PageTemplate {
-        errors: extract_errors(&flash_messages),
-        infos: extract_infos(&flash_messages),
-        current_user_name,
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
-}
 
 #[derive(serde::Deserialize)]
 pub struct FormData {
@@ -68,18 +36,17 @@ impl std::fmt::Debug for ChangePasswordError {
     }
 }
 
-#[route(
-    "/change_password",
-    method = "POST",
-    wrap = "from_fn(reject_anonymous_users)"
-)]
 #[tracing::instrument(skip(form, pool))]
 pub async fn change_password(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
-    user_name: web::ReqData<UserName>,
+    user_id: UserID,
 ) -> Result<HttpResponse, InternalError<ChangePasswordError>> {
-    let user_name = user_name.into_inner();
+    let user_name = get_user_by_id(&pool, &user_id)
+        .map_err(|e| redirect(ChangePasswordError::UnexpectedError(e)))?
+        .unwrap()
+        .name;
+
     if form.new_password.expose_secret() != form.repeat_new_password.expose_secret() {
         return Err(redirect(ChangePasswordError::RepeatPasswordDoesntMatch));
     }

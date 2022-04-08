@@ -47,10 +47,10 @@ pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, anyhow::
     Ok(user)
 }
 
-pub fn update_user(pool: &Pool, changeset: UpdateUser) -> Result<(), anyhow::Error> {
+pub fn update_user(pool: &Pool, changeset: &UpdateUser) -> Result<(), anyhow::Error> {
     let conn = pool.get()?;
     update(users.filter(id.eq(&changeset.id)))
-        .set(&changeset)
+        .set(changeset)
         .execute(&conn)?;
     Ok(())
 }

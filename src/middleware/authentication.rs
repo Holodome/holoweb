@@ -5,7 +5,7 @@ use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::error::InternalError;
 use actix_web::{FromRequest, HttpMessage};
 
-pub async fn reject_anonymous_users(
+pub async fn require_login(
     mut req: ServiceRequest,
     next: actix_web_lab::middleware::Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, actix_web::Error> {
@@ -14,9 +14,10 @@ pub async fn reject_anonymous_users(
         Session::from_request(http_request, payload).await
     }?;
 
-    match session.get_user_name().map_err(e500)? {
-        Some(user_name) => {
-            req.extensions_mut().insert(user_name);
+    match session.get_user_id().map_err(e500)? {
+        Some(id) => {
+            println!("require_login {:?}", id);
+            req.extensions_mut().insert(id);
             next.call(req).await
         }
         None => {

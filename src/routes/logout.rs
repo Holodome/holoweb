@@ -1,14 +1,19 @@
-use crate::middleware::Session;
-use crate::utils::{e500, see_other};
-use actix_web::HttpResponse;
+use crate::middleware::{require_login, Session};
+use crate::utils::see_other;
+use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::FlashMessage;
+use actix_web_lab::middleware::from_fn;
 
-pub async fn logout(session: Session) -> Result<HttpResponse, actix_web::Error> {
-    if session.get_user_name().map_err(e500)?.is_none() {
-        Ok(see_other("/login"))
-    } else {
-        session.log_out();
-        FlashMessage::info("You have successfully logged out").send();
-        Ok(see_other("/login"))
-    }
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::resource("/logout")
+            .wrap(from_fn(require_login))
+            .route(web::get().to(logout)),
+    );
+}
+
+pub async fn logout(session: Session) -> HttpResponse {
+    session.log_out();
+    FlashMessage::info("You have successfully logged out").send();
+    see_other("/login")
 }

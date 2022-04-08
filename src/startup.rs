@@ -1,16 +1,10 @@
 use crate::config::Settings;
-use crate::middleware::reject_anonymous_users;
-use crate::routes::{
-    account, change_name, change_name_form, change_password, change_password_form, health_check,
-    home, login, login_form, logout, registration, registration_form,
-};
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
-use actix_web_lab::middleware::from_fn;
 use diesel::r2d2::{self, ConnectionManager};
 use diesel::SqliteConnection;
 use secrecy::{ExposeSecret, Secret};
@@ -68,34 +62,8 @@ async fn run(
                 secret_key.clone(),
             ))
             .app_data(web::Data::new(pool.clone()))
-            .app_data(web::Data::new(hmac_secret.clone()))
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
-            .route("/health_check", web::get().to(health_check))
-            .route("/", web::get().to(home))
-            .service(
-                web::resource("/login")
-                    .route(web::get().to(login_form))
-                    .route(web::post().to(login)),
-            )
-            .service(
-                web::resource("/registration")
-                    .route(web::get().to(registration_form))
-                    .route(web::post().to(registration)),
-            )
-            .service(
-                web::resource("/logout")
-                    .wrap(from_fn(reject_anonymous_users))
-                    .to(logout),
-            )
-            .service(
-                web::resource("/account")
-                    .wrap(from_fn(reject_anonymous_users))
-                    .to(account),
-            )
-            .service(change_password)
-            .service(change_password_form)
-            .service(change_name)
-            .service(change_name_form)
+            .configure(crate::routes::configure)
     })
     .listen(listener)?
     .run();

@@ -1,12 +1,24 @@
+use crate::middleware::Session;
+use actix_web::dev::Payload;
+use actix_web::error::{ErrorBadRequest, ErrorForbidden};
+use actix_web::{FromRequest, HttpRequest};
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
+use futures_util::future::{err, ok, Ready};
 use std::io::Write;
 use uuid::Uuid;
 
 #[derive(
-    Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
+    Debug,
+    Clone,
+    PartialEq,
+    derive_more::Display,
+    diesel::AsExpression,
+    diesel::FromSqlRow,
+    serde::Deserialize,
+    serde::Serialize,
 )]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct UserID {
@@ -38,5 +50,21 @@ impl UserID {
 impl AsRef<String> for UserID {
     fn as_ref(&self) -> &String {
         &self.s
+    }
+}
+
+impl FromRequest for UserID {
+    type Error = <actix_session::Session as FromRequest>::Error;
+    type Future = Ready<Result<UserID, Self::Error>>;
+
+    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
+        let session = Session::from_request_sync(req);
+        match session.get_user_id() {
+            Ok(id) => match id {
+                Some(id) => ok(id),
+                None => err(ErrorForbidden("User is not authenticated")),
+            },
+            Err(e) => err(ErrorBadRequest(e)),
+        }
     }
 }
