@@ -35,9 +35,9 @@ pub fn insert_new_blog_post(
     let blog_post = BlogPost {
         id: BlogPostID::generate_random(),
 
-        title: new_blog_post.title.clone(),
-        brief: new_blog_post.brief.clone(),
-        contents: new_blog_post.contents.clone(),
+        title: new_blog_post.title.to_string(),
+        brief: new_blog_post.brief.to_string(),
+        contents: new_blog_post.contents.to_string(),
         author_id: new_blog_post.author_id.clone(),
         created_at: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

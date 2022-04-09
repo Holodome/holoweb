@@ -2,21 +2,24 @@ use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
+use serde::{Deserialize, Deserializer};
 use std::io::Write;
 use uuid::Uuid;
 
 #[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    derive_more::Display,
-    diesel::AsExpression,
-    diesel::FromSqlRow,
-    serde::Deserialize,
+    Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
 )]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct BlogPostID {
     s: String,
+}
+
+impl<'de> Deserialize<'de> for BlogPostID {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        Ok(Self {
+            s: String::deserialize(deserializer)?,
+        })
+    }
 }
 
 impl FromSql<diesel::sql_types::Text, Sqlite> for BlogPostID {

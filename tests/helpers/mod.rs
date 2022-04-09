@@ -1,14 +1,14 @@
 use diesel::r2d2::ConnectionManager;
 use diesel_migrations::embed_migrations;
 use holosite::config::Settings;
-use holosite::domain::blog_posts::BlogPostID;
+use holosite::domain::blog_posts::{BlogPostID, NewBlogPost};
 use holosite::domain::users::{NewUser, UserID, UserName, UserPassword};
-use holosite::services::insert_new_user;
+use holosite::services::{insert_new_blog_post, insert_new_user};
 use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
-use serde_json::Value;
+
 use uuid::Uuid;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
@@ -174,6 +174,15 @@ impl TestApp {
         self.get_edit_blog_post_page(id).await.text().await.unwrap()
     }
 
+    pub async fn get_view_blog_post_page(&self, id: &str) -> reqwest::Response {
+        self.get_page(format!("/blog_post/view/{}", id).as_str())
+            .await
+    }
+
+    pub async fn get_view_blog_post_page_html(&self, id: &str) -> String {
+        self.get_view_blog_post_page(id).await.text().await.unwrap()
+    }
+
     async fn get_page(&self, rel_address: &str) -> reqwest::Response {
         self.api_client
             .get(format!("{}{}", &self.address, rel_address))
@@ -208,12 +217,14 @@ impl TestUser {
         }
     }
 
-    pub async fn register_internally(&self, app: &TestApp) {
+    pub async fn register_internally(&self, app: &TestApp) -> UserID {
         let new_user = NewUser {
             name: self.name.clone(),
             password: self.password.clone(),
         };
-        insert_new_user(&app.pool, &new_user).expect("Failed to insert new user");
+        insert_new_user(&app.pool, &new_user)
+            .expect("Failed to insert new user")
+            .id
     }
 
     pub async fn login(&self, app: &TestApp) {
@@ -248,6 +259,18 @@ impl TestBlogPost {
             "brief": self.brief.clone(),
             "contents": self.contents.clone()
         })
+    }
+
+    pub fn create_internally(&self, app: &TestApp, author_id: &UserID) -> BlogPostID {
+        let new_blog_post = NewBlogPost {
+            title: self.title.as_str(),
+            brief: self.brief.as_str(),
+            contents: self.contents.as_str(),
+            author_id,
+        };
+        insert_new_blog_post(&app.pool, &new_blog_post)
+            .expect("Failed to insert blog post")
+            .id
     }
 }
 

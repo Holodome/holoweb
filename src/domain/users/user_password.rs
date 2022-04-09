@@ -1,4 +1,4 @@
-use secrecy::{ExposeSecret, Secret, SecretString, SerializableSecret};
+use secrecy::{ExposeSecret, Secret};
 
 const PASSWORD_MIN_LENGTH: usize = 8;
 const PASSWORD_MAX_LENGTH: usize = 128;
