@@ -15,14 +15,14 @@ pub struct CreateBlogPostFormData {
 pub async fn create_blog_post(
     form: web::Form<CreateBlogPostFormData>,
     pool: web::Data<Pool>,
-    user_id: web::ReqData<UserID>,
+    user_id: UserID,
 ) -> actix_web::Result<HttpResponse> {
     let new_blog_post = NewBlogPost {
-        title: form.0.title,
-        brief: form.0.brief,
-        contents: form.0.contents,
-        author_id: user_id.into_inner(),
+        title: form.0.title.as_str(),
+        brief: form.0.brief.as_str(),
+        contents: form.0.contents.as_str(),
+        author_id: &user_id,
     };
     crate::services::insert_new_blog_post(&pool, &new_blog_post).map_err(e500)?;
-    Ok(see_other("/blog_posts"))
+    Ok(see_other("/blog_post/all"))
 }

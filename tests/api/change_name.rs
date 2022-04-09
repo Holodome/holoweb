@@ -1,4 +1,4 @@
-use crate::helpers::{assert_is_redirect_to, TestApp};
+use crate::helpers::{assert_is_redirect_to, TestApp, TestUser};
 use uuid::Uuid;
 
 #[tokio::test]
@@ -6,6 +6,12 @@ async fn you_must_be_logged_in_to_see_change_name_form() {
     let app = TestApp::spawn().await;
     let response = app.get_change_name().await;
     assert_is_redirect_to(&response, "/login");
+
+    let test_user = TestUser::generate();
+    test_user.register_internally(&app).await;
+    test_user.login(&app).await;
+    let response = app.get_change_name().await;
+    assert_eq!(response.status(), 200);
 }
 
 #[tokio::test]

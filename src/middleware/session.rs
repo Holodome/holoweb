@@ -19,7 +19,6 @@ impl Session {
 
     pub fn get_user_id(&self) -> Result<Option<UserID>, serde_json::Error> {
         let r = self.0.get(Self::USER_ID_KEY)?;
-        println!("get user id {:?}", &r);
         Ok(r)
     }
 

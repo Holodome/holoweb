@@ -16,7 +16,6 @@ pub async fn require_login(
 
     match session.get_user_id().map_err(e500)? {
         Some(id) => {
-            println!("require_login {:?}", id);
             req.extensions_mut().insert(id);
             next.call(req).await
         }

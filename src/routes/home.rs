@@ -3,13 +3,9 @@ use crate::domain::users::UserID;
 use crate::utils::{extract_errors, extract_infos};
 
 use actix_web::http::header::ContentType;
-use actix_web::{web, HttpResponse};
+use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
-
-pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/").route(web::get().to(home)));
-}
 
 #[derive(Template)]
 #[template(path = "home.html")]

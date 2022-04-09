@@ -4,9 +4,16 @@ use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
 use std::io::Write;
 use unicode_segmentation::UnicodeSegmentation;
+use uuid::Uuid;
 
 #[derive(
-    Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
+    Debug,
+    Clone,
+    PartialEq,
+    derive_more::Display,
+    diesel::AsExpression,
+    diesel::FromSqlRow,
+    serde::Serialize,
 )]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct UserName {
@@ -32,6 +39,10 @@ impl UserName {
         }
 
         Ok(Self { s })
+    }
+
+    pub fn generate_random() -> Self {
+        UserName::parse(Uuid::new_v4().to_string()).expect("OOps")
     }
 }
 

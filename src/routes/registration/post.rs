@@ -1,6 +1,6 @@
 use crate::domain::users::{NewUser, NewUserError, PasswordError};
 use crate::middleware::Session;
-use crate::services::{get_user_by_name, insert_new_user};
+use crate::services::{insert_new_user, InsertNewUserError};
 use crate::startup::Pool;
 use crate::utils::see_other;
 use actix_web::error::InternalError;
@@ -65,13 +65,6 @@ pub async fn registration(
     let new_user: NewUser =
         RegistrationFormData::try_into(form.0).map_err(registration_redirect)?;
 
-    if get_user_by_name(&pool, &new_user.name)
-        .map_err(|e| registration_redirect(e.into()))?
-        .is_some()
-    {
-        return Err(registration_redirect(RegistrationError::TakenName));
-    }
-
     match insert_new_user(&pool, &new_user) {
         Ok(user) => {
             session.renew();
@@ -80,7 +73,14 @@ pub async fn registration(
                 .map_err(|e| registration_redirect(RegistrationError::UnexpectedError(e.into())))?;
             Ok(see_other("/"))
         }
-        Err(e) => Err(registration_redirect(RegistrationError::UnexpectedError(e))),
+        Err(e) => match e {
+            InsertNewUserError::TakenName => {
+                Err(registration_redirect(RegistrationError::TakenName))
+            }
+            _ => Err(registration_redirect(RegistrationError::UnexpectedError(
+                e.into(),
+            ))),
+        },
     }
 }
 
