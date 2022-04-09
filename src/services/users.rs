@@ -78,7 +78,7 @@ pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, InsertNe
                 } else {
                     InsertNewUserError::UnexpectedError(e.into())
                 }
-            },
+            }
             _ => InsertNewUserError::UnexpectedError(e.into()),
         })?;
 

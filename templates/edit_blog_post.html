@@ -14,17 +14,17 @@
         <div class="ui stacked segment">
           <div class="field">
             <div class="ui input">
-              <input type="text" name="title" placeholder="Title">
+              <input type="text" name="title" placeholder="Title" value="{{ blog_post.title }}">
             </div>
           </div>
           <div class="field">
             <div class="ui input">
-              <input type="text" name="breif" placeholder="Breif">
+              <input type="text" name="breif" placeholder="Breif" value="{{ blog_post.brief }}">
             </div>
           </div>
           <div class="field">
             <label>Contents</label>
-            <textarea></textarea>
+            <textarea>{{ blog_post.contents }}</textarea>
           </div>
           <button class="ui fluid large submit button" type="submit">Change</button>
         </div>

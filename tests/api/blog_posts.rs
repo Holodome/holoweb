@@ -62,3 +62,53 @@ async fn view_blog_post_works() {
         .await;
     assert!(html.contains(&blog_post.title))
 }
+
+#[tokio::test]
+async fn you_must_be_logged_in_to_edit_blog_post() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(&app).await;
+
+    let blog_post = TestBlogPost::generate();
+    let blog_post_id = blog_post.create_internally(&app, &user_id);
+
+    let response = app.get_edit_blog_post_page(&blog_post_id.as_ref()).await;
+    assert_is_redirect_to(&response, "/login");
+
+    test_user.login(&app).await;
+    let response = app.get_edit_blog_post_page(&blog_post_id.as_ref()).await;
+    assert_eq!(response.status(), 200);
+}
+
+#[tokio::test]
+async fn edit_blog_post_works() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(&app).await;
+    test_user.login(&app).await;
+
+    let blog_post = TestBlogPost::generate();
+    let blog_post_id = blog_post.create_internally(&app, &user_id);
+
+    let response = app
+        .get_edit_blog_post_page(blog_post_id.as_ref().as_str())
+        .await;
+    assert_eq!(response.status(), 200);
+    let html = app
+        .get_edit_blog_post_page_html(blog_post_id.as_ref().as_str())
+        .await;
+    assert!(html.contains(&blog_post.title));
+
+    let updated = TestBlogPost::generate();
+    app.post_edit_blog_post(&updated.to_json(), &blog_post_id)
+        .await;
+
+    let response = app
+        .get_view_blog_post_page(blog_post_id.as_ref().as_str())
+        .await;
+    assert_eq!(response.status(), 200);
+    let html = app
+        .get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+        .await;
+    assert!(html.contains(&updated.title))
+}

@@ -153,10 +153,6 @@ impl TestApp {
         self.get_page("/blog_post/create").await
     }
 
-    pub async fn get_create_blog_post_page_html(&self) -> String {
-        self.get_create_blog_post_page().await.text().await.unwrap()
-    }
-
     pub async fn get_all_blog_posts_page(&self) -> reqwest::Response {
         self.get_page("/blog_post/all").await
     }
