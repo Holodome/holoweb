@@ -6,7 +6,13 @@ use std::io::Write;
 use uuid::Uuid;
 
 #[derive(
-    Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
+    Debug,
+    Clone,
+    PartialEq,
+    derive_more::Display,
+    diesel::AsExpression,
+    diesel::FromSqlRow,
+    serde::Deserialize,
 )]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct BlogPostID {

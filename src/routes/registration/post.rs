@@ -1,6 +1,6 @@
 use crate::domain::users::{NewUser, NewUserError, PasswordError};
 use crate::middleware::Session;
-use crate::services::{get_user_by_name, insert_new_user, InsertNewUserError};
+use crate::services::{insert_new_user, InsertNewUserError};
 use crate::startup::Pool;
 use crate::utils::see_other;
 use actix_web::error::InternalError;
@@ -74,7 +74,9 @@ pub async fn registration(
             Ok(see_other("/"))
         }
         Err(e) => match e {
-            InsertNewUserError::TakenName => RegistrationError::TakenName,
+            InsertNewUserError::TakenName => {
+                Err(registration_redirect(RegistrationError::TakenName))
+            }
             _ => Err(registration_redirect(RegistrationError::UnexpectedError(
                 e.into(),
             ))),

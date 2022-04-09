@@ -7,10 +7,6 @@ use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 
-pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/").route(web::get().to(home)));
-}
-
 #[derive(Template)]
 #[template(path = "home.html")]
 struct HomeTemplate {

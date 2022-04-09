@@ -44,7 +44,9 @@ impl std::fmt::Debug for InsertNewUserError {
 }
 
 pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, InsertNewUserError> {
-    let conn = pool.get()?;
+    let conn = pool
+        .get()
+        .map_err(|e| InsertNewUserError::UnexpectedError(e.into()))?;
     let salt = UserPasswordSalt::generate_random();
     let hashed_password = HashedUserPassword::parse(&new_user.password, &salt);
 
@@ -66,15 +68,21 @@ pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, InsertNe
         .values(&user)
         .execute(&conn)
         .map_err(|e| match e {
-            Error::DatabaseError(kind, data) => match kind {
-                DatabaseErrorKind::UniqueViolation => match data.column_name() {
-                    &"name" => InsertNewUserError::TakenName,
-                    &"email" => InsertNewUserError::TakenEmail,
-                    _ => e.into(),
-                },
-                _ => e.into(),
+            Error::DatabaseError(kind, ref data) => match kind {
+                DatabaseErrorKind::UniqueViolation => {
+                    if let Some(error_col) = data.column_name() {
+                        match error_col {
+                            "name" => InsertNewUserError::TakenName,
+                            "email" => InsertNewUserError::TakenEmail,
+                            _ => InsertNewUserError::UnexpectedError(e.into()),
+                        }
+                    } else {
+                        InsertNewUserError::UnexpectedError(e.into())
+                    }
+                }
+                _ => InsertNewUserError::UnexpectedError(e.into()),
             },
-            _ => e.into(),
+            _ => InsertNewUserError::UnexpectedError(e.into()),
         })?;
 
     Ok(user)

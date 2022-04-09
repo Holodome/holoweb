@@ -24,5 +24,5 @@ pub async fn create_blog_post(
         author_id: user_id.into_inner(),
     };
     crate::services::insert_new_blog_post(&pool, &new_blog_post).map_err(e500)?;
-    Ok(see_other("/blog_posts"))
+    Ok(see_other("/blog_post/all"))
 }

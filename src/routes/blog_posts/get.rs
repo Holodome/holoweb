@@ -46,9 +46,10 @@ struct BlogPostTemplate {
     blog_post: BlogPost,
 }
 
+#[tracing::instrument("Blog post", skip(pool))]
 pub async fn blog_post(
     pool: web::Data<Pool>,
-    params: web::Path<(BlogPostID)>,
+    params: web::Path<BlogPostID>,
     user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
     let blog_post_id = params.into_inner();
