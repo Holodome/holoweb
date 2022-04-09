@@ -7,10 +7,10 @@
     <div class="column">
       <div class="ui image header">
         <div class="content">
-          Create blog post
+          Edit blog post
         </div>
       </div>
-      <form class="ui large form" action="/create_blog_post" method="post">
+      <form class="ui large form" action="/blog_post/edit/{{ blog_post.id }}" method="post">
         <div class="ui stacked segment">
           <div class="field">
             <div class="ui input">
@@ -19,14 +19,14 @@
           </div>
           <div class="field">
             <div class="ui input">
-              <input type="text" name="breif" placeholder="Breif" value="{{ blog_post.brief }}">
+              <input type="text" name="brief" placeholder="Brief" value="{{ blog_post.brief }}">
             </div>
           </div>
           <div class="field">
             <label>Contents</label>
-            <textarea>{{ blog_post.contents }}</textarea>
+            <textarea name="contents">{{ blog_post.contents }}</textarea>
           </div>
-          <button class="ui fluid large submit button" type="submit">Change</button>
+          <button class="ui fluid large submit button" type="submit">Edit</button>
         </div>
       </form>
     </div>

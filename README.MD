@@ -8,12 +8,14 @@ implementing backend infrastructure.
 You should have docker installed to run Redis.
 In order to view logs in human-readable format you can use [bunyan](https://crates.io/crates/bunyan),
 though it is not necessary to run application.
+You also need [diesel](https://diesel.rs/) cli to run migrations on database.
 
 To run locally execute commands in following order:
 ```shell
 git clone https://github.com/Holodome/rustweb.git
 cd rustweb
 srcipts/init_redis.sh
+diesel migration run
 cargo run  # | bunyan
 ```
 

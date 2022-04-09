@@ -9,6 +9,11 @@
 <div class="ui middle aligned center aligned grid" style="margin-top: 50px">
   <div class="ui text container">
     <div class="ui menu">
+      <div class="item">
+        {% if current_user_id.is_some() %}
+          <a class="ui button" href="/blog_post/create">Create blog post</a>
+        {% endif %}
+      </div>
       <div class="right menu">
         <div class="ui right aligned item">
           <div class="ui tiny buttons">
@@ -19,22 +24,24 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="ui four cards"
-       style="width: 70%; margin-left: 15%; display: flex;">
-    {% for blog_post in blog_posts %}
-      {% if loop.index <= page.size %}
-        <div class="center aligned card">
-          <div class="content">
-            <a class="header" href="/blog_posts/{{blog_post.id}}"> {{ blog_post.title }} </a>
-            <div class="meta">
-              <p> {{ blog_post.brief }} </p>
+    <div class="ui center aligned container segment">
+      <div class="ui four cards"
+           style="width: 70%; margin-left: 15%; display: flex;">
+        {% for blog_post in blog_posts %}
+          {% if loop.index <= page.size %}
+            <div class="center aligned card">
+              <div class="content">
+                <a class="header" href="/blog_post/view/{{blog_post.id}}"> {{ blog_post.title }} </a>
+                <div class="meta">
+                  <p> {{ blog_post.brief }} </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      {% endif %}
-    {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
 
