@@ -68,19 +68,16 @@ pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, InsertNe
         .values(&user)
         .execute(&conn)
         .map_err(|e| match e {
-            Error::DatabaseError(kind, ref data) => match kind {
-                DatabaseErrorKind::UniqueViolation => {
-                    if let Some(error_col) = data.column_name() {
-                        match error_col {
-                            "name" => InsertNewUserError::TakenName,
-                            "email" => InsertNewUserError::TakenEmail,
-                            _ => InsertNewUserError::UnexpectedError(e.into()),
-                        }
-                    } else {
-                        InsertNewUserError::UnexpectedError(e.into())
+            Error::DatabaseError(DatabaseErrorKind::UniqueViolation, ref data) => {
+                if let Some(error_col) = data.column_name() {
+                    match error_col {
+                        "name" => InsertNewUserError::TakenName,
+                        "email" => InsertNewUserError::TakenEmail,
+                        _ => InsertNewUserError::UnexpectedError(e.into()),
                     }
+                } else {
+                    InsertNewUserError::UnexpectedError(e.into())
                 }
-                _ => InsertNewUserError::UnexpectedError(e.into()),
             },
             _ => InsertNewUserError::UnexpectedError(e.into()),
         })?;
