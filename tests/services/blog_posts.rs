@@ -1,9 +1,9 @@
 use crate::helpers::{get_db_connection, TestBlogPost, TestUser};
-use claim::{assert_ok, assert_some};
+use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::blog_posts::{BlogPostID, NewBlogPost, UpdateBlogPost};
 use holosite::services::{
     get_all_blog_posts, get_blog_post_by_id, get_blog_post_by_title, insert_new_blog_post,
-    update_blog_post, Page,
+    update_blog_post, BlogPostError, Page,
 };
 
 #[test]
@@ -93,7 +93,32 @@ fn update_blog_post_title_works() {
 }
 
 #[test]
-fn cant_change_blog_post_title_to_taken_name() {}
+fn cant_change_blog_post_title_to_taken_title() {
+    let pool = get_db_connection();
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(&pool);
+
+    let test_post = TestBlogPost::generate();
+    let post_id = test_post.register_internally(&pool, &user_id);
+    let other_post = TestBlogPost::generate();
+    other_post.register_internally(&pool, &user_id);
+
+    let res = update_blog_post(
+        &pool,
+        &UpdateBlogPost {
+            id: &post_id,
+            title: Some(&other_post.title),
+            brief: None,
+            contents: None,
+        },
+    );
+    assert_err!(&res);
+    let res = res.unwrap_err();
+    match res {
+        BlogPostError::TakenTitle => {}
+        _ => panic!("Incorrect error type: got {:?}", res),
+    };
+}
 
 #[test]
 fn change_blog_post_brief_works() {
@@ -150,7 +175,29 @@ fn change_blog_post_contents_works() {
 }
 
 #[test]
-fn cant_add_new_blog_post_with_taken_title() {}
+fn cant_add_new_blog_post_with_taken_title() {
+    let pool = get_db_connection();
+    let test_post = TestBlogPost::generate();
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(&pool);
+    test_post.register_internally(&pool, &user_id);
+
+    let res = insert_new_blog_post(
+        &pool,
+        &NewBlogPost {
+            title: &test_post.title,
+            brief: &test_post.brief,
+            contents: &test_post.contents,
+            author_id: &user_id,
+        },
+    );
+    assert_err!(&res);
+    let res = res.unwrap_err();
+    match res {
+        BlogPostError::TakenTitle => {}
+        _ => panic!("Incorrect error type: got {:?}", res),
+    };
+}
 
 #[test]
 fn get_all_blog_posts_works() {

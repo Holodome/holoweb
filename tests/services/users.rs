@@ -3,7 +3,7 @@ use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::users::hashed_user_password::HashedUserPassword;
 use holosite::domain::users::{NewUser, UpdateUser, UserName, UserPassword};
 use holosite::services::{
-    get_user_by_id, get_user_by_name, insert_new_user, update_user, InsertNewUserError,
+    get_user_by_id, get_user_by_name, insert_new_user, update_user, UserError,
 };
 use secrecy::Secret;
 
@@ -118,7 +118,33 @@ fn cant_create_user_with_same_name_and_get_correct_error_kind() {
     assert_err!(&res);
     let res = res.unwrap_err();
     match res {
-        InsertNewUserError::TakenName => {}
+        UserError::TakenName => {}
+        _ => panic!("Incorrect error type: got {:?}", res),
+    };
+}
+
+#[test]
+fn cant_update_user_with_same_name_and_get_correct_error_kind() {
+    let pool = get_db_connection();
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(&pool);
+    let other_user = TestUser::generate();
+    other_user.register_internally(&pool);
+
+    let res = update_user(
+        &pool,
+        &UpdateUser {
+            id: &user_id,
+            name: Some(&other_user.name),
+            email: None,
+            password: None,
+            is_banned: None,
+        },
+    );
+    assert_err!(&res);
+    let res = res.unwrap_err();
+    match res {
+        UserError::TakenName => {}
         _ => panic!("Incorrect error type: got {:?}", res),
     };
 }
