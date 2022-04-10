@@ -44,7 +44,11 @@ pub async fn change_password(
 ) -> Result<HttpResponse, InternalError<ChangePasswordError>> {
     let user_name = get_user_by_id(&pool, &user_id)
         .map_err(|e| redirect(ChangePasswordError::UnexpectedError(e)))?
-        .unwrap()
+        .ok_or_else(|| {
+            redirect(ChangePasswordError::UnexpectedError(anyhow::anyhow!(
+                "Failed to get user name"
+            )))
+        })?
         .name;
 
     if form.new_password.expose_secret() != form.repeat_new_password.expose_secret() {

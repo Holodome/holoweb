@@ -21,10 +21,9 @@ pub async fn home(
     flash_messages: IncomingFlashMessages,
     user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
-    let s = render_template(HomeTemplate {
+    render_template(HomeTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
         current_user_id: user_id,
-    });
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+    })
 }

@@ -1,4 +1,5 @@
 use crate::domain::users::{UserID, UserName};
+use crate::routes::render_template;
 use crate::services::get_user_by_id;
 use crate::startup::Pool;
 use crate::utils::e500;
@@ -13,13 +14,10 @@ pub async fn account(pool: web::Data<Pool>, user_id: UserID) -> actix_web::Resul
         .ok_or_else(|| e500("Failed to get user name"))?
         .name;
 
-    let s = AccountPage {
+    render_template(AccountPage {
         current_user_id: Some(user_id),
         user_name,
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+    })
 }
 
 #[derive(Template)]

@@ -2,7 +2,7 @@ use crate::domain::credentials::Credentials;
 use crate::domain::users::{UserID, UserName, UserPassword};
 use crate::services::{get_user_by_id, get_user_by_name, validate_credentials, AuthError};
 use crate::startup::Pool;
-use crate::utils::see_other;
+use crate::utils::{e500, see_other};
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::FlashMessage;
@@ -43,8 +43,13 @@ pub async fn change_name(
 ) -> Result<HttpResponse, InternalError<ChangeNameError>> {
     let user_name = get_user_by_id(&pool, &user_id)
         .map_err(|e| redirect(ChangeNameError::UnexpectedError(e)))?
-        .unwrap()
+        .ok_or_else(|| {
+            redirect(ChangeNameError::UnexpectedError(anyhow::anyhow!(
+                "Failed to get user name"
+            )))
+        })?
         .name;
+
     let credentials = Credentials {
         name: user_name.clone(),
         password: UserPassword::parse(form.current_password.clone())

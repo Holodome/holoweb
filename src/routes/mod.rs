@@ -1,5 +1,7 @@
 use crate::middleware::require_login;
-use actix_web::web;
+use crate::utils::e500;
+use actix_web::http::header::ContentType;
+use actix_web::{web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
 use askama::Template;
 
@@ -63,6 +65,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         );
 }
 
-fn render_template<T: Template>(template: T) -> String {
-    template.render().expect("Failed to render template")
+fn render_template<T: Template>(template: T) -> actix_web::Result<HttpResponse> {
+    let s = template.render().map_err(e500)?;
+    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
 }
