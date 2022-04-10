@@ -1,6 +1,6 @@
 use crate::domain::users::UserID;
 use crate::routes::render_template;
-use actix_web::http::header::ContentType;
+
 use actix_web::HttpResponse;
 use askama::Template;
 

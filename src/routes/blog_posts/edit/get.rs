@@ -5,7 +5,7 @@ use crate::services::get_blog_post_by_id;
 use crate::startup::Pool;
 use crate::utils::e500;
 use actix_web::error::ErrorNotFound;
-use actix_web::http::header::ContentType;
+
 use actix_web::{web, HttpResponse};
 use askama::Template;
 

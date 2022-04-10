@@ -3,7 +3,7 @@ use crate::domain::users::UserID;
 use crate::utils::{extract_errors, extract_infos};
 
 use crate::routes::render_template;
-use actix_web::http::header::ContentType;
+
 use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;

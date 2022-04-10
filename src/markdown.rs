@@ -1,4 +1,4 @@
-use once_cell::sync::Lazy;
+
 use pulldown_cmark::{html, Options, Parser};
 
 pub fn parse_markdown_to_html(markdown: &str) -> String {
@@ -9,8 +9,9 @@ pub fn parse_markdown_to_html(markdown: &str) -> String {
     output
 }
 
+#[cfg(test)]
 mod tests {
-    use crate::markdown::parse_markdown_to_html;
+    use super::parse_markdown_to_html;
 
     #[test]
     fn simple_test_that_markdown_parser_seems_to_work() {

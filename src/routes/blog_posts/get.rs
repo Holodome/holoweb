@@ -4,7 +4,7 @@ use crate::routes::render_template;
 use crate::services::{get_all_blog_posts, get_blog_post_by_id, Page};
 use crate::startup::Pool;
 use crate::utils::e500;
-use actix_web::http::header::ContentType;
+
 use actix_web::{web, HttpResponse};
 use askama::Template;
 
