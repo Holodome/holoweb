@@ -1,6 +1,7 @@
 use crate::middleware::require_login;
 use actix_web::web;
 use actix_web_lab::middleware::from_fn;
+use askama::Template;
 
 mod account;
 mod blog_posts;
@@ -60,4 +61,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                         .route(web::post().to(account::change_password::post::change_password)),
                 ),
         );
+}
+
+fn render_template<T: Template>(template: T) -> String {
+    template.render().expect("Failed to render template")
 }

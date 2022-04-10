@@ -1,8 +1,10 @@
 use crate::helpers::{get_db_connection, TestUser};
-use claim::{assert_ok, assert_some};
+use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::users::hashed_user_password::HashedUserPassword;
 use holosite::domain::users::{NewUser, UpdateUser, UserName, UserPassword};
-use holosite::services::{get_user_by_id, get_user_by_name, insert_new_user, update_user};
+use holosite::services::{
+    get_user_by_id, get_user_by_name, insert_new_user, update_user, InsertNewUserError,
+};
 use secrecy::Secret;
 
 #[test]
@@ -98,4 +100,25 @@ fn update_user_password_works() {
     assert_ne!(initial, user);
     assert_eq!(user.name, initial.name);
     assert_eq!(user.password, hashed_password);
+}
+
+#[test]
+fn cant_create_user_with_same_name_and_get_correct_error_kind() {
+    let pool = get_db_connection();
+    let test_user = TestUser::generate();
+    test_user.register_internally(&pool);
+
+    let res = insert_new_user(
+        &pool,
+        &NewUser {
+            name: test_user.name.clone(),
+            password: test_user.password.clone(),
+        },
+    );
+    assert_err!(&res);
+    let res = res.unwrap_err();
+    match res {
+        InsertNewUserError::TakenName => {}
+        _ => panic!("Incorrect error type: got {:?}", res),
+    };
 }
