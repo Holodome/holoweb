@@ -1,4 +1,5 @@
 mod blog_posts;
+mod comments;
 mod credentials;
 mod password;
 mod users;
@@ -16,6 +17,14 @@ impl Default for Page {
             size: 10,
         }
     }
+}
+
+fn get_current_time_str() -> String {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_millis()
+        .to_string()
 }
 
 pub use blog_posts::*;

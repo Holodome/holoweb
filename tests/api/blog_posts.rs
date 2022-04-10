@@ -112,3 +112,6 @@ async fn edit_blog_post_works() {
         .await;
     assert!(html.contains(&updated.title))
 }
+
+#[tokio::test]
+async fn you_must_be_logged_in_to_leave_comments() {}

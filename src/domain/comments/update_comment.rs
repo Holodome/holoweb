@@ -4,6 +4,6 @@ use crate::schema::comments;
 #[derive(Debug, diesel::AsChangeset)]
 #[table_name = "comments"]
 pub struct UpdateComment<'a> {
-    id: &'a CommentID,
-    contents: &'a str,
+    pub id: &'a CommentID,
+    pub contents: &'a str,
 }

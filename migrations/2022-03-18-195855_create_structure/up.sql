@@ -28,6 +28,7 @@ create table comments (
 
     parent_id varchar,
     contents text not null,
+    created_at text not null,
 
     foreign key (author_id) references users(id),
     foreign key (post_id) references blog_posts(id)

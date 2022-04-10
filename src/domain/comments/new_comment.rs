@@ -4,9 +4,8 @@ use crate::domain::users::UserID;
 
 #[derive(Debug)]
 pub struct NewComment<'a> {
-    id: CommentID,
-    author_id: &'a UserID,
-    post_id: &'a BlogPostID,
-    parent_id: Option<&'a CommentID>,
-    contents: &'a str,
+    pub author_id: &'a UserID,
+    pub post_id: &'a BlogPostID,
+    pub parent_id: Option<&'a CommentID>,
+    pub contents: &'a str,
 }

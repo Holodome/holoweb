@@ -1,7 +1,7 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
 use crate::domain::users::UserID;
 use crate::schema::blog_posts::dsl::*;
-use crate::services::Page;
+use crate::services::{get_current_time_str, Page};
 use crate::startup::Pool;
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
@@ -39,11 +39,7 @@ pub fn insert_new_blog_post(
         brief: new_blog_post.brief.to_string(),
         contents: new_blog_post.contents.to_string(),
         author_id: new_blog_post.author_id.clone(),
-        created_at: std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_millis()
-            .to_string(),
+        created_at: get_current_time_str(),
     };
     insert_into(blog_posts).values(&blog_post).execute(&conn)?;
     Ok(blog_post)

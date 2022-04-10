@@ -121,6 +121,21 @@ impl TestApp {
             .await
     }
 
+    pub async fn post_comment(
+        &self,
+        body: &impl serde::Serialize,
+        id: &BlogPostID,
+    ) -> reqwest::Response {
+        self.post(format!("/blog_post/{}/comment", id.as_ref()).as_str(), body)
+            .await
+    }
+
+    // pub async fn post_edit_comment(
+    //     &self,
+    //     body: &impl serde::Serialize,
+    //     id: &BlogPostID,
+    // )
+
     pub async fn get_home_page(&self) -> reqwest::Response {
         self.get_page("/").await
     }

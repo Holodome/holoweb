@@ -16,6 +16,7 @@ table! {
         post_id -> Text,
         parent_id -> Nullable<Text>,
         contents -> Text,
+        created_at -> Text,
     }
 }
 
