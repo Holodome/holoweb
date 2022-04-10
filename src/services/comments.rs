@@ -66,23 +66,10 @@ pub fn insert_new_comment(pool: &Pool, new_comment: &NewComment) -> Result<Comme
 
         author_id: new_comment.author_id.clone(),
         post_id: new_comment.post_id.clone(),
-        parent_id: new_comment.parent_id.map(|p| p.clone()),
+        parent_id: new_comment.parent_id.cloned(),
         contents: new_comment.contents.to_string(),
         created_at: get_current_time_str(),
     };
     insert_into(comments).values(&comment).execute(&conn)?;
     Ok(comment)
-}
-
-pub struct CommentTreeElement {
-    it: Comment,
-    children: Vec<CommentTreeElement>,
-}
-
-pub fn get_comment_tree_for_blog_post(
-    pool: &Pool,
-    blog_post_id: &BlogPostID,
-    page: &Page,
-) -> Result<Vec<CommentTreeElement>, anyhow::Error> {
-    todo!()
 }

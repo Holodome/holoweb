@@ -8,7 +8,7 @@ async fn you_must_be_logged_in_to_see_change_name_form() {
     assert_is_redirect_to(&response, "/login");
 
     let test_user = TestUser::generate();
-    test_user.register_internally(&app).await;
+    test_user.register_internally(&app.pool);
     test_user.login(&app).await;
     let response = app.get_change_name().await;
     assert_eq!(response.status(), 200);

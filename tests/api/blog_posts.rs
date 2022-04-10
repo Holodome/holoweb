@@ -7,7 +7,7 @@ async fn you_must_be_logged_in_to_see_create_blog_post_page() {
     assert_is_redirect_to(&response, "/login");
 
     let test_user = TestUser::generate();
-    test_user.register_internally(&app).await;
+    test_user.register_internally(&app.pool);
     test_user.login(&app).await;
     let response = app.get_create_blog_post_page().await;
     assert_eq!(response.status(), 200);
@@ -24,7 +24,7 @@ async fn you_are_not_required_to_be_logged_in_to_see_all_blog_posts() {
 async fn create_blog_post_and_see_it_appears_at_dashboard() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    test_user.register_internally(&app).await;
+    test_user.register_internally(&app.pool);
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
@@ -47,7 +47,7 @@ async fn you_must_be_logged_in_to_create_blog_post() {
 async fn view_blog_post_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app).await;
+    let user_id = test_user.register_internally(&app.pool);
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
@@ -67,7 +67,7 @@ async fn view_blog_post_works() {
 async fn you_must_be_logged_in_to_edit_blog_post() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app).await;
+    let user_id = test_user.register_internally(&app.pool);
 
     let blog_post = TestBlogPost::generate();
     let blog_post_id = blog_post.create_internally(&app, &user_id);
@@ -84,7 +84,7 @@ async fn you_must_be_logged_in_to_edit_blog_post() {
 async fn edit_blog_post_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app).await;
+    let user_id = test_user.register_internally(&app.pool);
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();

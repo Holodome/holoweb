@@ -46,6 +46,7 @@ impl TestApp {
         let app = Application::build(config.clone())
             .await
             .expect("Failed to build application");
+
         let address = format!("http://localhost:{}", app.port());
 
         let _ = tokio::spawn(app.run_until_stopped());
@@ -129,12 +130,6 @@ impl TestApp {
         self.post(format!("/blog_post/{}/comment", id.as_ref()).as_str(), body)
             .await
     }
-
-    // pub async fn post_edit_comment(
-    //     &self,
-    //     body: &impl serde::Serialize,
-    //     id: &BlogPostID,
-    // )
 
     pub async fn get_home_page(&self) -> reqwest::Response {
         self.get_page("/").await
@@ -228,12 +223,12 @@ impl TestUser {
         }
     }
 
-    pub async fn register_internally(&self, app: &TestApp) -> UserID {
+    pub fn register_internally(&self, pool: &Pool) -> UserID {
         let new_user = NewUser {
             name: self.name.clone(),
             password: self.password.clone(),
         };
-        insert_new_user(&app.pool, &new_user)
+        insert_new_user(&pool, &new_user)
             .expect("Failed to insert new user")
             .id
     }
@@ -289,6 +284,7 @@ fn get_config() -> Settings {
     let mut c = holosite::config::get_config().expect("Failed ot get config");
     c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
     c.app.port = 0;
+    c.app.workers = Some(1);
     c
 }
 
@@ -301,6 +297,11 @@ pub fn get_connection_pool(path: &str) -> Pool {
     let conn = pool.get().expect("Failed to get connection");
     embedded_migrations::run(&conn).expect("Failed to run migrations");
     pool
+}
+
+pub fn get_db_connection() -> Pool {
+    let config = get_config();
+    get_connection_pool(config.database_path.as_str())
 }
 
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {

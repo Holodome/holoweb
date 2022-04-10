@@ -117,7 +117,7 @@ async fn registration_with_invalid_password_and_not_equal_repeat_is_password_err
 async fn test_user_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    test_user.register_internally(&app).await;
+    test_user.register_internally(&app.pool);
     test_user.login(&app).await;
 
     let home = app.get_home_page_html().await;

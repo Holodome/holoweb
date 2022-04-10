@@ -10,6 +10,9 @@ pub struct ApplicationSettings {
     pub host: String,
     /// Secret that is used to make HMAC
     pub hmac_secret: Secret<String>,
+    /// Number of worker threads.
+    /// If not specified, number of CPU cores is used
+    pub workers: Option<usize>,
 }
 
 /// Settings of whole system

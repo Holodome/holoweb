@@ -1163,6 +1163,7 @@ dependencies = [
  "futures-util",
  "hmac",
  "log",
+ "num_cpus",
  "once_cell",
  "quickcheck",
  "quickcheck_macros",
