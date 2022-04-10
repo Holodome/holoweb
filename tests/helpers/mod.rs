@@ -110,7 +110,7 @@ impl TestApp {
     }
 
     pub async fn post_create_blog_post(&self, body: &impl serde::Serialize) -> reqwest::Response {
-        self.post("/blog_post/create", body).await
+        self.post("/blog_posts/create", body).await
     }
 
     pub async fn post_edit_blog_post(
@@ -118,7 +118,7 @@ impl TestApp {
         body: &impl serde::Serialize,
         id: &BlogPostID,
     ) -> reqwest::Response {
-        self.post(format!("/blog_post/edit/{}", id.as_ref()).as_str(), body)
+        self.post(format!("/blog_posts/{}/edit", id.as_ref()).as_str(), body)
             .await
     }
 
@@ -127,8 +127,11 @@ impl TestApp {
         body: &impl serde::Serialize,
         id: &BlogPostID,
     ) -> reqwest::Response {
-        self.post(format!("/blog_post/{}/comment", id.as_ref()).as_str(), body)
-            .await
+        self.post(
+            format!("/blog_posts/{}/comment", id.as_ref()).as_str(),
+            body,
+        )
+        .await
     }
 
     pub async fn get_home_page(&self) -> reqwest::Response {
@@ -160,11 +163,11 @@ impl TestApp {
     }
 
     pub async fn get_create_blog_post_page(&self) -> reqwest::Response {
-        self.get_page("/blog_post/create").await
+        self.get_page("/blog_posts/create").await
     }
 
     pub async fn get_all_blog_posts_page(&self) -> reqwest::Response {
-        self.get_page("/blog_post/all").await
+        self.get_page("/blog_posts/all").await
     }
 
     pub async fn get_all_blog_posts_page_html(&self) -> String {
@@ -172,7 +175,7 @@ impl TestApp {
     }
 
     pub async fn get_edit_blog_post_page(&self, id: &str) -> reqwest::Response {
-        self.get_page(format!("/blog_post/edit/{}", id).as_str())
+        self.get_page(format!("/blog_posts/{}/edit", id).as_str())
             .await
     }
 
@@ -181,7 +184,7 @@ impl TestApp {
     }
 
     pub async fn get_view_blog_post_page(&self, id: &str) -> reqwest::Response {
-        self.get_page(format!("/blog_post/view/{}", id).as_str())
+        self.get_page(format!("/blog_posts/{}/view", id).as_str())
             .await
     }
 
@@ -267,14 +270,14 @@ impl TestBlogPost {
         })
     }
 
-    pub fn create_internally(&self, app: &TestApp, author_id: &UserID) -> BlogPostID {
+    pub fn register_internally(&self, pool: &Pool, author_id: &UserID) -> BlogPostID {
         let new_blog_post = NewBlogPost {
             title: self.title.as_str(),
             brief: self.brief.as_str(),
             contents: self.contents.as_str(),
             author_id,
         };
-        insert_new_blog_post(&app.pool, &new_blog_post)
+        insert_new_blog_post(pool, &new_blog_post)
             .expect("Failed to insert blog post")
             .id
     }

@@ -29,7 +29,7 @@ async fn create_blog_post_and_see_it_appears_at_dashboard() {
 
     let blog_post = TestBlogPost::generate();
     let response = app.post_create_blog_post(&blog_post.to_json()).await;
-    assert_is_redirect_to(&response, "/blog_post/all");
+    assert_is_redirect_to(&response, "/blog_posts/all");
 
     let html = app.get_all_blog_posts_page_html().await;
     assert!(html.contains(&blog_post.title));
@@ -51,7 +51,7 @@ async fn view_blog_post_works() {
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.create_internally(&app, &user_id);
+    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
 
     let response = app
         .get_view_blog_post_page(blog_post_id.as_ref().as_str())
@@ -70,7 +70,7 @@ async fn you_must_be_logged_in_to_edit_blog_post() {
     let user_id = test_user.register_internally(&app.pool);
 
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.create_internally(&app, &user_id);
+    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
 
     let response = app.get_edit_blog_post_page(&blog_post_id.as_ref()).await;
     assert_is_redirect_to(&response, "/login");
@@ -88,7 +88,7 @@ async fn edit_blog_post_works() {
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.create_internally(&app, &user_id);
+    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
 
     let response = app
         .get_edit_blog_post_page(blog_post_id.as_ref().as_str())

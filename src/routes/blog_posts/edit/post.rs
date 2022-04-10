@@ -17,11 +17,11 @@ pub async fn edit_blog_post(
     post_id: web::Path<BlogPostID>,
 ) -> actix_web::Result<HttpResponse> {
     let changeset = UpdateBlogPost {
-        id: post_id.into_inner(),
-        title: Some(form.title.clone()),
-        brief: Some(form.brief.clone()),
-        contents: Some(form.contents.clone()),
+        id: &post_id.into_inner(),
+        title: Some(&form.title),
+        brief: Some(&form.brief),
+        contents: Some(&form.contents),
     };
     update_blog_post(&pool, &changeset).map_err(e500)?;
-    Ok(see_other("/blog_post/all"))
+    Ok(see_other("/blog_posts/all"))
 }

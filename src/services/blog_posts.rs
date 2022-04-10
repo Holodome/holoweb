@@ -18,7 +18,7 @@ pub fn get_blog_post_by_id(
 
 pub fn get_blog_post_by_title(
     pool: &Pool,
-    blog_post_title: String,
+    blog_post_title: &str,
 ) -> Result<Option<BlogPost>, anyhow::Error> {
     let conn = pool.get()?;
     Ok(blog_posts

@@ -10,6 +10,15 @@ pub struct Page {
     pub size: usize,
 }
 
+impl Page {
+    pub fn infinite() -> Self {
+        Self {
+            number: 0,
+            size: usize::MAX,
+        }
+    }
+}
+
 impl Default for Page {
     fn default() -> Self {
         Self {

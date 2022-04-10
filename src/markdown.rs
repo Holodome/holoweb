@@ -1,4 +1,3 @@
-
 use pulldown_cmark::{html, Options, Parser};
 
 pub fn parse_markdown_to_html(markdown: &str) -> String {
