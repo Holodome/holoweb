@@ -28,35 +28,32 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                 .route(web::get().to(login::get::login_form))
                 .route(web::post().to(login::post::login)),
         )
-        .route(
-            "/blog_posts/all",
-            web::get().to(blog_posts::get::all_blog_posts),
-        )
         .service(
-            web::resource("/blog_posts/create")
-                .wrap(from_fn(require_login))
-                .route(web::get().to(blog_posts::create::get::create_blog_post_form))
-                .route(web::post().to(blog_posts::create::post::create_blog_post)),
-        )
-        .route(
-            "/blog_posts/{post_id}/view",
-            web::get().to(blog_posts::get::blog_post),
-        )
-        .service(
-            web::resource("/blog_posts/{post_id}/edit")
-                .wrap(from_fn(require_login))
-                .route(web::get().to(blog_posts::edit::get::edit_blog_post_form))
-                .route(web::post().to(blog_posts::edit::post::edit_blog_post)),
-        )
-        .service(
-            web::resource("blog_posts/{post_id}/comments/create")
-                .wrap(from_fn(require_login))
-                .route(web::post().to(blog_posts::comments::create::create_comment)),
-        )
-        .service(
-            web::resource("/blog_posts/{post_id}/comments/{comment_id}/edit")
-                .wrap(from_fn(require_login))
-                .route(web::post().to(blog_posts::comments::edit::edit_comment)),
+            web::scope("/blog_posts")
+                .route("/all", web::get().to(blog_posts::get::all_blog_posts))
+                .service(
+                    web::resource("/create")
+                        .wrap(from_fn(require_login))
+                        .route(web::get().to(blog_posts::create::get::create_blog_post_form))
+                        .route(web::post().to(blog_posts::create::post::create_blog_post)),
+                )
+                .route("/{post_id}/view", web::get().to(blog_posts::get::blog_post))
+                .service(
+                    web::resource("/{post_id}/edit")
+                        .wrap(from_fn(require_login))
+                        .route(web::get().to(blog_posts::edit::get::edit_blog_post_form))
+                        .route(web::post().to(blog_posts::edit::post::edit_blog_post)),
+                )
+                .service(
+                    web::resource("/{post_id}/comments/create")
+                        .wrap(from_fn(require_login))
+                        .route(web::post().to(blog_posts::comments::create::create_comment)),
+                )
+                .service(
+                    web::resource("/{post_id}/comments/{comment_id}/edit")
+                        .wrap(from_fn(require_login))
+                        .route(web::post().to(blog_posts::comments::edit::edit_comment)),
+                ),
         )
         .service(
             web::scope("/account")
