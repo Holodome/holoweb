@@ -298,12 +298,12 @@ impl TestComment {
     pub fn register_internally(
         &self,
         pool: &Pool,
-        post_id: BlogPostID,
-        author_id: UserID,
+        post_id: &BlogPostID,
+        author_id: &UserID,
     ) -> CommentID {
         let new_comment = NewComment {
-            author_id: &author_id,
-            post_id: &post_id,
+            author_id,
+            post_id,
             parent_id: None,
             contents: &self.contents,
         };
