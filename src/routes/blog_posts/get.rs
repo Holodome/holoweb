@@ -2,8 +2,8 @@ use crate::domain::blog_posts::{BlogPost, BlogPostID};
 use crate::domain::users::UserID;
 use crate::services::{get_all_blog_posts, get_blog_post_by_id, Page};
 use crate::startup::Pool;
-use crate::utils::e500;
-use actix_web::http::header::ContentType;
+use crate::utils::{e500, render_template};
+
 use actix_web::{web, HttpResponse};
 use askama::Template;
 
@@ -29,14 +29,11 @@ pub async fn all_blog_posts(
     let page = query.0.page.unwrap_or_default();
     let blog_posts = get_all_blog_posts(&pool, &page).map_err(e500)?;
 
-    let s = BlogPostsTemplate {
+    render_template(BlogPostsTemplate {
         current_user_id: user_id,
         page,
         blog_posts,
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+    })
 }
 
 #[derive(Template)]
@@ -57,11 +54,8 @@ pub async fn blog_post(
         .map_err(e500)?
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
-    let s = BlogPostTemplate {
+    render_template(BlogPostTemplate {
         current_user_id: user_id,
         blog_post,
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+    })
 }

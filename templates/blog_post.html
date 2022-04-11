@@ -3,27 +3,39 @@
 {% block content %}
 
 <div class="ui middle aligned center aligned grid" style="margin-top: 50px">
-  <h2 style="text-align: center">
-    Blog post info
-  </h2>
-  <div class="ui divided selection list">
-    <div class="item">
-      <div class="ui purple horizontal header">
-        Title
+  <div class="ui text container">
+    <div class="ui menu">
+      <div class="item">
+        {% if current_user_id.is_some() %}
+        <a class="ui button" href="/blog_posts/edit/{{ blog_post.id }}">Edit blog post</a>
+        {% endif %}
       </div>
-      {{ blog_post.title }}
     </div>
-    <div class="item">
-      <div class="ui purple horizontal header">
-        Brief
+
+    <div class="ui center aligned container segment">
+      <h2 style="text-align: center">
+        Blog post info
+      </h2>
+      <div class="ui divided selection list">
+        <div class="item">
+          <div class="ui purple horizontal header">
+            Title
+          </div>
+          {{ blog_post.title }}
+        </div>
+        <div class="item">
+          <div class="ui purple horizontal header">
+            Brief
+          </div>
+          {{ blog_post.brief }}
+        </div>
+        <div class="item">
+          <div class="ui purple horizontal header">
+            Contents
+          </div>
+          {{ blog_post.contents }}
+        </div>
       </div>
-      {{ blog_post.brief }}
-    </div>
-    <div class="item">
-      <div class="ui purple horizontal header">
-        Contents
-      </div>
-      {{ blog_post.contents }}
     </div>
   </div>
 </div>

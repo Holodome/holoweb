@@ -29,7 +29,14 @@ impl Application {
         let listener = TcpListener::bind(address)?;
 
         let port = listener.local_addr().unwrap().port();
-        let server = run(listener, pool, config.app.hmac_secret, config.redis_uri).await?;
+        let server = run(
+            listener,
+            pool,
+            config.app.hmac_secret,
+            config.redis_uri,
+            config.app.workers,
+        )
+        .await?;
 
         Ok(Self { port, server })
     }
@@ -48,11 +55,16 @@ async fn run(
     pool: Pool,
     hmac_secret: Secret<String>,
     redis_uri: Secret<String>,
+    workers: Option<usize>,
 ) -> Result<Server, anyhow::Error> {
+    let workers = workers.unwrap_or_else(num_cpus::get_physical);
+    tracing::info!("Workers: {:?}", &workers);
     let secret_key = actix_web::cookie::Key::from(hmac_secret.expose_secret().as_bytes());
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
-    let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
+    let redis_store = RedisSessionStore::new(redis_uri.expose_secret())
+        .await
+        .expect("Failed to connect to redis");
     let server = HttpServer::new(move || {
         App::new()
             .wrap(TracingLogger::default())
@@ -65,7 +77,9 @@ async fn run(
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .configure(crate::routes::configure)
     })
-    .listen(listener)?
+    .workers(workers)
+    .listen(listener)
+    .expect("Failed to bind TCP listener")
     .run();
     Ok(server)
 }

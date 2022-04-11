@@ -26,7 +26,7 @@ pub fn get_user_by_name(pool: &Pool, user_name: &UserName) -> Result<Option<User
 }
 
 #[derive(thiserror::Error)]
-pub enum InsertNewUserError {
+pub enum UserError {
     #[error("Name is already taken")]
     TakenName,
     #[error("Email is already taken")]
@@ -35,7 +35,7 @@ pub enum InsertNewUserError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
-impl std::fmt::Debug for InsertNewUserError {
+impl std::fmt::Debug for UserError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         use crate::utils::error_chain_fmt;
 
@@ -43,10 +43,10 @@ impl std::fmt::Debug for InsertNewUserError {
     }
 }
 
-pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, InsertNewUserError> {
+pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, UserError> {
     let conn = pool
         .get()
-        .map_err(|e| InsertNewUserError::UnexpectedError(e.into()))?;
+        .map_err(|e| UserError::UnexpectedError(e.into()))?;
     let salt = UserPasswordSalt::generate_random();
     let hashed_password = HashedUserPassword::parse(&new_user.password, &salt);
 
@@ -67,28 +67,34 @@ pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, InsertNe
     insert_into(users)
         .values(&user)
         .execute(&conn)
-        .map_err(|e| match e {
-            Error::DatabaseError(DatabaseErrorKind::UniqueViolation, ref data) => {
-                if let Some(error_col) = data.column_name() {
-                    match error_col {
-                        "name" => InsertNewUserError::TakenName,
-                        "email" => InsertNewUserError::TakenEmail,
-                        _ => InsertNewUserError::UnexpectedError(e.into()),
-                    }
-                } else {
-                    InsertNewUserError::UnexpectedError(e.into())
-                }
-            }
-            _ => InsertNewUserError::UnexpectedError(e.into()),
-        })?;
+        .map_err(get_user_error_from_database_error)?;
 
     Ok(user)
 }
 
-pub fn update_user(pool: &Pool, changeset: &UpdateUser) -> Result<(), anyhow::Error> {
-    let conn = pool.get()?;
+pub fn update_user(pool: &Pool, changeset: &UpdateUser) -> Result<(), UserError> {
+    let conn = pool
+        .get()
+        .map_err(|e| UserError::UnexpectedError(e.into()))?;
     update(users.filter(id.eq(&changeset.id)))
         .set(changeset)
-        .execute(&conn)?;
+        .execute(&conn)
+        .map_err(get_user_error_from_database_error)?;
     Ok(())
+}
+
+fn get_user_error_from_database_error(e: Error) -> UserError {
+    match e {
+        Error::DatabaseError(DatabaseErrorKind::UniqueViolation, ref data) => {
+            let msg = data.message();
+            if msg.contains("name") {
+                UserError::TakenName
+            } else if msg.contains("email") {
+                UserError::TakenEmail
+            } else {
+                UserError::UnexpectedError(e.into())
+            }
+        }
+        _ => UserError::UnexpectedError(e.into()),
+    }
 }

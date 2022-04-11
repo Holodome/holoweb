@@ -12,7 +12,7 @@ create table users (
 
 create table blog_posts (
     id varchar primary key not null,
-    title text not null,
+    title text unique not null,
     brief text not null,
     contents text not null,
     author_id varchar not null,
@@ -28,6 +28,8 @@ create table comments (
 
     parent_id varchar,
     contents text not null,
+    created_at text not null,
+    is_deleted boolean not null,
 
     foreign key (author_id) references users(id),
     foreign key (post_id) references blog_posts(id)

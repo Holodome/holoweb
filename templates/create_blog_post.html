@@ -10,7 +10,7 @@
           Create blog post
         </div>
       </div>
-      <form class="ui large form" action="/create_blog_post" method="post">
+      <form class="ui large form" action="/blog_posts/create" method="post">
         <div class="ui stacked segment">
           <div class="field">
             <div class="ui input">
@@ -19,14 +19,14 @@
           </div>
           <div class="field">
             <div class="ui input">
-              <input type="text" name="breif" placeholder="Breif">
+              <input type="text" name="brief" placeholder="Brief">
             </div>
           </div>
           <div class="field">
             <label>Contents</label>
-            <textarea></textarea>
+            <textarea name="contents"></textarea>
           </div>
-          <button class="ui fluid large submit button" type="submit">Change</button>
+          <button class="ui fluid large submit button" type="submit">Create</button>
         </div>
       </form>
     </div>

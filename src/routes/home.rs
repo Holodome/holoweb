@@ -1,8 +1,7 @@
 use crate::domain::users::UserID;
 
-use crate::utils::{extract_errors, extract_infos};
+use crate::utils::{extract_errors, extract_infos, render_template};
 
-use actix_web::http::header::ContentType;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
@@ -20,12 +19,9 @@ pub async fn home(
     flash_messages: IncomingFlashMessages,
     user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
-    let s = HomeTemplate {
+    render_template(HomeTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
         current_user_id: user_id,
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+    })
 }

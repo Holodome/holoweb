@@ -1,4 +1,5 @@
 mod blog_posts;
+mod comments;
 mod credentials;
 mod password;
 mod users;
@@ -7,6 +8,15 @@ mod users;
 pub struct Page {
     pub number: usize,
     pub size: usize,
+}
+
+impl Page {
+    pub fn infinite() -> Self {
+        Self {
+            number: 0,
+            size: usize::MAX,
+        }
+    }
 }
 
 impl Default for Page {
@@ -18,7 +28,16 @@ impl Default for Page {
     }
 }
 
+fn get_current_time_str() -> String {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_millis()
+        .to_string()
+}
+
 pub use blog_posts::*;
+pub use comments::*;
 pub use credentials::*;
 pub use password::*;
 pub use users::*;

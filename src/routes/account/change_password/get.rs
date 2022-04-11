@@ -1,6 +1,6 @@
 use crate::domain::users::UserID;
-use crate::utils::{extract_errors, extract_infos};
-use actix_web::http::header::ContentType;
+use crate::utils::{extract_errors, extract_infos, render_template};
+
 use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
@@ -17,12 +17,9 @@ pub async fn change_password_form(
     flash_messages: IncomingFlashMessages,
     user_id: UserID,
 ) -> actix_web::Result<HttpResponse> {
-    let s = PageTemplate {
+    render_template(PageTemplate {
         errors: extract_errors(&flash_messages),
         infos: extract_infos(&flash_messages),
         current_user_id: Some(user_id),
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+    })
 }

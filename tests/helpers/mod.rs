@@ -3,12 +3,13 @@ use diesel_migrations::embed_migrations;
 use holosite::config::Settings;
 use holosite::domain::blog_posts::{BlogPostID, NewBlogPost};
 use holosite::domain::users::{NewUser, UserID, UserName, UserPassword};
-use holosite::services::{insert_new_blog_post, insert_new_user};
+use holosite::services::{insert_new_blog_post, insert_new_comment, insert_new_user};
 use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
 
+use holosite::domain::comments::{CommentID, NewComment};
 use uuid::Uuid;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
@@ -46,6 +47,7 @@ impl TestApp {
         let app = Application::build(config.clone())
             .await
             .expect("Failed to build application");
+
         let address = format!("http://localhost:{}", app.port());
 
         let _ = tokio::spawn(app.run_until_stopped());
@@ -109,7 +111,7 @@ impl TestApp {
     }
 
     pub async fn post_create_blog_post(&self, body: &impl serde::Serialize) -> reqwest::Response {
-        self.post("/blog_post/create", body).await
+        self.post("/blog_posts/create", body).await
     }
 
     pub async fn post_edit_blog_post(
@@ -117,8 +119,20 @@ impl TestApp {
         body: &impl serde::Serialize,
         id: &BlogPostID,
     ) -> reqwest::Response {
-        self.post(format!("/blog_post/edit/{}", id.as_ref()).as_str(), body)
+        self.post(format!("/blog_posts/{}/edit", id.as_ref()).as_str(), body)
             .await
+    }
+
+    pub async fn post_comment(
+        &self,
+        body: &impl serde::Serialize,
+        id: &BlogPostID,
+    ) -> reqwest::Response {
+        self.post(
+            format!("/blog_posts/{}/comments", id.as_ref()).as_str(),
+            body,
+        )
+        .await
     }
 
     pub async fn get_home_page(&self) -> reqwest::Response {
@@ -150,11 +164,11 @@ impl TestApp {
     }
 
     pub async fn get_create_blog_post_page(&self) -> reqwest::Response {
-        self.get_page("/blog_post/create").await
+        self.get_page("/blog_posts/create").await
     }
 
     pub async fn get_all_blog_posts_page(&self) -> reqwest::Response {
-        self.get_page("/blog_post/all").await
+        self.get_page("/blog_posts/all").await
     }
 
     pub async fn get_all_blog_posts_page_html(&self) -> String {
@@ -162,7 +176,7 @@ impl TestApp {
     }
 
     pub async fn get_edit_blog_post_page(&self, id: &str) -> reqwest::Response {
-        self.get_page(format!("/blog_post/edit/{}", id).as_str())
+        self.get_page(format!("/blog_posts/{}/edit", id).as_str())
             .await
     }
 
@@ -171,7 +185,7 @@ impl TestApp {
     }
 
     pub async fn get_view_blog_post_page(&self, id: &str) -> reqwest::Response {
-        self.get_page(format!("/blog_post/view/{}", id).as_str())
+        self.get_page(format!("/blog_posts/{}/view", id).as_str())
             .await
     }
 
@@ -213,12 +227,12 @@ impl TestUser {
         }
     }
 
-    pub async fn register_internally(&self, app: &TestApp) -> UserID {
+    pub fn register_internally(&self, pool: &Pool) -> UserID {
         let new_user = NewUser {
             name: self.name.clone(),
             password: self.password.clone(),
         };
-        insert_new_user(&app.pool, &new_user)
+        insert_new_user(&pool, &new_user)
             .expect("Failed to insert new user")
             .id
     }
@@ -257,15 +271,44 @@ impl TestBlogPost {
         })
     }
 
-    pub fn create_internally(&self, app: &TestApp, author_id: &UserID) -> BlogPostID {
+    pub fn register_internally(&self, pool: &Pool, author_id: &UserID) -> BlogPostID {
         let new_blog_post = NewBlogPost {
             title: self.title.as_str(),
             brief: self.brief.as_str(),
             contents: self.contents.as_str(),
             author_id,
         };
-        insert_new_blog_post(&app.pool, &new_blog_post)
+        insert_new_blog_post(pool, &new_blog_post)
             .expect("Failed to insert blog post")
+            .id
+    }
+}
+
+pub struct TestComment {
+    pub contents: String,
+}
+
+impl TestComment {
+    pub fn generate() -> Self {
+        Self {
+            contents: Uuid::new_v4().to_string(),
+        }
+    }
+
+    pub fn register_internally(
+        &self,
+        pool: &Pool,
+        post_id: BlogPostID,
+        author_id: UserID,
+    ) -> CommentID {
+        let new_comment = NewComment {
+            author_id: &author_id,
+            post_id: &post_id,
+            parent_id: None,
+            contents: &self.contents,
+        };
+        insert_new_comment(&pool, &new_comment)
+            .expect("Failed to insert comment")
             .id
     }
 }
@@ -274,6 +317,7 @@ fn get_config() -> Settings {
     let mut c = holosite::config::get_config().expect("Failed ot get config");
     c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
     c.app.port = 0;
+    c.app.workers = Some(1);
     c
 }
 
@@ -286,6 +330,11 @@ pub fn get_connection_pool(path: &str) -> Pool {
     let conn = pool.get().expect("Failed to get connection");
     embedded_migrations::run(&conn).expect("Failed to run migrations");
     pool
+}
+
+pub fn get_db_connection() -> Pool {
+    let config = get_config();
+    get_connection_pool(config.database_path.as_str())
 }
 
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {

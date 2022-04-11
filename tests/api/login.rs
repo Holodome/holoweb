@@ -1,4 +1,5 @@
 use crate::helpers::{assert_is_redirect_to, TestApp, TestUser};
+use secrecy::ExposeSecret;
 
 #[tokio::test]
 async fn logout_returns_redirect_to_login_when_not_logged_in() {
@@ -117,10 +118,29 @@ async fn registration_with_invalid_password_and_not_equal_repeat_is_password_err
 async fn test_user_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    test_user.register_internally(&app).await;
+    test_user.register_internally(&app.pool);
     test_user.login(&app).await;
 
     let home = app.get_home_page_html().await;
     assert!(home.contains("Log out"));
     assert!(home.contains("Account"));
+}
+
+#[tokio::test]
+async fn you_cant_create_user_with_taken_name() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    test_user.register_internally(&app.pool);
+
+    let register_body = serde_json::json!({
+        "name": test_user.name.as_ref(),
+        "password": test_user.password.as_ref().expose_secret(),
+        "repeat_password": test_user.password.as_ref().expose_secret()
+    });
+
+    let response = app.post_registration(&register_body).await;
+    assert_is_redirect_to(&response, "/registration");
+
+    let html_page = app.get_registration_page_html().await;
+    assert!(!html_page.contains("Taken name"));
 }

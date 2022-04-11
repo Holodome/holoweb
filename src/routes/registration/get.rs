@@ -1,6 +1,6 @@
 use crate::domain::users::UserID;
-use crate::utils::extract_errors;
-use actix_web::http::header::ContentType;
+use crate::utils::{extract_errors, render_template};
+
 use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
@@ -17,11 +17,8 @@ pub async fn registration_form(
     flash_messages: IncomingFlashMessages,
     user_id: Option<UserID>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let s = RegistrationTemplate {
+    render_template(RegistrationTemplate {
         errors: extract_errors(&flash_messages),
         current_user_id: user_id,
-    }
-    .render()
-    .unwrap();
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+    })
 }

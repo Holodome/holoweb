@@ -41,11 +41,10 @@ pub fn change_password(
     let id = user.id;
     let password = HashedUserPassword::parse(password, &user.password_salt);
     let changeset = UpdateUser {
-        id,
+        id: &id,
         name: None,
         email: None,
-        password: Some(password),
-        password_salt: None,
+        password: Some(&password),
         is_banned: None,
     };
     update_user(pool, &changeset)?;
@@ -62,11 +61,10 @@ pub fn change_name(
         .ok_or_else(|| anyhow::anyhow!("Failed to get user with given name"))?;
     let id = user.id;
     let changeset = UpdateUser {
-        id,
-        name: Some(new_user_name.clone()),
+        id: &id,
+        name: Some(new_user_name),
         email: None,
         password: None,
-        password_salt: None,
         is_banned: None,
     };
     update_user(pool, &changeset)?;
