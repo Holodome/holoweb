@@ -1,7 +1,6 @@
 use crate::helpers::{get_db_connection, TestUser};
 use claim::{assert_err, assert_ok, assert_some};
-use holosite::domain::users::hashed_user_password::HashedUserPassword;
-use holosite::domain::users::{NewUser, UpdateUser, UserName, UserPassword};
+use holosite::domain::users::{HashedUserPassword, NewUser, UpdateUser, UserName, UserPassword};
 use holosite::services::{
     get_user_by_id, get_user_by_name, insert_new_user, update_user, UserError,
 };
