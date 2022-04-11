@@ -4,9 +4,7 @@ use crate::domain::users::UserID;
 use crate::schema::comments::dsl::*;
 use crate::services::{get_current_time_str, Page};
 use crate::startup::Pool;
-use diesel::{
-    delete, insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl,
-};
+use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
 pub fn get_comment_by_id(
     pool: &Pool,
@@ -53,12 +51,6 @@ pub fn update_comment(pool: &Pool, changeset: &UpdateComment) -> Result<(), anyh
     Ok(())
 }
 
-pub fn delete_comment(pool: &Pool, comment_id: &CommentID) -> Result<(), anyhow::Error> {
-    let conn = pool.get()?;
-    delete(comments.filter(id.eq(comment_id))).execute(&conn)?;
-    Ok(())
-}
-
 pub fn insert_new_comment(pool: &Pool, new_comment: &NewComment) -> Result<Comment, anyhow::Error> {
     let conn = pool.get()?;
     let comment = Comment {
@@ -69,6 +61,7 @@ pub fn insert_new_comment(pool: &Pool, new_comment: &NewComment) -> Result<Comme
         parent_id: new_comment.parent_id.cloned(),
         contents: new_comment.contents.to_string(),
         created_at: get_current_time_str(),
+        is_deleted: false,
     };
     insert_into(comments).values(&comment).execute(&conn)?;
     Ok(comment)

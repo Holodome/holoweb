@@ -1,9 +1,6 @@
 use crate::middleware::require_login;
-use crate::utils::e500;
-use actix_web::http::header::ContentType;
-use actix_web::{web, HttpResponse};
+use actix_web::web;
 use actix_web_lab::middleware::from_fn;
-use askama::Template;
 
 mod account;
 mod blog_posts;
@@ -34,7 +31,6 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         .service(
             web::scope("/blog_posts")
                 .route("/all", web::get().to(blog_posts::get::all_blog_posts))
-                .route("/{post_id}/view", web::get().to(blog_posts::get::blog_post))
                 .service(
                     web::resource("/create")
                         .wrap(from_fn(require_login))
@@ -46,6 +42,24 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                         .wrap(from_fn(require_login))
                         .route(web::get().to(blog_posts::edit::get::edit_blog_post_form))
                         .route(web::post().to(blog_posts::edit::post::edit_blog_post)),
+                )
+                .service(
+                    web::scope("/{post_id}")
+                        .route("/view", web::get().to(blog_posts::get::blog_post))
+                        .service(
+                            web::scope("/comment")
+                                .service(
+                                    web::resource("/create").wrap(from_fn(require_login)).route(
+                                        web::post()
+                                            .to(blog_posts::comments::create::create_comment),
+                                    ),
+                                )
+                                .service(web::scope("/{comment_id}").service(
+                                    web::resource("/edit").wrap(from_fn(require_login)).route(
+                                        web::post().to(blog_posts::comments::edit::edit_comment),
+                                    ),
+                                )),
+                        ),
                 ),
         )
         .service(
@@ -63,9 +77,4 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                         .route(web::post().to(account::change_password::post::change_password)),
                 ),
         );
-}
-
-fn render_template<T: Template>(template: T) -> actix_web::Result<HttpResponse> {
-    let s = template.render().map_err(e500)?;
-    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
 }

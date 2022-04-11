@@ -1,8 +1,7 @@
 use crate::domain::users::{UserID, UserName};
-use crate::routes::render_template;
 use crate::services::get_user_by_id;
 use crate::startup::Pool;
-use crate::utils::e500;
+use crate::utils::{e500, render_template};
 
 use actix_web::{web, HttpResponse};
 use askama::Template;

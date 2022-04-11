@@ -1,9 +1,8 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID};
 use crate::domain::users::UserID;
-use crate::routes::render_template;
 use crate::services::get_blog_post_by_id;
 use crate::startup::Pool;
-use crate::utils::e500;
+use crate::utils::{e500, render_template};
 use actix_web::error::ErrorNotFound;
 
 use actix_web::{web, HttpResponse};

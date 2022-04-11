@@ -5,5 +5,6 @@ use crate::schema::comments;
 #[table_name = "comments"]
 pub struct UpdateComment<'a> {
     pub id: &'a CommentID,
-    pub contents: &'a str,
+    pub contents: Option<&'a str>,
+    pub is_deleted: Option<bool>,
 }

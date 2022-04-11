@@ -17,6 +17,7 @@ table! {
         parent_id -> Nullable<Text>,
         contents -> Text,
         created_at -> Text,
+        is_deleted -> Bool,
     }
 }
 

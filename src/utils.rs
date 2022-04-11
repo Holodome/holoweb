@@ -1,6 +1,8 @@
+use actix_web::http::header::ContentType;
 use actix_web::http::header::LOCATION;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::{IncomingFlashMessages, Level};
+use askama::Template;
 
 /// Mapper to InternalServerError. This is preferred way to unwrap result returning functions.
 /// Preserves error cause for logging.
@@ -23,13 +25,6 @@ where
     actix_web::error::ErrorInternalServerError(e)
 }
 
-/// Helper function used to generate redirection response.
-pub fn see_other(location: &str) -> HttpResponse {
-    HttpResponse::SeeOther()
-        .insert_header((LOCATION, location))
-        .finish()
-}
-
 /// Used to generate error string representation, preserving all child error types.
 pub fn error_chain_fmt(
     e: &impl std::error::Error,
@@ -42,6 +37,18 @@ pub fn error_chain_fmt(
         current = cause.source();
     }
     Ok(())
+}
+
+pub fn render_template<T: Template>(template: T) -> actix_web::Result<HttpResponse> {
+    let s = template.render().map_err(e500)?;
+    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(s))
+}
+
+/// Helper function used to generate redirection response.
+pub fn see_other(location: &str) -> HttpResponse {
+    HttpResponse::SeeOther()
+        .insert_header((LOCATION, location))
+        .finish()
 }
 
 pub fn extract_flash_messages_level(

@@ -3,12 +3,13 @@ use diesel_migrations::embed_migrations;
 use holosite::config::Settings;
 use holosite::domain::blog_posts::{BlogPostID, NewBlogPost};
 use holosite::domain::users::{NewUser, UserID, UserName, UserPassword};
-use holosite::services::{insert_new_blog_post, insert_new_user};
+use holosite::services::{insert_new_blog_post, insert_new_comment, insert_new_user};
 use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
 
+use holosite::domain::comments::{CommentID, NewComment};
 use uuid::Uuid;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
@@ -128,7 +129,7 @@ impl TestApp {
         id: &BlogPostID,
     ) -> reqwest::Response {
         self.post(
-            format!("/blog_posts/{}/comment", id.as_ref()).as_str(),
+            format!("/blog_posts/{}/comments", id.as_ref()).as_str(),
             body,
         )
         .await
@@ -279,6 +280,35 @@ impl TestBlogPost {
         };
         insert_new_blog_post(pool, &new_blog_post)
             .expect("Failed to insert blog post")
+            .id
+    }
+}
+
+pub struct TestComment {
+    pub contents: String,
+}
+
+impl TestComment {
+    pub fn generate() -> Self {
+        Self {
+            contents: Uuid::new_v4().to_string(),
+        }
+    }
+
+    pub fn register_internally(
+        &self,
+        pool: &Pool,
+        post_id: BlogPostID,
+        author_id: UserID,
+    ) -> CommentID {
+        let new_comment = NewComment {
+            author_id: &author_id,
+            post_id: &post_id,
+            parent_id: None,
+            contents: &self.contents,
+        };
+        insert_new_comment(&pool, &new_comment)
+            .expect("Failed to insert comment")
             .id
     }
 }

@@ -11,4 +11,5 @@ pub struct Comment {
     pub parent_id: Option<CommentID>,
     pub contents: String,
     pub created_at: String,
+    pub is_deleted: bool,
 }

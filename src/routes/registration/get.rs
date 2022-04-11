@@ -1,6 +1,5 @@
 use crate::domain::users::UserID;
-use crate::routes::render_template;
-use crate::utils::extract_errors;
+use crate::utils::{extract_errors, render_template};
 
 use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
