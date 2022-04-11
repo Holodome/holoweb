@@ -1,6 +1,7 @@
 use crate::domain::users::UserID;
-use crate::utils::{extract_errors, extract_infos, render_template};
+use crate::utils::render_template;
 
+use crate::middleware::FlashMessages;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
@@ -8,8 +9,7 @@ use askama::Template;
 #[derive(Template)]
 #[template(path = "change_name.html")]
 struct PageTemplate {
-    errors: Vec<String>,
-    infos: Vec<String>,
+    flash_messages: FlashMessages,
     current_user_id: Option<UserID>,
 }
 
@@ -18,8 +18,7 @@ pub async fn change_name_form(
     user_id: UserID,
 ) -> actix_web::Result<HttpResponse> {
     render_template(PageTemplate {
-        errors: extract_errors(&flash_messages),
-        infos: extract_infos(&flash_messages),
+        flash_messages: flash_messages.into(),
         current_user_id: Some(user_id),
     })
 }

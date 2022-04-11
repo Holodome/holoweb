@@ -32,7 +32,7 @@
 
       </form>
 
-      {% for error in errors %}
+      {% for error in flash_messages.errors %}
       <div class="ui negative message">
         {{ error }}
       </div>

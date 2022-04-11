@@ -1,6 +1,7 @@
 use crate::domain::users::UserID;
-use crate::utils::{extract_errors, extract_infos, render_template};
+use crate::utils::render_template;
 
+use crate::middleware::FlashMessages;
 use actix_web::HttpResponse;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
@@ -8,8 +9,7 @@ use askama::Template;
 #[derive(Template)]
 #[template(path = "login.html")]
 struct LoginTemplate {
-    errors: Vec<String>,
-    infos: Vec<String>,
+    flash_messages: FlashMessages,
     current_user_id: Option<UserID>,
 }
 
@@ -19,8 +19,7 @@ pub async fn login_form(
     user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
     render_template(LoginTemplate {
-        errors: extract_errors(&flash_messages),
-        infos: extract_infos(&flash_messages),
+        flash_messages: flash_messages.into(),
         current_user_id: user_id,
     })
 }
