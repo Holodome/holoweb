@@ -1,5 +1,4 @@
-use crate::domain::credentials::Credentials;
-use crate::domain::users::{UserID, UserPassword};
+use crate::domain::users::{Credentials, UserID, UserPassword};
 use crate::services::{get_user_by_id, validate_credentials, AuthError};
 use crate::startup::Pool;
 use crate::utils::see_other;

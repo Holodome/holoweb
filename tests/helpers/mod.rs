@@ -350,3 +350,12 @@ pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
         "Response is redirect to different location"
     );
 }
+
+pub fn assert_ok(response: &reqwest::Response) {
+    assert_eq!(
+        response.status().as_u16(),
+        200,
+        "Response is not OK: {:?}",
+        response
+    )
+}
