@@ -18,6 +18,8 @@ table! {
         contents -> Text,
         created_at -> Text,
         is_deleted -> Bool,
+        main_parent_id -> Nullable<Text>,
+        depth -> Integer,
     }
 }
 

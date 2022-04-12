@@ -29,7 +29,7 @@ impl TestComment {
             contents: &self.contents,
         };
         insert_new_comment(&pool, &new_comment)
-            .expect("Failed to insert comment")
+            .expect("Failed to insert comment.html")
             .id
     }
 }
