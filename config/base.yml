@@ -1,4 +1,5 @@
 database_path: "/tmp/holosite.sqlite"
+run_db_migrations: false
 redis_uri: "redis://127.0.0.1:6379"
 app:
   port: 8080

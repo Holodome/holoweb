@@ -20,6 +20,8 @@ pub struct ApplicationSettings {
 pub struct Settings {
     /// URI of database, typically path to database file
     pub database_path: String,
+    /// Force run database migrations on startup. Useful for testing
+    pub run_db_migrations: bool,
     /// Settings of application
     pub app: ApplicationSettings,
     /// Redis URI. Typically address of redis hosted in docker container
