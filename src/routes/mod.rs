@@ -12,12 +12,12 @@ mod registration;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
+        .route("/", web::get().to(home::home))
         .service(
             web::resource("/logout")
                 .wrap(from_fn(require_login))
                 .route(web::get().to(logout::logout)),
         )
-        .route("/", web::get().to(home::home))
         .service(
             web::resource("/registration")
                 .route(web::get().to(registration::get::registration_form))

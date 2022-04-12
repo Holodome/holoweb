@@ -1,5 +1,6 @@
 use crate::helpers::{get_test_config, TRACING};
 use holosite::domain::blog_posts::BlogPostID;
+use holosite::domain::comments::CommentID;
 use holosite::startup::{Application, Pool};
 use once_cell::sync::Lazy;
 
@@ -95,13 +96,31 @@ impl TestApp {
             .await
     }
 
-    pub async fn post_comment(
+    pub async fn post_create_comment(
         &self,
         body: &impl serde::Serialize,
         id: &BlogPostID,
     ) -> reqwest::Response {
         self.post(
-            format!("/blog_posts/{}/comments", id.as_ref()).as_str(),
+            format!("/blog_posts/{}/comments/create", id.as_ref().as_str()).as_str(),
+            body,
+        )
+        .await
+    }
+
+    pub async fn post_edit_comment(
+        &self,
+        body: &impl serde::Serialize,
+        post_id: &BlogPostID,
+        comment_id: &CommentID,
+    ) -> reqwest::Response {
+        self.post(
+            format!(
+                "/blog_posts/{}/comments/{}/edit",
+                post_id.as_ref(),
+                comment_id.as_ref()
+            )
+            .as_str(),
             body,
         )
         .await

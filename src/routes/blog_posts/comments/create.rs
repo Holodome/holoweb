@@ -7,7 +7,7 @@ use crate::utils::{e500, see_other};
 use actix_web::{web, HttpResponse};
 
 #[derive(serde::Deserialize)]
-pub struct CreateCommentQuery {
+pub struct CreateCommentFormData {
     contents: String,
 }
 
@@ -15,7 +15,7 @@ pub async fn create_comment(
     pool: web::Data<Pool>,
     user_id: UserID,
     post_id: web::Path<BlogPostID>,
-    query: web::Query<CreateCommentQuery>,
+    query: web::Form<CreateCommentFormData>,
 ) -> actix_web::Result<HttpResponse> {
     let post_id = post_id.into_inner();
     let new_comment = NewComment {
