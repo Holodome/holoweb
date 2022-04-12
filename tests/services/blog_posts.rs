@@ -1,4 +1,4 @@
-use crate::helpers::{get_db_connection, TestBlogPost, TestUser};
+use crate::helpers::{get_test_db_connection, TestBlogPost, TestUser};
 use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::blog_posts::{BlogPostID, NewBlogPost, UpdateBlogPost};
 use holosite::services::{
@@ -8,7 +8,7 @@ use holosite::services::{
 
 #[test]
 fn add_new_blog_post_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
@@ -31,7 +31,7 @@ fn add_new_blog_post_works() {
 
 #[test]
 fn add_blog_post_and_get_it_by_title_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
@@ -49,7 +49,7 @@ fn add_blog_post_and_get_it_by_title_works() {
 
 #[test]
 fn add_blog_post_and_get_it_by_id_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
@@ -67,7 +67,7 @@ fn add_blog_post_and_get_it_by_id_works() {
 
 #[test]
 fn update_blog_post_title_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
@@ -94,7 +94,7 @@ fn update_blog_post_title_works() {
 
 #[test]
 fn cant_change_blog_post_title_to_taken_title() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
 
@@ -122,7 +122,7 @@ fn cant_change_blog_post_title_to_taken_title() {
 
 #[test]
 fn change_blog_post_brief_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
@@ -149,7 +149,7 @@ fn change_blog_post_brief_works() {
 
 #[test]
 fn change_blog_post_contents_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
@@ -176,7 +176,7 @@ fn change_blog_post_contents_works() {
 
 #[test]
 fn cant_add_new_blog_post_with_taken_title() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
@@ -201,7 +201,7 @@ fn cant_add_new_blog_post_with_taken_title() {
 
 #[test]
 fn get_all_blog_posts_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
     let post_ids: Vec<BlogPostID> = (0..100)

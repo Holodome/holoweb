@@ -315,7 +315,7 @@ impl TestComment {
 
 fn get_config() -> Settings {
     let mut c = holosite::config::get_config().expect("Failed ot get config");
-    c.database_path = format!("{}{}", c.database_path, Uuid::new_v4().to_string());
+    c.database_path = format!("{}_test{}", c.database_path, Uuid::new_v4().to_string());
     c.app.port = 0;
     c.app.workers = Some(1);
     c
@@ -332,9 +332,8 @@ pub fn get_connection_pool(path: &str) -> Pool {
     pool
 }
 
-pub fn get_db_connection() -> Pool {
-    let config = get_config();
-    get_connection_pool(config.database_path.as_str())
+pub fn get_test_db_connection() -> Pool {
+    get_connection_pool(":memory:")
 }
 
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {

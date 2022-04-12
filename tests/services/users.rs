@@ -1,4 +1,4 @@
-use crate::helpers::{get_db_connection, TestUser};
+use crate::helpers::{get_test_db_connection, TestUser};
 use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::users::{HashedUserPassword, NewUser, UpdateUser, UserName, UserPassword};
 use holosite::services::{
@@ -8,7 +8,7 @@ use secrecy::Secret;
 
 #[test]
 fn test_add_new_user_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     let res = insert_new_user(
         &pool,
@@ -24,7 +24,7 @@ fn test_add_new_user_works() {
 
 #[test]
 fn test_add_new_user_and_get_it_by_name_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     test_user.register_internally(&pool);
 
@@ -38,7 +38,7 @@ fn test_add_new_user_and_get_it_by_name_works() {
 
 #[test]
 fn test_add_new_user_and_get_it_by_id_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     let id = test_user.register_internally(&pool);
 
@@ -52,7 +52,7 @@ fn test_add_new_user_and_get_it_by_id_works() {
 
 #[test]
 fn update_user_name_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     let id = test_user.register_internally(&pool);
 
@@ -76,7 +76,7 @@ fn update_user_name_works() {
 
 #[test]
 fn update_user_password_works() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     let id = test_user.register_internally(&pool);
 
@@ -103,7 +103,7 @@ fn update_user_password_works() {
 
 #[test]
 fn cant_create_user_with_same_name_and_get_correct_error_kind() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     test_user.register_internally(&pool);
 
@@ -124,7 +124,7 @@ fn cant_create_user_with_same_name_and_get_correct_error_kind() {
 
 #[test]
 fn cant_update_user_with_same_name_and_get_correct_error_kind() {
-    let pool = get_db_connection();
+    let pool = get_test_db_connection();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(&pool);
     let other_user = TestUser::generate();
