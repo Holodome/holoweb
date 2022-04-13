@@ -14,7 +14,7 @@ To run locally execute commands in following order:
 ```shell
 git clone https://github.com/Holodome/rustweb.git
 cd rustweb
-srcipts/init_redis.sh
+scripts/init_redis.sh
 diesel migration run
 cargo run  # | bunyan
 ```

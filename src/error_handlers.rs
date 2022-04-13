@@ -1,7 +1,7 @@
 use crate::utils::see_other;
+use actix_web::dev;
 use actix_web::dev::ServiceResponse;
 use actix_web::middleware::ErrorHandlerResponse;
-use actix_web::dev;
 use actix_web_flash_messages::FlashMessage;
 
 pub fn redirect_on_same_page<B>(
