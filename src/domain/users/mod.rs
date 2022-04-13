@@ -1,5 +1,6 @@
-pub mod hashed_user_password;
+mod hashed_user_password;
 mod new_user;
+mod stored_credentials;
 mod update_user;
 mod user;
 mod user_email;
@@ -8,7 +9,9 @@ mod user_name;
 mod user_password;
 mod user_password_salt;
 
+pub use hashed_user_password::*;
 pub use new_user::*;
+pub use stored_credentials::*;
 pub use update_user::*;
 pub use user::*;
 pub use user_email::*;

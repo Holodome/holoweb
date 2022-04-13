@@ -1,9 +1,10 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID};
 use crate::domain::users::UserID;
-use crate::services::{get_all_blog_posts, get_blog_post_by_id, Page};
+use crate::services::{get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post, Page};
 use crate::startup::Pool;
 use crate::utils::{e500, render_template};
 
+use crate::domain::comments::Comment;
 use actix_web::{web, HttpResponse};
 use askama::Template;
 
@@ -41,6 +42,7 @@ pub async fn all_blog_posts(
 struct BlogPostTemplate {
     current_user_id: Option<UserID>,
     blog_post: BlogPost,
+    comments: Vec<Comment>,
 }
 
 #[tracing::instrument("Blog post", skip(pool))]
@@ -54,8 +56,12 @@ pub async fn blog_post(
         .map_err(e500)?
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
+    let comments =
+        get_comments_for_blog_post(&pool, &blog_post_id, &Page::infinite()).map_err(e500)?;
+
     render_template(BlogPostTemplate {
         current_user_id: user_id,
         blog_post,
+        comments,
     })
 }

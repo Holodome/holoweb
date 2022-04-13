@@ -17,6 +17,7 @@ create table blog_posts (
     contents text not null,
     author_id varchar not null,
     created_at text not null,
+    visibility text check(visibility in ('all', 'authenticated')) not null,
 
     foreign key (author_id) references users(id)
 );
@@ -30,9 +31,13 @@ create table comments (
     contents text not null,
     created_at text not null,
     is_deleted boolean not null,
+    main_parent_id varchar,
+    depth integer not null,
 
     foreign key (author_id) references users(id),
-    foreign key (post_id) references blog_posts(id)
+    foreign key (post_id) references blog_posts(id),
+    foreign key (parent_id) references comments(id),
+    foreign key (main_parent_id) references comments(id)
 );
 
 create table projects (

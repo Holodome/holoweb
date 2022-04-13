@@ -1,6 +1,5 @@
-use crate::domain::users::hashed_user_password::HashedUserPassword;
 use crate::domain::users::{
-    NewUser, UpdateUser, User, UserEmail, UserID, UserName, UserPasswordSalt,
+    HashedUserPassword, NewUser, UpdateUser, User, UserEmail, UserID, UserName, UserPasswordSalt,
 };
 use crate::schema::users::dsl::*;
 use crate::startup::Pool;

@@ -1,9 +1,14 @@
-mod stored_credentials;
-
-pub use stored_credentials::*;
-
-use crate::domain::users::{UserName, UserPassword};
+use crate::domain::users::hashed_user_password::HashedUserPassword;
+use crate::domain::users::{UserID, UserName, UserPassword, UserPasswordSalt};
 use secrecy::Secret;
+
+#[derive(Debug, Clone, diesel::Queryable)]
+pub struct StoredCredentials {
+    pub name: UserName,
+    pub password: HashedUserPassword,
+    pub salt: UserPasswordSalt,
+    pub user_id: UserID,
+}
 
 #[derive(Debug, Clone, diesel::Queryable)]
 pub struct Credentials {

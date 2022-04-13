@@ -12,4 +12,6 @@ pub struct Comment {
     pub contents: String,
     pub created_at: String,
     pub is_deleted: bool,
+    pub main_parent_id: Option<BlogPostID>,
+    pub depth: i32,
 }

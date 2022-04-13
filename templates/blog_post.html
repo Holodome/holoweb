@@ -38,6 +38,16 @@
       </div>
     </div>
   </div>
+
+  {% for comment in comments %}
+    {% if !comment.is_deleted %}
+      <div>
+        <p> {{ comment.contents }} </p>
+      </div>
+    {% endif %}
+  {% endfor %}
+  <div>
+  </div>
 </div>
 
 {% endblock %}

@@ -14,15 +14,27 @@ use tracing_actix_web::TracingLogger;
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 pub struct Application {
-    port: u16,
-    server: Server,
+    pub port: u16,
+    pub server: Server,
+    pub pool: Pool,
+}
+
+embed_migrations!();
+
+pub fn get_connection_pool(path: &str, run_migrations: bool) -> Pool {
+    let pool: Pool = Pool::builder()
+        .build(ConnectionManager::new(path))
+        .expect("Failed to create db pool");
+    let conn = pool.get().expect("Failed to get connection");
+    if run_migrations {
+        embedded_migrations::run(&conn).expect("Failed to run migrations");
+    }
+    pool
 }
 
 impl Application {
     pub async fn build(config: Settings) -> Result<Self, anyhow::Error> {
-        let pool: Pool = Pool::builder()
-            .build(ConnectionManager::new(config.database_path))
-            .expect("Failed to create db pool");
+        let pool = get_connection_pool(&config.database_path, config.run_db_migrations);
 
         let address = format!("{}:{}", config.app.host, config.app.port);
         tracing::info!("Starting server on {:?}", &address);
@@ -31,14 +43,14 @@ impl Application {
         let port = listener.local_addr().unwrap().port();
         let server = run(
             listener,
-            pool,
+            pool.clone(),
             config.app.hmac_secret,
             config.redis_uri,
             config.app.workers,
         )
         .await?;
 
-        Ok(Self { port, server })
+        Ok(Self { port, server, pool })
     }
 
     pub fn port(&self) -> u16 {
