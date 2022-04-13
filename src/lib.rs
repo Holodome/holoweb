@@ -6,6 +6,7 @@ extern crate core;
 
 pub mod config;
 pub mod domain;
+pub mod error_handlers;
 pub mod markdown;
 pub mod middleware;
 pub mod routes;

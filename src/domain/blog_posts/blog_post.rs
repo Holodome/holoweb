@@ -10,4 +10,5 @@ pub struct BlogPost {
     pub contents: String,
     pub author_id: UserID,
     pub created_at: String,
+    pub visibility: String,
 }

@@ -6,6 +6,7 @@ table! {
         contents -> Text,
         author_id -> Text,
         created_at -> Text,
+        visibility -> Text,
     }
 }
 

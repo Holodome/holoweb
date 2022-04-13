@@ -17,6 +17,7 @@ create table blog_posts (
     contents text not null,
     author_id varchar not null,
     created_at text not null,
+    visibility text check(visibility in ('all', 'authenticated')) not null,
 
     foreign key (author_id) references users(id)
 );

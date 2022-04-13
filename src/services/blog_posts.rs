@@ -60,6 +60,7 @@ pub fn insert_new_blog_post(
         contents: new_blog_post.contents.to_string(),
         author_id: new_blog_post.author_id.clone(),
         created_at: get_current_time_str(),
+        visibility: "all".to_string(),
     };
     insert_into(blog_posts)
         .values(&blog_post)

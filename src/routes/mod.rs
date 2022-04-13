@@ -1,6 +1,8 @@
+use actix_web::middleware::ErrorHandlers;
 use crate::middleware::require_login;
-use actix_web::web;
+use actix_web::{http, web};
 use actix_web_lab::middleware::from_fn;
+use crate::error_handlers::redirect_on_same_page;
 
 mod account;
 mod blog_posts;
@@ -9,6 +11,25 @@ mod home;
 mod login;
 mod logout;
 mod registration;
+
+/*
+/health_check                      G
+/                                  G
+/registration                      GP
+/login                             GP
+/logout                            G
+/blog_posts
+   /all                            G
+   /create                         GP
+   /{id}/view                      G+L
+   /{id}/edit                      GP+L
+   /{id}/comments/create           P+L
+   /{id}/comments/{id}/edit        P+L
+/account                           +L
+   /change_name                    GP
+   /change_password                GP
+   /home                           G
+*/
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
@@ -25,6 +46,11 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::resource("/login")
+                .wrap(
+                    ErrorHandlers::new()
+                        .handler(http::StatusCode::INTERNAL_SERVER_ERROR, redirect_on_same_page)
+                        .handler(http::StatusCode::BAD_REQUEST, redirect_on_same_page)
+                )
                 .route(web::get().to(login::get::login_form))
                 .route(web::post().to(login::post::login)),
         )

@@ -4,10 +4,12 @@ use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
 use crate::utils::see_other;
 use actix_web::error::InternalError;
-use actix_web::{web, HttpResponse};
+use actix_web::http::StatusCode;
+use actix_web::{web, HttpResponse, ResponseError};
 use actix_web_flash_messages::FlashMessage;
+use log::Log;
 use secrecy::Secret;
-use std::fmt::Formatter;
+use std::fmt::{Display, Formatter};
 
 #[derive(thiserror::Error)]
 pub enum LoginError {
@@ -20,10 +22,19 @@ pub enum LoginError {
 }
 
 impl std::fmt::Debug for LoginError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use crate::utils::error_chain_fmt;
-
         error_chain_fmt(self, f)
+    }
+}
+
+impl ResponseError for LoginError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::InvalidCredentials(_) => StatusCode::BAD_REQUEST,
+            Self::AuthError(_) => StatusCode::BAD_REQUEST,
+            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 }
 
@@ -38,16 +49,18 @@ pub async fn login(
     form: web::Form<FormData>,
     pool: web::Data<Pool>,
     session: Session,
-) -> Result<HttpResponse, InternalError<LoginError>> {
-    let credentials = Credentials::parse(form.0.name, form.0.password)
-        .map_err(|e| login_redirect(LoginError::InvalidCredentials(e)))?;
+) -> Result<HttpResponse, LoginError> {
+    let credentials =
+        Credentials::parse(form.0.name, form.0.password).map_err(LoginError::InvalidCredentials)?;
+    // .map_err(|e| login_redirect(LoginError::InvalidCredentials(e)))?;
 
     match validate_credentials(credentials, &pool) {
         Ok(user_id) => {
             session.renew();
             session
                 .insert_user_id(user_id)
-                .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
+                .map_err(|e| LoginError::UnexpectedError(e.into()))?;
+            // .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
             Ok(see_other("/"))
         }
         Err(e) => {
@@ -55,7 +68,8 @@ pub async fn login(
                 AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
                 AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
             };
-            Err(login_redirect(e))
+            Err(e)
+            // Err(login_redirect(e))
         }
     }
 }
