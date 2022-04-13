@@ -72,6 +72,9 @@ pub fn get_config() -> Result<Settings, config::ConfigError> {
     let config = Config::builder()
         .add_source(config::File::from(config_dir.join("base")).required(true))
         .add_source(config::File::from(config_dir.join(env.as_str())).required(true))
+        // Environment variables with prefix APP__ override settings loaded from files.
+        // For example APP__APP__PORT=8081 will override port setting.
+        .add_source(config::Environment::with_prefix("APP").separator("__"))
         .build()?;
 
     config.try_deserialize()
