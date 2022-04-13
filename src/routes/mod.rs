@@ -1,8 +1,8 @@
-use actix_web::middleware::ErrorHandlers;
+use crate::error_handlers::redirect_on_same_page;
 use crate::middleware::require_login;
+use actix_web::middleware::ErrorHandlers;
 use actix_web::{http, web};
 use actix_web_lab::middleware::from_fn;
-use crate::error_handlers::redirect_on_same_page;
 
 mod account;
 mod blog_posts;
@@ -48,8 +48,11 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             web::resource("/login")
                 .wrap(
                     ErrorHandlers::new()
-                        .handler(http::StatusCode::INTERNAL_SERVER_ERROR, redirect_on_same_page)
-                        .handler(http::StatusCode::BAD_REQUEST, redirect_on_same_page)
+                        .handler(
+                            http::StatusCode::INTERNAL_SERVER_ERROR,
+                            redirect_on_same_page,
+                        )
+                        .handler(http::StatusCode::BAD_REQUEST, redirect_on_same_page),
                 )
                 .route(web::get().to(login::get::login_form))
                 .route(web::post().to(login::post::login)),

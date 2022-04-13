@@ -3,13 +3,9 @@ use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
 use crate::startup::Pool;
 use crate::utils::see_other;
-use actix_web::error::InternalError;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, ResponseError};
-use actix_web_flash_messages::FlashMessage;
-use log::Log;
 use secrecy::Secret;
-use std::fmt::{Display, Formatter};
 
 #[derive(thiserror::Error)]
 pub enum LoginError {
@@ -74,7 +70,7 @@ pub async fn login(
     }
 }
 
-fn login_redirect(e: LoginError) -> InternalError<LoginError> {
-    FlashMessage::error(e.to_string()).send();
-    InternalError::from_response(e, see_other("/login"))
-}
+// fn login_redirect(e: LoginError) -> InternalError<LoginError> {
+//     FlashMessage::error(e.to_string()).send();
+//     InternalError::from_response(e, see_other("/login"))
+// }
