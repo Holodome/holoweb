@@ -3,6 +3,8 @@ mod test_blog_post;
 mod test_comment;
 mod test_user;
 
+use diesel::r2d2::{ConnectionManager, ManageConnection};
+use diesel::{Connection, PgConnection};
 use once_cell::sync::Lazy;
 pub use test_app::*;
 pub use test_blog_post::*;
@@ -37,17 +39,33 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 fn get_test_config() -> Config {
     let mut c = holosite::config::get_config().expect("Failed ot get config");
     c.database.database_name = Uuid::new_v4().to_string();
-    c.database.in_memory = true;
-    c.database.run_migrations = true;
     c.app.port = 0;
     c.app.workers = Some(1);
+
     c
 }
 
-pub fn get_test_db_connection() -> Pool {
+embed_migrations!();
+
+pub fn get_test_db_connection(config: &Config) -> Pool {
+    let conn = ConnectionManager::<PgConnection>::new(config.database.uri_without_db())
+        .connect()
+        .expect("Failed to connect to database");
+    conn.execute(&*format!(
+        r#"CREATE DATABASE "{}";"#,
+        config.database.database_name
+    ))
+    .expect("Failed to create database");
+    let pool = get_connection_pool(&config.database.uri());
+    let conn = pool.get().expect("Failed to get connection");
+    embedded_migrations::run(&conn).expect("Failed to run migrations");
+    pool
+}
+
+pub fn spawn_test_db() -> Pool {
     Lazy::force(&TRACING);
     let config = get_test_config();
-    get_connection_pool(config.database)
+    get_test_db_connection(&config)
 }
 
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {

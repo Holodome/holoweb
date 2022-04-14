@@ -21,10 +21,6 @@ pub struct DbConfig {
     pub port: u16,
     pub host: String,
     pub database_name: String,
-    #[serde(skip, default)]
-    pub in_memory: bool,
-    #[serde(skip, default)]
-    pub run_migrations: bool,
 }
 
 impl DbConfig {

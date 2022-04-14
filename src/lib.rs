@@ -1,7 +1,5 @@
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate diesel_migrations;
 extern crate core;
 
 use diesel::r2d2::ConnectionManager;

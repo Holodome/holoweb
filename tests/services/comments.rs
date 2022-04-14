@@ -1,4 +1,4 @@
-use crate::helpers::{get_test_db_connection, TestBlogPost, TestComment, TestUser};
+use crate::helpers::{spawn_test_db, TestBlogPost, TestComment, TestUser};
 use claim::{assert_ok, assert_some};
 use holosite::domain::comments::{CommentID, NewComment, UpdateComment};
 use holosite::services::{
@@ -8,7 +8,7 @@ use holosite::services::{
 
 #[test]
 fn create_comment_works() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();
@@ -31,7 +31,7 @@ fn create_comment_works() {
 
 #[test]
 fn get_comment_by_id_works() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();
@@ -49,7 +49,7 @@ fn get_comment_by_id_works() {
 
 #[test]
 fn get_comment_by_author_works() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();
@@ -66,7 +66,7 @@ fn get_comment_by_author_works() {
 
 #[test]
 fn get_comment_by_author_returns_all_comments() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();
@@ -90,7 +90,7 @@ fn get_comment_by_author_returns_all_comments() {
 
 #[test]
 fn get_comment_by_blog_post_works() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();
@@ -107,7 +107,7 @@ fn get_comment_by_blog_post_works() {
 
 #[test]
 fn get_comment_by_blog_post_returns_blog_posts_from_different_authors() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();
@@ -133,7 +133,7 @@ fn get_comment_by_blog_post_returns_blog_posts_from_different_authors() {
 
 #[test]
 fn get_comment_by_blog_post_returns_all_comments() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();
@@ -157,7 +157,7 @@ fn get_comment_by_blog_post_returns_all_comments() {
 
 #[test]
 fn update_comment_contents_works() {
-    let pool = get_test_db_connection();
+    let pool = spawn_test_db();
     let user = TestUser::generate();
     let user_id = user.register_internally(&pool);
     let blog_post = TestBlogPost::generate();

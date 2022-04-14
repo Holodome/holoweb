@@ -1,4 +1,4 @@
-use crate::helpers::{get_test_config, TRACING};
+use crate::helpers::{get_test_config, get_test_db_connection, TRACING};
 use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::CommentID;
 use holosite::startup::Application;
@@ -16,11 +16,11 @@ impl TestApp {
         Lazy::force(&TRACING);
 
         let config = get_test_config();
+        let pool = get_test_db_connection(&config);
         let app = Application::build(config.clone())
             .await
             .expect("Failed to build application");
 
-        let pool = app.pool.clone();
         let address = format!("http://localhost:{}", app.port());
 
         let _ = tokio::spawn(app.run_until_stopped());
