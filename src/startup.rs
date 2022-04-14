@@ -1,17 +1,16 @@
-use crate::config::Settings;
+use crate::config::{Config, DbConfig};
+use crate::Pool;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
-use diesel::r2d2::{self, ConnectionManager};
-use diesel::SqliteConnection;
+use diesel::r2d2::{ConnectionManager, ManageConnection};
+use diesel::{Connection, PgConnection};
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
-
-pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 pub struct Application {
     pub port: u16,
@@ -21,20 +20,31 @@ pub struct Application {
 
 embed_migrations!();
 
-pub fn get_connection_pool(path: &str, run_migrations: bool) -> Pool {
+pub fn get_connection_pool(settings: DbConfig) -> Pool {
+    if settings.in_memory {
+        let conn = ConnectionManager::<PgConnection>::new(settings.uri_without_db())
+            .connect()
+            .expect("Failed to connect to database");
+        conn.execute(&*format!(
+            r#"CREATE DATABASE "{}";"#,
+            settings.database_name
+        ))
+        .expect("Failed to create database");
+    }
+
     let pool: Pool = Pool::builder()
-        .build(ConnectionManager::new(path))
+        .build(ConnectionManager::<PgConnection>::new(settings.uri()))
         .expect("Failed to create db pool");
     let conn = pool.get().expect("Failed to get connection");
-    if run_migrations {
+    if settings.run_migrations {
         embedded_migrations::run(&conn).expect("Failed to run migrations");
     }
     pool
 }
 
 impl Application {
-    pub async fn build(config: Settings) -> Result<Self, anyhow::Error> {
-        let pool = get_connection_pool(&config.database_path, config.run_db_migrations);
+    pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
+        let pool = get_connection_pool(config.database);
 
         let address = format!("{}:{}", config.app.host, config.app.port);
         tracing::info!("Starting server on {:?}", &address);

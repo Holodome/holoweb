@@ -3,7 +3,7 @@ use crate::domain::comments::{Comment, CommentID, NewComment, UpdateComment};
 use crate::domain::users::UserID;
 use crate::schema::comments::dsl::*;
 use crate::services::{get_current_time_str, Page};
-use crate::startup::Pool;
+use crate::Pool;
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
 pub fn get_comment_by_id(

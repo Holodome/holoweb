@@ -2,7 +2,7 @@ use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPos
 use crate::domain::users::UserID;
 use crate::schema::blog_posts::dsl::*;
 use crate::services::{get_current_time_str, Page};
-use crate::startup::Pool;
+use crate::Pool;
 use diesel::result::{DatabaseErrorKind, Error};
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 use std::fmt::Formatter;

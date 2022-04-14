@@ -2,8 +2,8 @@ use crate::domain::blog_posts::BlogPostID;
 use crate::domain::comments::{CommentID, UpdateComment};
 use crate::domain::users::UserID;
 use crate::services::{get_comment_by_id, update_comment};
-use crate::startup::Pool;
 use crate::utils::see_other;
+use crate::Pool;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, ResponseError};
 

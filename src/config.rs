@@ -1,9 +1,8 @@
-use config::Config;
-use secrecy::Secret;
+use secrecy::{ExposeSecret, Secret};
 
 /// Settings related to application
 #[derive(Debug, Clone, serde::Deserialize)]
-pub struct ApplicationSettings {
+pub struct AppConfig {
     /// Port where to start server. If 0, will be chosen randomly by OS
     pub port: u16,
     /// Host path. Typically 127.0.0.1
@@ -15,15 +14,48 @@ pub struct ApplicationSettings {
     pub workers: Option<usize>,
 }
 
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct DbConfig {
+    pub username: String,
+    pub password: Secret<String>,
+    pub port: u16,
+    pub host: String,
+    pub database_name: String,
+    #[serde(skip, default)]
+    pub in_memory: bool,
+    #[serde(skip, default)]
+    pub run_migrations: bool,
+}
+
+impl DbConfig {
+    pub fn uri(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}/{}",
+            &self.username,
+            &self.password.expose_secret(),
+            &self.host,
+            self.port,
+            &self.database_name
+        )
+    }
+
+    pub fn uri_without_db(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}",
+            &self.username,
+            &self.password.expose_secret(),
+            &self.host,
+            self.port
+        )
+    }
+}
+
 /// Settings of whole system
 #[derive(Debug, Clone, serde::Deserialize)]
-pub struct Settings {
-    /// URI of database, typically path to database file
-    pub database_path: String,
-    /// Force run database migrations on startup. Useful for testing
-    pub run_db_migrations: bool,
+pub struct Config {
+    pub database: DbConfig,
     /// Settings of application
-    pub app: ApplicationSettings,
+    pub app: AppConfig,
     /// Redis URI. Typically address of redis hosted in docker container
     pub redis_uri: Secret<String>,
 }
@@ -60,7 +92,7 @@ impl TryFrom<String> for Environment {
 }
 
 /// Gets config from local settings files.
-pub fn get_config() -> Result<Settings, config::ConfigError> {
+pub fn get_config() -> Result<Config, config::ConfigError> {
     let base_path = std::env::current_dir().expect("Failed to get current directory");
     let config_dir = base_path.join("config");
 
@@ -69,7 +101,7 @@ pub fn get_config() -> Result<Settings, config::ConfigError> {
         .try_into()
         .expect("Failed to set app environment");
 
-    let config = Config::builder()
+    let config = config::Config::builder()
         .add_source(config::File::from(config_dir.join("base")).required(true))
         .add_source(config::File::from(config_dir.join(env.as_str())).required(true))
         // Environment variables with prefix APP__ override settings loaded from files.

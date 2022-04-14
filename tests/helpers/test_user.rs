@@ -1,7 +1,7 @@
 use crate::helpers::{assert_is_redirect_to, TestApp};
 use holosite::domain::users::{NewUser, UserID, UserName, UserPassword};
 use holosite::services::insert_new_user;
-use holosite::startup::Pool;
+use holosite::Pool;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
 

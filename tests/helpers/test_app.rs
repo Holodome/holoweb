@@ -1,7 +1,8 @@
 use crate::helpers::{get_test_config, TRACING};
 use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::CommentID;
-use holosite::startup::{Application, Pool};
+use holosite::startup::Application;
+use holosite::Pool;
 use once_cell::sync::Lazy;
 
 pub struct TestApp {

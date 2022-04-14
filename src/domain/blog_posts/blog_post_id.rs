@@ -1,7 +1,7 @@
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
+use diesel::pg::Pg;
 use diesel::serialize::{Output, ToSql};
-use diesel::sqlite::Sqlite;
 use serde::{Deserialize, Deserializer};
 use std::io::Write;
 use uuid::Uuid;
@@ -22,18 +22,15 @@ impl<'de> Deserialize<'de> for BlogPostID {
     }
 }
 
-impl FromSql<diesel::sql_types::Text, Sqlite> for BlogPostID {
-    fn from_sql(
-        bytes: Option<&<Sqlite as Backend>::RawValue>,
-    ) -> diesel::deserialize::Result<Self> {
-        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
-            .map(|s| BlogPostID { s })
+impl FromSql<diesel::sql_types::Text, Pg> for BlogPostID {
+    fn from_sql(bytes: Option<&<Pg as Backend>::RawValue>) -> diesel::deserialize::Result<Self> {
+        <String as FromSql<diesel::sql_types::Text, Pg>>::from_sql(bytes).map(|s| BlogPostID { s })
     }
 }
 
-impl ToSql<diesel::sql_types::Text, Sqlite> for BlogPostID {
-    fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
-        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(&self.s, out)
+impl ToSql<diesel::sql_types::Text, Pg> for BlogPostID {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Pg>) -> diesel::serialize::Result {
+        <String as ToSql<diesel::sql_types::Text, Pg>>::to_sql(&self.s, out)
     }
 }
 

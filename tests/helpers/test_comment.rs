@@ -2,7 +2,7 @@ use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::{CommentID, NewComment};
 use holosite::domain::users::UserID;
 use holosite::services::insert_new_comment;
-use holosite::startup::Pool;
+use holosite::Pool;
 use uuid::Uuid;
 
 pub struct TestComment {

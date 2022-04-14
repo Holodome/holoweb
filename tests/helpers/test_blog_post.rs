@@ -1,7 +1,7 @@
 use holosite::domain::blog_posts::{BlogPostID, NewBlogPost};
 use holosite::domain::users::UserID;
 use holosite::services::insert_new_blog_post;
-use holosite::startup::Pool;
+use holosite::Pool;
 use uuid::Uuid;
 
 pub struct TestBlogPost {

@@ -2,7 +2,7 @@ use crate::domain::users::{
     Credentials, HashedUserPassword, UpdateUser, UserID, UserName, UserPassword,
 };
 use crate::services::{get_stored_credentials, get_user_by_name, update_user};
-use crate::startup::Pool;
+use crate::Pool;
 
 #[derive(thiserror::Error, Debug)]
 pub enum AuthError {

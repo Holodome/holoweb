@@ -1,6 +1,5 @@
-use crate::startup::Pool;
-
 use crate::domain::users::{StoredCredentials, UserName};
+use crate::Pool;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
 #[tracing::instrument(name = "Get stored credentials", skip(username, pool))]

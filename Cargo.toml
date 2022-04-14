@@ -13,7 +13,7 @@ name = "holosite"
 
 [dependencies]
 actix-web = "4"
-diesel = { version = "1.4.8", features = ["sqlite", "r2d2", "uuidv07"] }
+diesel = { version = "1.4.8", features = ["postgres", "r2d2", "uuidv07"] }
 log = "0.4"
 tracing = { version = "0.1.32", featurs = ["log"] }
 serde = { version = "1.0", features = ["derive"] }

@@ -1,8 +1,8 @@
 use crate::domain::users::{NewUser, NewUserError, PasswordError};
 use crate::middleware::Session;
 use crate::services::{insert_new_user, UserError};
-use crate::startup::Pool;
 use crate::utils::see_other;
+use crate::Pool;
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::FlashMessage;

@@ -1,4 +1,4 @@
-# rustweb
+# holoweb
 
 This is a blog/forum/personal website project. The goal is to create MVP webserver
 implementing backend infrastructure.

@@ -1,8 +1,8 @@
 use crate::domain::users::Credentials;
 use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
-use crate::startup::Pool;
 use crate::utils::see_other;
+use crate::Pool;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, ResponseError};
 use secrecy::Secret;

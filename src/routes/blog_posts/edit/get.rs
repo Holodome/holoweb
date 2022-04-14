@@ -1,10 +1,10 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID};
 use crate::domain::users::UserID;
 use crate::services::get_blog_post_by_id;
-use crate::startup::Pool;
 use crate::utils::{e500, render_template};
 use actix_web::error::ErrorNotFound;
 
+use crate::Pool;
 use actix_web::{web, HttpResponse};
 use askama::Template;
 

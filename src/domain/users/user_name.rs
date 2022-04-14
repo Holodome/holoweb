@@ -1,7 +1,7 @@
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
+use diesel::pg::Pg;
 use diesel::serialize::{Output, ToSql};
-use diesel::sqlite::Sqlite;
 use std::io::Write;
 use unicode_segmentation::UnicodeSegmentation;
 use uuid::Uuid;
@@ -46,18 +46,15 @@ impl UserName {
     }
 }
 
-impl FromSql<diesel::sql_types::Text, Sqlite> for UserName {
-    fn from_sql(
-        bytes: Option<&<Sqlite as Backend>::RawValue>,
-    ) -> diesel::deserialize::Result<Self> {
-        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
-            .map(|s| UserName { s })
+impl FromSql<diesel::sql_types::Text, Pg> for UserName {
+    fn from_sql(bytes: Option<&<Pg as Backend>::RawValue>) -> diesel::deserialize::Result<Self> {
+        <String as FromSql<diesel::sql_types::Text, Pg>>::from_sql(bytes).map(|s| UserName { s })
     }
 }
 
-impl ToSql<diesel::sql_types::Text, Sqlite> for UserName {
-    fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
-        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(&self.s, out)
+impl ToSql<diesel::sql_types::Text, Pg> for UserName {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Pg>) -> diesel::serialize::Result {
+        <String as ToSql<diesel::sql_types::Text, Pg>>::to_sql(&self.s, out)
     }
 }
 
