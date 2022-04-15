@@ -9,6 +9,7 @@ use actix_web_flash_messages::FlashMessagesFramework;
 use diesel::r2d2::ConnectionManager;
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
+use std::time::Duration;
 use tracing_actix_web::TracingLogger;
 
 pub struct Application {
@@ -19,6 +20,7 @@ pub struct Application {
 
 pub fn get_connection_pool(uri: &str) -> Pool {
     let pool: Pool = Pool::builder()
+        .connection_timeout(Duration::new(10, 0))
         .build(ConnectionManager::new(uri))
         .expect("Failed to create db pool");
     pool
@@ -66,6 +68,7 @@ async fn run(
     let secret_key = actix_web::cookie::Key::from(hmac_secret.expose_secret().as_bytes());
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
+    println!("{}", &redis_uri.expose_secret());
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret())
         .await
         .expect("Failed to connect to redis");

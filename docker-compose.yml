@@ -1,0 +1,47 @@
+version: "3.4"
+
+services:
+  db:
+    image: "postgres:13.3"
+    container_name: "postgres"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: holoweb
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - .:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - '5432:5432'
+    networks:
+      - backend
+
+  cache:
+    image: 'redis:alpine'
+    container_name: 'redis'
+    restart: always
+#    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - '6379:6379'
+    networks:
+      - backend
+
+  app:
+    container_name: "app"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
