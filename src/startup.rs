@@ -15,7 +15,6 @@ use tracing_actix_web::TracingLogger;
 pub struct Application {
     pub port: u16,
     pub server: Server,
-    pub pool: Pool,
 }
 
 pub fn get_connection_pool(uri: &str) -> Pool {
@@ -27,9 +26,7 @@ pub fn get_connection_pool(uri: &str) -> Pool {
 }
 
 impl Application {
-    pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
-        let pool = get_connection_pool(&config.database.uri());
-
+    pub async fn build_with_pool(config: Config, pool: Pool) -> Result<Self, anyhow::Error> {
         let address = format!("{}:{}", config.app.host, config.app.port);
         tracing::info!("Starting server on {:?}", &address);
         let listener = TcpListener::bind(address)?;
@@ -44,7 +41,12 @@ impl Application {
         )
         .await?;
 
-        Ok(Self { port, server, pool })
+        Ok(Self { port, server })
+    }
+
+    pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
+        let pool = get_connection_pool(&config.database_uri);
+        Self::build_with_pool(config, pool).await
     }
 
     pub fn port(&self) -> u16 {

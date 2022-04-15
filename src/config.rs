@@ -1,4 +1,4 @@
-use secrecy::{ExposeSecret, Secret};
+use secrecy::Secret;
 
 /// Settings related to application
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -14,42 +14,10 @@ pub struct AppConfig {
     pub workers: Option<usize>,
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct DbConfig {
-    pub username: String,
-    pub password: Secret<String>,
-    pub port: u16,
-    pub host: String,
-    pub database_name: String,
-}
-
-impl DbConfig {
-    pub fn uri(&self) -> String {
-        format!(
-            "postgres://{}:{}@{}:{}/{}",
-            &self.username,
-            &self.password.expose_secret(),
-            &self.host,
-            self.port,
-            &self.database_name
-        )
-    }
-
-    pub fn uri_without_db(&self) -> String {
-        format!(
-            "postgres://{}:{}@{}:{}",
-            &self.username,
-            &self.password.expose_secret(),
-            &self.host,
-            self.port
-        )
-    }
-}
-
 /// Settings of whole system
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct Config {
-    pub database: DbConfig,
+    pub database_uri: String,
     /// Settings of application
     pub app: AppConfig,
     /// Redis URI. Typically address of redis hosted in docker container

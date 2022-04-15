@@ -1,22 +1,6 @@
 version: "3.4"
 
 services:
-  db:
-    image: "postgres:14.1-alpine"
-    container_name: "postgres"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: holoweb
-      PGDATA: "/var/lib/postgresql/data/pgdata"
-    volumes:
-      - .data/db/:/var/lib/postgresql/data
-    restart: always
-    ports:
-      - '5432:5432'
-    networks:
-      - backend
-
   redis:
     image: 'redis:6.2-alpine'
     container_name: 'redis'
@@ -37,7 +21,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
       - redis
     ports:
       - "8080:8080"

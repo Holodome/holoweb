@@ -1,8 +1,8 @@
 use crate::domain::users::{UserPassword, UserPasswordSalt};
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
-use diesel::pg::Pg;
 use diesel::serialize::{Output, ToSql};
+use diesel::sqlite::Sqlite;
 use secrecy::{ExposeSecret, Secret};
 use sha3::Digest;
 use std::io::Write;
@@ -33,8 +33,8 @@ impl PartialEq<HashedUserPassword> for HashedUserPassword {
     }
 }
 
-impl diesel::Queryable<diesel::sql_types::Text, Pg> for HashedUserPassword {
-    type Row = <String as diesel::Queryable<diesel::sql_types::Text, Pg>>::Row;
+impl diesel::Queryable<diesel::sql_types::Text, Sqlite> for HashedUserPassword {
+    type Row = <String as diesel::Queryable<diesel::sql_types::Text, Sqlite>>::Row;
 
     fn build(row: Self::Row) -> Self {
         HashedUserPassword {
@@ -43,16 +43,18 @@ impl diesel::Queryable<diesel::sql_types::Text, Pg> for HashedUserPassword {
     }
 }
 
-impl FromSql<diesel::sql_types::Text, Pg> for HashedUserPassword {
-    fn from_sql(bytes: Option<&<Pg as Backend>::RawValue>) -> diesel::deserialize::Result<Self> {
-        <String as FromSql<diesel::sql_types::Text, Pg>>::from_sql(bytes)
+impl FromSql<diesel::sql_types::Text, Sqlite> for HashedUserPassword {
+    fn from_sql(
+        bytes: Option<&<Sqlite as Backend>::RawValue>,
+    ) -> diesel::deserialize::Result<Self> {
+        <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
             .map(|s| HashedUserPassword { s: Secret::new(s) })
     }
 }
 
-impl ToSql<diesel::sql_types::Text, Pg> for HashedUserPassword {
-    fn to_sql<W: Write>(&self, out: &mut Output<W, Pg>) -> diesel::serialize::Result {
-        <String as ToSql<diesel::sql_types::Text, Pg>>::to_sql(self.s.expose_secret(), out)
+impl ToSql<diesel::sql_types::Text, Sqlite> for HashedUserPassword {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> diesel::serialize::Result {
+        <String as ToSql<diesel::sql_types::Text, Sqlite>>::to_sql(self.s.expose_secret(), out)
     }
 }
 

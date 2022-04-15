@@ -15,8 +15,8 @@ impl TestApp {
     pub async fn spawn() -> TestApp {
         init_tracing();
         let config = get_test_config();
-        let db = TestDB::new(&config.database);
-        let app = Application::build(config.clone())
+        let db = TestDB::new(&config.database_uri);
+        let app = Application::build_with_pool(config.clone(), db.pool().clone())
             .await
             .expect("Failed to build application");
 
@@ -35,10 +35,6 @@ impl TestApp {
             db,
             api_client: client,
         }
-    }
-
-    pub fn rel_addr(&self, rel: &str) -> String {
-        format!("{}{}", self.address, rel)
     }
 
     pub fn pool(&self) -> &Pool {
