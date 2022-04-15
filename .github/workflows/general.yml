@@ -14,16 +14,8 @@ jobs:
         image: redis:6
         ports:
           - 6379:6379
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: holoweb
-        ports:
-          - 5432:5432
     env:
-      DIESEL_FEATURES: postgres
+      DIESEL_FEATURES: sqlite
       DIESEL_VERSION: 1.4.1
     steps:
       - name: Checkout repository
@@ -71,9 +63,10 @@ jobs:
         run: |
           diesel database setup
 
-      - name: Run tests
-        run: |
-          TEST_THREADS=4 scripts/test.sh
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
 
   fmt:
     name: Rustfmt
@@ -125,14 +118,6 @@ jobs:
         image: redis:6
         ports:
           - 6379:6379
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: holoweb
-        ports:
-          - 5432:5432
     env:
       DIESEL_FEATURES: sqlite
       DIESEL_VERSION: 1.4.1
