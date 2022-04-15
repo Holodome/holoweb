@@ -1,13 +1,12 @@
-use crate::helpers::{get_test_config, get_test_db_connection, TRACING};
+use crate::helpers::{get_test_config, TestDB, TRACING};
 use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::CommentID;
 use holosite::startup::Application;
-use holosite::Pool;
 use once_cell::sync::Lazy;
 
 pub struct TestApp {
     pub address: String,
-    pub pool: Pool,
+    pub db: TestDB,
     pub api_client: reqwest::Client,
 }
 
@@ -16,7 +15,7 @@ impl TestApp {
         Lazy::force(&TRACING);
 
         let config = get_test_config();
-        let pool = get_test_db_connection(&config);
+        let db = TestDB::new(&config.database);
         let app = Application::build(config.clone())
             .await
             .expect("Failed to build application");
@@ -33,7 +32,7 @@ impl TestApp {
 
         TestApp {
             address,
-            pool,
+            db,
             api_client: client,
         }
     }

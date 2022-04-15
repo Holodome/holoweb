@@ -12,7 +12,7 @@ pub use test_comment::*;
 pub use test_user::*;
 use uuid::Uuid;
 
-use holosite::config::Config;
+use holosite::config::{Config, DbConfig};
 use holosite::startup::get_connection_pool;
 use holosite::Pool;
 
@@ -47,25 +47,33 @@ fn get_test_config() -> Config {
 
 embed_migrations!();
 
-pub fn get_test_db_connection(config: &Config) -> Pool {
-    let conn = ConnectionManager::<PgConnection>::new(config.database.uri_without_db())
-        .connect()
-        .expect("Failed to connect to database");
-    conn.execute(&*format!(
-        r#"CREATE DATABASE "{}";"#,
-        config.database.database_name
-    ))
-    .expect("Failed to create database");
-    let pool = get_connection_pool(&config.database.uri());
-    let conn = pool.get().expect("Failed to get connection");
-    embedded_migrations::run(&conn).expect("Failed to run migrations");
-    pool
+pub struct TestDB {
+    pub pool: Pool,
+    pub config: DbConfig,
 }
 
-pub fn spawn_test_db() -> Pool {
-    Lazy::force(&TRACING);
-    let config = get_test_config();
-    get_test_db_connection(&config)
+impl TestDB {
+    pub fn new(config: &DbConfig) -> Self {
+        let conn = ConnectionManager::<PgConnection>::new(config.uri_without_db())
+            .connect()
+            .expect("Failed to connect to database");
+        conn.execute(&*format!(r#"CREATE DATABASE "{}";"#, config.database_name))
+            .expect("Failed to create database");
+
+        let pool = get_connection_pool(&config.uri());
+        let conn = pool.get().expect("Failed to get connection");
+        embedded_migrations::run(&conn).expect("Failed to run migrations");
+        Self {
+            pool,
+            config: config.clone(),
+        }
+    }
+
+    pub fn spawn() -> TestDB {
+        Lazy::force(&TRACING);
+        let config = get_test_config();
+        Self::new(&config.database)
+    }
 }
 
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
