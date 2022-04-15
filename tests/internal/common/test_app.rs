@@ -37,10 +37,6 @@ impl TestApp {
         }
     }
 
-    pub fn address(&self) -> &str {
-        &self.address
-    }
-
     pub fn rel_addr(&self, rel: &str) -> String {
         format!("{}{}", self.address, rel)
     }

@@ -5,4 +5,3 @@ extern crate core;
 mod api;
 mod common;
 mod db;
-mod ui;

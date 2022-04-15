@@ -27,7 +27,17 @@ There are several layers of testing. Unit testing and integration testing is han
 by rust, and system testing is done with python.
 
 To run tests locally, you must initialize redis and database using scripts first.
-Rust-based tests can be executed using `cargo test` command.
+Then execute *scripts/test.sh*.
+
+## Project structure
+
+* tests/ - Directory with all tests, written in both rust and other languages
+* templates/ - internal data used by server. These are the html templates that are later embedded in application
+* static/ - static website content
+* src/ - source code
+* scripts/ - helper scripts used in CI/CD or locally
+* migrations/ - database migrations generated using diesel, must be run to initialize database
+* config/ - server startup configuration
 
 ## Disclaimer
 
