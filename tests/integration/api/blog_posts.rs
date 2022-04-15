@@ -1,4 +1,5 @@
-use crate::common::{assert_is_redirect_to, assert_resp_ok, TestApp, TestBlogPost, TestUser};
+use crate::api::{assert_is_redirect_to, assert_resp_ok};
+use crate::common::{TestApp, TestBlogPost, TestUser};
 
 #[tokio::test]
 async fn you_must_be_logged_in_to_see_create_blog_post_page() {

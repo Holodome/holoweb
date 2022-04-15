@@ -1,6 +1,5 @@
-use crate::common::{
-    assert_is_redirect_to, assert_resp_forbidden, TestApp, TestBlogPost, TestComment, TestUser,
-};
+use crate::api::{assert_is_redirect_to, assert_resp_forbidden};
+use crate::common::{TestApp, TestBlogPost, TestComment, TestUser};
 
 #[tokio::test]
 async fn create_comment_works() {

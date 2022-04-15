@@ -1,11 +1,12 @@
+mod test_app;
 mod test_blog_post;
 mod test_comment;
 mod test_user;
 
-pub use crate::api::test_app::*;
 use diesel::r2d2::{ConnectionManager, ManageConnection};
 use diesel::{Connection, PgConnection};
 use once_cell::sync::Lazy;
+pub use test_app::*;
 pub use test_blog_post::*;
 pub use test_comment::*;
 pub use test_user::*;
@@ -77,36 +78,4 @@ impl TestDB {
     pub fn pool(&self) -> &Pool {
         &self.pool
     }
-}
-
-pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
-    assert_eq!(
-        response.status().as_u16(),
-        303,
-        "Response is not redirect as expected: {:?}",
-        response
-    );
-    assert_eq!(
-        response.headers().get("Location").unwrap(),
-        location,
-        "Response is redirect to different location"
-    );
-}
-
-pub fn assert_resp_ok(response: &reqwest::Response) {
-    assert_eq!(
-        response.status().as_u16(),
-        200,
-        "Response is not OK: {:?}",
-        response
-    )
-}
-
-pub fn assert_resp_forbidden(response: &reqwest::Response) {
-    assert_eq!(
-        response.status().as_u16(),
-        403,
-        "Response is not FORBIDDEN: {:?}",
-        response
-    )
 }

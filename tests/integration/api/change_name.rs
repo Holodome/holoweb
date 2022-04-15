@@ -1,4 +1,5 @@
-use crate::common::{assert_is_redirect_to, TestApp, TestUser};
+use crate::api::assert_is_redirect_to;
+use crate::common::{TestApp, TestUser};
 use uuid::Uuid;
 
 #[tokio::test]
