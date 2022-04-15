@@ -14,7 +14,7 @@ impl Page {
     pub fn infinite() -> Self {
         Self {
             number: 0,
-            size: usize::MAX,
+            size: i32::MAX as usize,
         }
     }
 }

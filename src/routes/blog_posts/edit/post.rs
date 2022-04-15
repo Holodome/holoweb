@@ -1,7 +1,7 @@
 use crate::domain::blog_posts::{BlogPostID, UpdateBlogPost};
 use crate::services::update_blog_post;
-use crate::startup::Pool;
 use crate::utils::{e500, see_other};
+use crate::Pool;
 use actix_web::{web, HttpResponse};
 
 #[derive(serde::Deserialize)]

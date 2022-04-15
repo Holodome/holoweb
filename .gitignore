@@ -145,3 +145,6 @@ Cargo.lock
 
 .idea
 .DS_Store
+
+.data/*
+!.data/.gitkeep

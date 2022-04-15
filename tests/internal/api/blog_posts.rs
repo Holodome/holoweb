@@ -1,4 +1,5 @@
-use crate::helpers::{assert_is_redirect_to, assert_resp_ok, TestApp, TestBlogPost, TestUser};
+use crate::api::{assert_is_redirect_to, assert_resp_ok};
+use crate::common::{TestApp, TestBlogPost, TestUser};
 
 #[tokio::test]
 async fn you_must_be_logged_in_to_see_create_blog_post_page() {
@@ -7,7 +8,7 @@ async fn you_must_be_logged_in_to_see_create_blog_post_page() {
     assert_is_redirect_to(&response, "/login");
 
     let test_user = TestUser::generate();
-    test_user.register_internally(&app.pool);
+    test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let response = app.get_create_blog_post_page().await;
     assert_resp_ok(&response);
@@ -24,7 +25,7 @@ async fn you_are_not_required_to_be_logged_in_to_see_all_blog_posts() {
 async fn create_blog_post_and_see_it_appears_at_dashboard() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    test_user.register_internally(&app.pool);
+    test_user.register_internally(app.pool());
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
@@ -47,11 +48,11 @@ async fn you_must_be_logged_in_to_create_blog_post() {
 async fn view_blog_post_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
 
     let response = app
         .get_view_blog_post_page(blog_post_id.as_ref().as_str())
@@ -67,10 +68,10 @@ async fn view_blog_post_works() {
 async fn you_must_be_logged_in_to_edit_blog_post() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
 
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
 
     let response = app.get_edit_blog_post_page(&blog_post_id.as_ref()).await;
     assert_is_redirect_to(&response, "/login");
@@ -84,11 +85,11 @@ async fn you_must_be_logged_in_to_edit_blog_post() {
 async fn edit_blog_post_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
 
     let response = app
         .get_edit_blog_post_page(blog_post_id.as_ref().as_str())

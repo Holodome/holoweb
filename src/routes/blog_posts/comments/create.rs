@@ -2,8 +2,8 @@ use crate::domain::blog_posts::BlogPostID;
 use crate::domain::comments::NewComment;
 use crate::domain::users::UserID;
 use crate::services::insert_new_comment;
-use crate::startup::Pool;
 use crate::utils::{e500, see_other};
+use crate::Pool;
 use actix_web::{web, HttpResponse};
 
 #[derive(serde::Deserialize)]

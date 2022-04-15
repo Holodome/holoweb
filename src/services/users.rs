@@ -2,7 +2,7 @@ use crate::domain::users::{
     HashedUserPassword, NewUser, UpdateUser, User, UserEmail, UserID, UserName, UserPasswordSalt,
 };
 use crate::schema::users::dsl::*;
-use crate::startup::Pool;
+use crate::Pool;
 use diesel::result::{DatabaseErrorKind, Error};
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 use std::fmt::Formatter;

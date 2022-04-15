@@ -28,8 +28,8 @@ impl PartialEq<UserPasswordSalt> for UserPasswordSalt {
     }
 }
 
-impl diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite> for UserPasswordSalt {
-    type Row = <String as diesel::Queryable<diesel::sql_types::Text, diesel::sqlite::Sqlite>>::Row;
+impl diesel::Queryable<diesel::sql_types::Text, Sqlite> for UserPasswordSalt {
+    type Row = <String as diesel::Queryable<diesel::sql_types::Text, Sqlite>>::Row;
 
     fn build(row: Self::Row) -> Self {
         UserPasswordSalt {

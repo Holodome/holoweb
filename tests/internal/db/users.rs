@@ -1,4 +1,4 @@
-use crate::helpers::{get_test_db_connection, TestUser};
+use crate::common::{TestDB, TestUser};
 use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::users::{HashedUserPassword, NewUser, UpdateUser, UserName, UserPassword};
 use holosite::services::{
@@ -8,10 +8,10 @@ use secrecy::Secret;
 
 #[test]
 fn test_add_new_user_works() {
-    let pool = get_test_db_connection();
+    let db = TestDB::spawn();
     let test_user = TestUser::generate();
     let res = insert_new_user(
-        &pool,
+        db.pool(),
         &NewUser {
             name: test_user.name.clone(),
             password: test_user.password.clone(),
@@ -24,11 +24,11 @@ fn test_add_new_user_works() {
 
 #[test]
 fn test_add_new_user_and_get_it_by_name_works() {
-    let pool = get_test_db_connection();
+    let db = TestDB::spawn();
     let test_user = TestUser::generate();
-    test_user.register_internally(&pool);
+    test_user.register_internally(db.pool());
 
-    let res = get_user_by_name(&pool, &test_user.name);
+    let res = get_user_by_name(db.pool(), &test_user.name);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_some!(&res);
@@ -38,11 +38,11 @@ fn test_add_new_user_and_get_it_by_name_works() {
 
 #[test]
 fn test_add_new_user_and_get_it_by_id_works() {
-    let pool = get_test_db_connection();
+    let db = TestDB::spawn();
     let test_user = TestUser::generate();
-    let id = test_user.register_internally(&pool);
+    let id = test_user.register_internally(db.pool());
 
-    let res = get_user_by_id(&pool, &id);
+    let res = get_user_by_id(db.pool(), &id);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_some!(&res);
@@ -52,11 +52,11 @@ fn test_add_new_user_and_get_it_by_id_works() {
 
 #[test]
 fn update_user_name_works() {
-    let pool = get_test_db_connection();
+    let db = TestDB::spawn();
     let test_user = TestUser::generate();
-    let id = test_user.register_internally(&pool);
+    let id = test_user.register_internally(db.pool());
 
-    let initial = get_user_by_id(&pool, &id).unwrap().unwrap();
+    let initial = get_user_by_id(db.pool(), &id).unwrap().unwrap();
     let new_name = UserName::generate_random();
     let changeset = UpdateUser {
         id: &id,
@@ -66,21 +66,21 @@ fn update_user_name_works() {
         password: None,
         is_banned: None,
     };
-    let res = update_user(&pool, &changeset);
+    let res = update_user(db.pool(), &changeset);
     assert_ok!(res);
 
-    let user = get_user_by_id(&pool, &id).unwrap().unwrap();
+    let user = get_user_by_id(db.pool(), &id).unwrap().unwrap();
     assert_ne!(initial, user);
     assert_eq!(user.name, new_name);
 }
 
 #[test]
 fn update_user_password_works() {
-    let pool = get_test_db_connection();
+    let db = TestDB::spawn();
     let test_user = TestUser::generate();
-    let id = test_user.register_internally(&pool);
+    let id = test_user.register_internally(db.pool());
 
-    let initial = get_user_by_id(&pool, &id).unwrap().unwrap();
+    let initial = get_user_by_id(db.pool(), &id).unwrap().unwrap();
     let new_password = UserPassword::parse(Secret::new("!1Aaaaaa".to_string())).unwrap();
     let hashed_password = HashedUserPassword::parse(&new_password, &initial.password_salt);
 
@@ -92,10 +92,10 @@ fn update_user_password_works() {
         password: Some(&hashed_password),
         is_banned: None,
     };
-    let res = update_user(&pool, &changeset);
+    let res = update_user(db.pool(), &changeset);
     assert_ok!(res);
 
-    let user = get_user_by_id(&pool, &id).unwrap().unwrap();
+    let user = get_user_by_id(db.pool(), &id).unwrap().unwrap();
     assert_ne!(initial, user);
     assert_eq!(user.name, initial.name);
     assert_eq!(user.password, hashed_password);
@@ -103,12 +103,12 @@ fn update_user_password_works() {
 
 #[test]
 fn cant_create_user_with_same_name_and_get_correct_error_kind() {
-    let pool = get_test_db_connection();
+    let db = TestDB::spawn();
     let test_user = TestUser::generate();
-    test_user.register_internally(&pool);
+    test_user.register_internally(db.pool());
 
     let res = insert_new_user(
-        &pool,
+        db.pool(),
         &NewUser {
             name: test_user.name.clone(),
             password: test_user.password.clone(),
@@ -124,14 +124,14 @@ fn cant_create_user_with_same_name_and_get_correct_error_kind() {
 
 #[test]
 fn cant_update_user_with_same_name_and_get_correct_error_kind() {
-    let pool = get_test_db_connection();
+    let db = TestDB::spawn();
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&pool);
+    let user_id = test_user.register_internally(db.pool());
     let other_user = TestUser::generate();
-    other_user.register_internally(&pool);
+    other_user.register_internally(db.pool());
 
     let res = update_user(
-        &pool,
+        db.pool(),
         &UpdateUser {
             id: &user_id,
             name: Some(&other_user.name),

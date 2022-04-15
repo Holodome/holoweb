@@ -1,41 +1,32 @@
-use crate::config::Settings;
+use crate::config::Config;
+use crate::Pool;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
-use diesel::r2d2::{self, ConnectionManager};
-use diesel::SqliteConnection;
+use diesel::r2d2::ConnectionManager;
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
+use std::time::Duration;
 use tracing_actix_web::TracingLogger;
-
-pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 pub struct Application {
     pub port: u16,
     pub server: Server,
-    pub pool: Pool,
 }
 
-embed_migrations!();
-
-pub fn get_connection_pool(path: &str, run_migrations: bool) -> Pool {
+pub fn get_connection_pool(uri: &str) -> Pool {
     let pool: Pool = Pool::builder()
-        .build(ConnectionManager::new(path))
+        .connection_timeout(Duration::new(10, 0))
+        .build(ConnectionManager::new(uri))
         .expect("Failed to create db pool");
-    let conn = pool.get().expect("Failed to get connection");
-    if run_migrations {
-        embedded_migrations::run(&conn).expect("Failed to run migrations");
-    }
     pool
 }
 
 impl Application {
-    pub async fn build(config: Settings) -> Result<Self, anyhow::Error> {
-        let pool = get_connection_pool(&config.database_path, config.run_db_migrations);
-
+    pub async fn build_with_pool(config: Config, pool: Pool) -> Result<Self, anyhow::Error> {
         let address = format!("{}:{}", config.app.host, config.app.port);
         tracing::info!("Starting server on {:?}", &address);
         let listener = TcpListener::bind(address)?;
@@ -50,7 +41,12 @@ impl Application {
         )
         .await?;
 
-        Ok(Self { port, server, pool })
+        Ok(Self { port, server })
+    }
+
+    pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
+        let pool = get_connection_pool(&config.database_uri);
+        Self::build_with_pool(config, pool).await
     }
 
     pub fn port(&self) -> u16 {
@@ -74,7 +70,8 @@ async fn run(
     let secret_key = actix_web::cookie::Key::from(hmac_secret.expose_secret().as_bytes());
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
-    let redis_store = RedisSessionStore::new(redis_uri.expose_secret())
+    let redis_uri = format!("redis://{}", redis_uri.expose_secret());
+    let redis_store = RedisSessionStore::new(redis_uri)
         .await
         .expect("Failed to connect to redis");
     let server = HttpServer::new(move || {

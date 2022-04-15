@@ -15,12 +15,13 @@ RUN cargo build --release --bin holosite
 FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends openssl ca-certificates sqlite3 \
+    && apt-get install -y --no-install-recommends openssl ca-certificates postgresql \
     # Clean up
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/holosite holosite
 COPY config config
+COPY static static
 ENV APP_ENV production
 ENTRYPOINT ["./holosite"]

@@ -1,4 +1,4 @@
-name: Rust
+name: Testing
 
 on: [push, pull_request]
 
@@ -7,7 +7,7 @@ env:
 
 jobs:
   test:
-    name: Test
+    name: Integration tests
     runs-on: ubuntu-latest
     services:
       redis:
@@ -37,6 +37,31 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+
+      - name: Cache diesel-cli
+        uses: actions/cache@v2
+        id: cache-diesel
+        with:
+          path: |
+            ~/.cargo/bin/diesel
+          key: ${{ runner.os }}-diesel-${{ env.DIESEL_VERSION }}-${{ env.DIESEL_FEATURES }}
+
+      - name: Install diesel-cli
+        uses: actions-rs/cargo@v1
+        if: steps.cache-diesel.outputs.cache-hit == false
+        with:
+          command: install
+          args: >
+            diesel_cli
+            --force
+            --version=${{ env.DIESEL_VERSION }}
+            --features=${{ env.DIESEL_FEATURES }}
+            --no-default-features
+            --locked
+
+      - name: Migrate database
+        run: |
+          diesel database setup
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1

@@ -1,7 +1,7 @@
 use crate::domain::users::{Credentials, UserID, UserName, UserPassword};
 use crate::services::{get_user_by_id, get_user_by_name, validate_credentials, AuthError};
-use crate::startup::Pool;
 use crate::utils::see_other;
+use crate::Pool;
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::FlashMessage;

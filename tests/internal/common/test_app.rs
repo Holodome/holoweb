@@ -1,25 +1,25 @@
-use crate::helpers::{get_test_config, TRACING};
+use crate::common::{get_test_config, init_tracing, TestDB};
 use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::CommentID;
-use holosite::startup::{Application, Pool};
-use once_cell::sync::Lazy;
+use holosite::startup::Application;
+use holosite::Pool;
+use reqwest::Response;
 
 pub struct TestApp {
-    pub address: String,
-    pub pool: Pool,
-    pub api_client: reqwest::Client,
+    address: String,
+    db: TestDB,
+    api_client: reqwest::Client,
 }
 
 impl TestApp {
     pub async fn spawn() -> TestApp {
-        Lazy::force(&TRACING);
-
+        init_tracing();
         let config = get_test_config();
-        let app = Application::build(config.clone())
+        let db = TestDB::new(&config.database_uri);
+        let app = Application::build_with_pool(config.clone(), db.pool().clone())
             .await
             .expect("Failed to build application");
 
-        let pool = app.pool.clone();
         let address = format!("http://localhost:{}", app.port());
 
         let _ = tokio::spawn(app.run_until_stopped());
@@ -32,12 +32,16 @@ impl TestApp {
 
         TestApp {
             address,
-            pool,
+            db,
             api_client: client,
         }
     }
 
-    pub async fn post_logout(&self) -> reqwest::Response {
+    pub fn pool(&self) -> &Pool {
+        self.db.pool()
+    }
+
+    pub async fn post_logout(&self) -> Response {
         self.api_client
             .get(format!("{}/logout", &self.address))
             .send()
@@ -45,7 +49,11 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    pub async fn get_login_page(&self) -> reqwest::Response {
+    pub async fn get_health_check(&self) -> Response {
+        self.get_page("/health_check").await
+    }
+
+    pub async fn get_login_page(&self) -> Response {
         self.get_page("/login").await
     }
 
@@ -53,7 +61,7 @@ impl TestApp {
         self.get_login_page().await.text().await.unwrap()
     }
 
-    pub async fn get_registration_page(&self) -> reqwest::Response {
+    pub async fn get_registration_page(&self) -> Response {
         self.get_page("/registration").await
     }
 
@@ -61,29 +69,29 @@ impl TestApp {
         self.get_registration_page().await.text().await.unwrap()
     }
 
-    pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
+    pub async fn post_login<Body>(&self, body: &Body) -> Response
     where
         Body: serde::Serialize,
     {
         self.post("/login", body).await
     }
 
-    pub async fn post_registration<Body>(&self, body: &Body) -> reqwest::Response
+    pub async fn post_registration<Body>(&self, body: &Body) -> Response
     where
         Body: serde::Serialize,
     {
         self.post("/registration", body).await
     }
 
-    pub async fn post_change_password(&self, body: &impl serde::Serialize) -> reqwest::Response {
+    pub async fn post_change_password(&self, body: &impl serde::Serialize) -> Response {
         self.post("/account/change_password", body).await
     }
 
-    pub async fn post_change_name(&self, body: &impl serde::Serialize) -> reqwest::Response {
+    pub async fn post_change_name(&self, body: &impl serde::Serialize) -> Response {
         self.post("/account/change_name", body).await
     }
 
-    pub async fn post_create_blog_post(&self, body: &impl serde::Serialize) -> reqwest::Response {
+    pub async fn post_create_blog_post(&self, body: &impl serde::Serialize) -> Response {
         self.post("/blog_posts/create", body).await
     }
 
@@ -91,7 +99,7 @@ impl TestApp {
         &self,
         body: &impl serde::Serialize,
         id: &BlogPostID,
-    ) -> reqwest::Response {
+    ) -> Response {
         self.post(format!("/blog_posts/{}/edit", id.as_ref()).as_str(), body)
             .await
     }
@@ -100,7 +108,7 @@ impl TestApp {
         &self,
         body: &impl serde::Serialize,
         id: &BlogPostID,
-    ) -> reqwest::Response {
+    ) -> Response {
         self.post(
             format!("/blog_posts/{}/comments/create", id.as_ref().as_str()).as_str(),
             body,
@@ -113,7 +121,7 @@ impl TestApp {
         body: &impl serde::Serialize,
         post_id: &BlogPostID,
         comment_id: &CommentID,
-    ) -> reqwest::Response {
+    ) -> Response {
         self.post(
             format!(
                 "/blog_posts/{}/comments/{}/edit",
@@ -126,7 +134,7 @@ impl TestApp {
         .await
     }
 
-    pub async fn get_home_page(&self) -> reqwest::Response {
+    pub async fn get_home_page(&self) -> Response {
         self.get_page("/").await
     }
 
@@ -138,7 +146,7 @@ impl TestApp {
         self.get_page("/account/home").await.text().await.unwrap()
     }
 
-    pub async fn get_change_password(&self) -> reqwest::Response {
+    pub async fn get_change_password(&self) -> Response {
         self.get_page("/account/change_password").await
     }
 
@@ -146,7 +154,7 @@ impl TestApp {
         self.get_change_password().await.text().await.unwrap()
     }
 
-    pub async fn get_change_name(&self) -> reqwest::Response {
+    pub async fn get_change_name(&self) -> Response {
         self.get_page("/account/change_name").await
     }
 
@@ -154,11 +162,11 @@ impl TestApp {
         self.get_change_name().await.text().await.unwrap()
     }
 
-    pub async fn get_create_blog_post_page(&self) -> reqwest::Response {
+    pub async fn get_create_blog_post_page(&self) -> Response {
         self.get_page("/blog_posts/create").await
     }
 
-    pub async fn get_all_blog_posts_page(&self) -> reqwest::Response {
+    pub async fn get_all_blog_posts_page(&self) -> Response {
         self.get_page("/blog_posts/all").await
     }
 
@@ -166,7 +174,7 @@ impl TestApp {
         self.get_all_blog_posts_page().await.text().await.unwrap()
     }
 
-    pub async fn get_edit_blog_post_page(&self, id: &str) -> reqwest::Response {
+    pub async fn get_edit_blog_post_page(&self, id: &str) -> Response {
         self.get_page(format!("/blog_posts/{}/edit", id).as_str())
             .await
     }
@@ -175,7 +183,7 @@ impl TestApp {
         self.get_edit_blog_post_page(id).await.text().await.unwrap()
     }
 
-    pub async fn get_view_blog_post_page(&self, id: &str) -> reqwest::Response {
+    pub async fn get_view_blog_post_page(&self, id: &str) -> Response {
         self.get_page(format!("/blog_posts/{}/view", id).as_str())
             .await
     }
@@ -184,7 +192,7 @@ impl TestApp {
         self.get_view_blog_post_page(id).await.text().await.unwrap()
     }
 
-    async fn get_page(&self, rel_address: &str) -> reqwest::Response {
+    async fn get_page(&self, rel_address: &str) -> Response {
         self.api_client
             .get(format!("{}{}", &self.address, rel_address))
             .send()
@@ -192,7 +200,7 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    async fn post<Body>(&self, rel_addr: &str, body: &Body) -> reqwest::Response
+    async fn post<Body>(&self, rel_addr: &str, body: &Body) -> Response
     where
         Body: serde::Serialize,
     {

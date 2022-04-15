@@ -1,10 +1,10 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID};
 use crate::domain::users::UserID;
 use crate::services::{get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post, Page};
-use crate::startup::Pool;
 use crate::utils::{e500, render_template};
 
 use crate::domain::comments::Comment;
+use crate::Pool;
 use actix_web::{web, HttpResponse};
 use askama::Template;
 

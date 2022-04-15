@@ -1,15 +1,14 @@
-use crate::helpers::{
-    assert_is_redirect_to, assert_resp_forbidden, TestApp, TestBlogPost, TestComment, TestUser,
-};
+use crate::api::{assert_is_redirect_to, assert_resp_forbidden};
+use crate::common::{TestApp, TestBlogPost, TestComment, TestUser};
 
 #[tokio::test]
 async fn create_comment_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
 
     let response = app
@@ -33,12 +32,12 @@ async fn create_comment_works() {
 async fn edit_comment_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
-    let comment_id = test_comment.register_internally(&app.pool, &blog_post_id, &user_id);
+    let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
 
     let response = app
         .post_edit_comment(
@@ -63,15 +62,15 @@ async fn edit_comment_works() {
 async fn cant_edit_others_comment() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
-    let comment_id = test_comment.register_internally(&app.pool, &blog_post_id, &user_id);
+    let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
 
     let other_user = TestUser::generate();
-    other_user.register_internally(&app.pool);
+    other_user.register_internally(app.pool());
     other_user.login(&app).await;
 
     let response = app
@@ -97,12 +96,12 @@ async fn cant_edit_others_comment() {
 async fn delete_comment_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
-    let comment_id = test_comment.register_internally(&app.pool, &blog_post_id, &user_id);
+    let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
 
     let response = app
         .post_edit_comment(
@@ -127,14 +126,14 @@ async fn delete_comment_works() {
 async fn all_comments_for_blog_post_are_displayed_correctly() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let comment_contents: Vec<String> = (0..100)
         .map(|_| {
             let comment = TestComment::generate();
-            comment.register_internally(&app.pool, &blog_post_id, &user_id);
+            comment.register_internally(app.pool(), &blog_post_id, &user_id);
             comment.contents
         })
         .collect();
@@ -151,12 +150,12 @@ async fn all_comments_for_blog_post_are_displayed_correctly() {
 async fn create_response_comment_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
-    let comment_id = test_comment.register_internally(&app.pool, &blog_post_id, &user_id);
+    let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
     let other_comment = TestComment::generate();
 
     let response = app
@@ -181,14 +180,14 @@ async fn create_response_comment_works() {
 async fn delete_comment_in_middle_of_response_tree_works() {
     let app = TestApp::spawn().await;
     let test_user = TestUser::generate();
-    let user_id = test_user.register_internally(&app.pool);
+    let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let blog_post = TestBlogPost::generate();
-    let blog_post_id = blog_post.register_internally(&app.pool, &user_id);
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
-    let comment_id = test_comment.register_internally(&app.pool, &blog_post_id, &user_id);
+    let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
     let response_comment = TestComment::generate();
-    response_comment.register_response_internally(&app.pool, &blog_post_id, &user_id, &comment_id);
+    response_comment.register_response_internally(app.pool(), &blog_post_id, &user_id, &comment_id);
 
     let response = app
         .post_edit_comment(
