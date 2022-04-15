@@ -23,7 +23,7 @@ jobs:
         ports:
           - 5432:5432
     env:
-      DIESEL_FEATURES: sqlite
+      DIESEL_FEATURES: postgres
       DIESEL_VERSION: 1.4.1
     steps:
       - name: Checkout repository
