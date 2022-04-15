@@ -44,7 +44,7 @@ To run tests locally execute commands in following order:
 ```shell
 scripts/init_redis.sh
 scripts/init_db.sh
-scripts/test.sh
+cargo test
 ```
 
 ### Details
