@@ -10,6 +10,7 @@ use diesel::r2d2::ConnectionManager;
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
 use std::time::Duration;
+use askama::filters::format;
 use tracing_actix_web::TracingLogger;
 
 pub struct Application {
@@ -68,8 +69,7 @@ async fn run(
     let secret_key = actix_web::cookie::Key::from(hmac_secret.expose_secret().as_bytes());
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
-    println!("{}", &redis_uri.expose_secret());
-    let redis_store = RedisSessionStore::new(redis_uri.expose_secret())
+    let redis_store = RedisSessionStore::new(format!("redis://{}", redis_uri.expose_secret()))
         .await
         .expect("Failed to connect to redis");
     let server = HttpServer::new(move || {

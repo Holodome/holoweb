@@ -22,5 +22,6 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/holosite holosite
 COPY config config
+COPY static static
 ENV APP_ENV production
 ENTRYPOINT ["./holosite"]

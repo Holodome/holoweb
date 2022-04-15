@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   db:
-    image: "postgres:13.3"
+    image: "postgres:14.1-alpine"
     container_name: "postgres"
     environment:
       POSTGRES_USER: postgres
@@ -10,18 +10,20 @@ services:
       POSTGRES_DB: holoweb
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
-      - .:/var/lib/postgresql/data
+      - .data/db/:/var/lib/postgresql/data
     restart: always
     ports:
       - '5432:5432'
     networks:
       - backend
 
-  cache:
-    image: 'redis:alpine'
+  redis:
+    image: 'redis:6.2-alpine'
     container_name: 'redis'
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - .data/redis/:/data
     restart: always
-#    command: redis-server --save 60 1 --loglevel warning
     ports:
       - '6379:6379'
     networks:
