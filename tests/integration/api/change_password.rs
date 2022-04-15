@@ -1,4 +1,4 @@
-use crate::helpers::{assert_is_redirect_to, TestApp, TestUser};
+use crate::common::{assert_is_redirect_to, TestApp, TestUser};
 use uuid::Uuid;
 
 #[tokio::test]
@@ -8,7 +8,7 @@ async fn you_must_be_logged_in_to_see_change_password_form() {
     assert_is_redirect_to(&response, "/login");
 
     let test_user = TestUser::generate();
-    test_user.register_internally(&app.db.pool);
+    test_user.register_internally(app.pool());
     test_user.login(&app).await;
     let response = app.get_change_password().await;
     assert_eq!(response.status(), 200);

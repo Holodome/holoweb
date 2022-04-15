@@ -3,5 +3,6 @@ extern crate diesel_migrations;
 extern crate core;
 
 mod api;
-mod helpers;
-mod services;
+mod common;
+mod db;
+mod ui;

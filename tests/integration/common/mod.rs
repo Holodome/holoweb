@@ -1,12 +1,11 @@
-mod test_app;
 mod test_blog_post;
 mod test_comment;
 mod test_user;
 
+pub use crate::api::test_app::*;
 use diesel::r2d2::{ConnectionManager, ManageConnection};
 use diesel::{Connection, PgConnection};
 use once_cell::sync::Lazy;
-pub use test_app::*;
 pub use test_blog_post::*;
 pub use test_comment::*;
 pub use test_user::*;
@@ -36,7 +35,11 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     }
 });
 
-fn get_test_config() -> Config {
+pub fn init_tracing() {
+    Lazy::force(&TRACING);
+}
+
+pub(crate) fn get_test_config() -> Config {
     let mut c = holosite::config::get_config().expect("Failed ot get config");
     c.database.database_name = Uuid::new_v4().to_string();
     c.app.port = 0;
@@ -48,8 +51,7 @@ fn get_test_config() -> Config {
 embed_migrations!();
 
 pub struct TestDB {
-    pub pool: Pool,
-    pub config: DbConfig,
+    pool: Pool,
 }
 
 impl TestDB {
@@ -63,16 +65,17 @@ impl TestDB {
         let pool = get_connection_pool(&config.uri());
         let conn = pool.get().expect("Failed to get connection");
         embedded_migrations::run(&conn).expect("Failed to run migrations");
-        Self {
-            pool,
-            config: config.clone(),
-        }
+        Self { pool }
     }
 
     pub fn spawn() -> TestDB {
         Lazy::force(&TRACING);
         let config = get_test_config();
         Self::new(&config.database)
+    }
+
+    pub fn pool(&self) -> &Pool {
+        &self.pool
     }
 }
 

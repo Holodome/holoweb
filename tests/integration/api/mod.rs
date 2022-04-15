@@ -5,3 +5,4 @@ mod change_password;
 mod comments;
 mod health_check;
 mod login;
+pub mod test_app;

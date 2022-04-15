@@ -12,14 +12,22 @@ You also need [diesel](https://diesel.rs/) cli to run migrations on database.
 
 To run locally execute commands in following order:
 ```shell
-git clone https://github.com/Holodome/rustweb.git
+git clone https://github.com/Holodome/holoweb.git
 cd rustweb
 scripts/init_redis.sh
-diesel migration run
-cargo run  # | bunyan
+scripts/init_db.sh
+cargo run # | bunyan
 ```
 
 The server should start now.
+
+## Testing
+
+There are several layers of testing. Unit testing and integration testing is handled
+by rust, and system testing is done with python.
+
+To run tests locally, you must initialize redis and database using scripts first.
+Rust-based tests can be executed using `cargo test` command.
 
 ## Disclaimer
 

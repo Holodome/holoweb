@@ -1,4 +1,4 @@
-use crate::helpers::{assert_is_redirect_to, TestApp};
+use crate::common::{assert_is_redirect_to, TestApp};
 
 #[tokio::test]
 async fn account_shows_correct_user_name() {

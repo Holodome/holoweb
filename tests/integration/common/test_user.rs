@@ -1,4 +1,4 @@
-use crate::helpers::{assert_is_redirect_to, TestApp};
+use crate::common::{assert_is_redirect_to, TestApp};
 use holosite::domain::users::{NewUser, UserID, UserName, UserPassword};
 use holosite::services::insert_new_user;
 use holosite::Pool;
