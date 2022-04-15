@@ -71,10 +71,9 @@ jobs:
         run: |
           diesel database setup
 
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - name: Run tests
+        run: |
+          scripts/test.sh
 
   fmt:
     name: Rustfmt
