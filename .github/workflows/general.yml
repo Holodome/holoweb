@@ -7,7 +7,7 @@ env:
 
 jobs:
   test:
-    name: Test
+    name: Integration tests
     runs-on: ubuntu-latest
     services:
       redis:
@@ -73,7 +73,7 @@ jobs:
 
       - name: Run tests
         run: |
-          scripts/test.sh
+          TEST_THREADS=4 scripts/test.sh
 
   fmt:
     name: Rustfmt
@@ -125,6 +125,14 @@ jobs:
         image: redis:6
         ports:
           - 6379:6379
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: holoweb
+        ports:
+          - 5432:5432
     env:
       DIESEL_FEATURES: sqlite
       DIESEL_VERSION: 1.4.1
