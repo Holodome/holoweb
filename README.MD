@@ -6,7 +6,7 @@ implementing backend infrastructure.
 ## Tech stack
 
 * Framework: [actix-web](https://actix.rs)
-* Database: [postgres](https://www.postgresql.org/)
+* Database: [sqlite](https://www.sqlite.org/index.html)
 * ORM: [diesel](https://diesel.rs/)
 * In-memory database: [redis](https://redis.io/)
 * CSS: [semantic ui](https://semantic-ui.com/)
@@ -25,6 +25,7 @@ though it is not necessary to run application.
 You also need [diesel](https://diesel.rs/) cli to run migrations on database.
 
 To run locally execute commands in following order:
+
 ```shell
 scripts/init_redis.sh
 scripts/init_db.sh
@@ -39,6 +40,7 @@ There are several layers of testing. Unit testing and integration testing is han
 by rust, and system testing is done using python.
 
 To run tests locally execute commands in following order:
+
 ```shell
 scripts/init_redis.sh
 scripts/init_db.sh
