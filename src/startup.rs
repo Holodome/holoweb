@@ -6,11 +6,11 @@ use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
+use askama::filters::format;
 use diesel::r2d2::ConnectionManager;
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
 use std::time::Duration;
-use askama::filters::format;
 use tracing_actix_web::TracingLogger;
 
 pub struct Application {
