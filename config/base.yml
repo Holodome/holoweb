@@ -1,11 +1,11 @@
-redis_uri: "redis://127.0.0.1:6379"
+redis_uri: 127.0.0.1:6379
 database:
-  host: "127.0.0.1"
+  host: 127.0.0.1
   port: 5432
-  username: "postgres"
-  password: "password"
-  database_name: "holoweb"
+  username: postgres
+  password: password
+  database_name: holoweb
   require_ssl: false
 app:
   port: 8080
-  hmac_secret: "super-long-and-secret-random-key-needed-to-verify-message-integrity"
+  hmac_secret: super-long-and-secret-random-key-needed-to-verify-message-integrity

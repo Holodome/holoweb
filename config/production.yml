@@ -2,4 +2,4 @@ app:
   host: 0.0.0.0
 database:
   host: db
-redis_uri: "redis:6379"
+redis_uri: redis:6379

@@ -68,7 +68,8 @@ async fn run(
     let secret_key = actix_web::cookie::Key::from(hmac_secret.expose_secret().as_bytes());
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
-    let redis_store = RedisSessionStore::new(format!("redis://{}", redis_uri.expose_secret()))
+    let redis_uri = format!("redis://{}", redis_uri.expose_secret());
+    let redis_store = RedisSessionStore::new(redis_uri)
         .await
         .expect("Failed to connect to redis");
     let server = HttpServer::new(move || {
