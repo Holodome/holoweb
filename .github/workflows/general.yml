@@ -66,9 +66,10 @@ jobs:
             --features=${{ env.DIESEL_FEATURES }}
             --no-default-features
             --locked
+
       - name: Migrate database
         run: |
-          diesel migration run
+          diesel database setup
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
