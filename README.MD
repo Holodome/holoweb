@@ -3,6 +3,11 @@
 This is a blog/forum/personal website project. The goal is to create MVP webserver
 implementing backend infrastructure.
 
+## Goal
+
+The goal is to create function personal website application trying to follow best practices.
+The project aims to be as simple as possible, while maintaining acceptable functionality.
+
 ## Tech stack
 
 * Framework: [actix-web](https://actix.rs)
