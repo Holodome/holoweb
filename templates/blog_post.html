@@ -1,53 +1,33 @@
 {% extends "base.html" %}
 
+{% block title %}{{ blog_post.title }}{% endblock %}
+
 {% block content %}
 
-<div class="ui middle aligned center aligned grid" style="margin-top: 50px">
-  <div class="ui text container">
-    <div class="ui menu">
-      <div class="item">
-        {% if current_user_id.is_some() %}
-        <a class="ui button" href="/blog_posts/edit/{{ blog_post.id }}">Edit blog post</a>
-        {% endif %}
-      </div>
-    </div>
+<div class="ui text container">
+  <div class="ui horizontal divider"></div>
+  <h1 class="ui huge header">
+    {{ blog_post.title }}
+  </h1>
 
-    <div class="ui center aligned container segment">
-      <h2 style="text-align: center">
-        Blog post info
-      </h2>
-      <div class="ui divided selection list">
-        <div class="item">
-          <div class="ui purple horizontal header">
-            Title
-          </div>
-          {{ blog_post.title }}
-        </div>
-        <div class="item">
-          <div class="ui purple horizontal header">
-            Brief
-          </div>
-          {{ blog_post.brief }}
-        </div>
-        <div class="item">
-          <div class="ui purple horizontal header">
-            Contents
-          </div>
-          {{ blog_post.contents }}
-        </div>
-      </div>
-    </div>
+  <div class="ui text container">
+    {{ blog_post.contents }}
   </div>
 
-  {% for comment in comments %}
-    {% if !comment.is_deleted %}
-      <div>
-        <p> {{ comment.contents }} </p>
-      </div>
-    {% endif %}
-  {% endfor %}
+  <h2 class="ui horizontal divider header">Comments</h2>
   <div>
+    <form class="ui reply form" action="/blog_posts/{{blog_post.id}}/create">
+      <div class="field">
+        <textarea></textarea>
+      </div>
+      <div class="ui blue button">
+        Add Reply
+      </div>
+    </form>
+
+    <div class="ui section divider"> </div>
+
+    {{ rendered_comments }}
   </div>
 </div>
-
 {% endblock %}

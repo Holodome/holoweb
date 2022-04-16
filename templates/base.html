@@ -1,58 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Holodome</title>
+  <meta charset="UTF-8">
+  <title>{% block title %}Holodome{% endblock %}</title>
 
-    <link rel="stylesheet" href="/static/semantic.min.css" type="text/css">
-    <script
-            src="/static/lib/jquery-3.1.1.min.js"
-            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-            crossorigin="anonymous"></script>
-    <script src="/static/lib/semantic.min.js"></script>
-    <script src="/static/js/base.js"></script>
-    {% block head %}
-    {% endblock %}
+  <link rel="stylesheet" href="/static/lib/semantic.min.css" type="text/css">
+  <script
+    src="/static/lib/jquery-3.1.1.min.js"
+    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+    crossorigin="anonymous"></script>
+  <script src="/static/lib/semantic.min.js"></script>
+  <script src="/static/js/base.js"></script>
 </head>
+
 <body>
 
-<div class="pusher">
-    <div class="ui inverted vertical masthead center aligned segment">
-        <div class="ui container">
-            <div class="ui large secondary inverted pointing menu">
-                <a class="item" href="/">Home</a>
-                <a class="item" href="/blog_posts/all">Posts</a>
-                <div class="right item">
-                    {% if current_user_id.is_some() %}
-                    <a class="ui inverted button" href="/account/home">Account</a>
-                    <a class="ui inverted button" href="/logout">Log out</a>
-                    {% else %}
-                    <a class="ui inverted button" id="login" href="/login">Log in</a>
-                    <a class="ui inverted button" id="registration" href="/registration">Sign Up</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+<header>
+  <div class="ui inverted menu">
+    <div class="ui container">
+      <h3 class="header item">
+        Holodome
+      </h3>
+      <a class="item" href="/account">
+        Blog posts
+      </a>
+      <a class="item" href="/projects">
+        Projects
+      </a>
+      <div class="right menu">
+        <a class="item" href="/account">
+          Account
+        </a>
+      </div>
     </div>
-</div>
-
+  </div>
+</header>
 
 {% block content %}
+
 {% endblock %}
 
-{% block footer %}
-{% endblock %}
-
-<div class="ui inverted vertical footer segment" style="position: absolute; bottom: 0; width: 100%">
-    <div class="ui center aligned container">
-        <div class="column">
-            <h4 class="ui inverted header">About</h4>
-            <p>
-                Prototype
-            </p>
-        </div>
+<footer>
+  <div class="ui inverted vertical footer segment">
+    <div class="ui center aligned text container">
+      <div class="ui horizontal inverted small divided link list">
+        <a class="item" href="#">Site Map</a>
+        <a class="item" href="#">Contact Us</a>
+        <a class="item" href="#">Terms and Conditions</a>
+        <a class="item" href="#">Privacy Policy</a>
+      </div>
     </div>
-</div>
+  </div>
+</footer>
 
 </body>
 </html>

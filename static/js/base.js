@@ -10,7 +10,6 @@ redirect_on_same_page_with_query = query => {
 
 change_password_visibility = (obj, input) => {
     obj.click(() => {
-        console.log("Hello");
         if (input.attr("type") === "password") {
             input.prop("type", "text");
         } else {
