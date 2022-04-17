@@ -52,6 +52,7 @@ pub fn insert_new_blog_post(
     let conn = pool
         .get()
         .map_err(|e| BlogPostError::UnexpectedError(e.into()))?;
+    let time = get_current_time_str();
     let blog_post = BlogPost {
         id: BlogPostID::generate_random(),
 
@@ -59,7 +60,8 @@ pub fn insert_new_blog_post(
         brief: new_blog_post.brief.to_string(),
         contents: new_blog_post.contents.to_string(),
         author_id: new_blog_post.author_id.clone(),
-        created_at: get_current_time_str(),
+        created_at: time.clone(),
+        updated_at: time,
         visibility: "all".to_string(),
     };
     insert_into(blog_posts)

@@ -8,7 +8,11 @@ pub struct BlogPost {
     pub title: String,
     pub brief: String,
     pub contents: String,
+
     pub author_id: UserID,
+
     pub created_at: String,
+    pub updated_at: String,
+
     pub visibility: String,
 }

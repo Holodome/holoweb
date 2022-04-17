@@ -7,7 +7,6 @@ use actix_web_lab::middleware::from_fn;
 mod account;
 mod blog_posts;
 mod health_check;
-mod home;
 mod login;
 mod logout;
 mod registration;
@@ -33,7 +32,6 @@ mod registration;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
-        .route("/", web::get().to(home::home))
         .service(
             web::resource("/logout")
                 .wrap(from_fn(require_login))
@@ -63,14 +61,14 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                 .service(
                     web::resource("/create")
                         .wrap(from_fn(require_login))
-                        .route(web::get().to(blog_posts::create::get::create_blog_post_form))
+                        // .route(web::get().to(blog_posts::create::get::create_blog_post_form))
                         .route(web::post().to(blog_posts::create::post::create_blog_post)),
                 )
                 .route("/{post_id}/view", web::get().to(blog_posts::get::blog_post))
                 .service(
                     web::resource("/{post_id}/edit")
                         .wrap(from_fn(require_login))
-                        .route(web::get().to(blog_posts::edit::get::edit_blog_post_form))
+                        // .route(web::get().to(blog_posts::edit::get::edit_blog_post_form))
                         .route(web::post().to(blog_posts::edit::post::edit_blog_post)),
                 )
                 .service(
@@ -87,16 +85,6 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         .service(
             web::scope("/account")
                 .wrap(from_fn(require_login))
-                .route("/home", web::get().to(account::get::account))
-                .service(
-                    web::resource("/change_name")
-                        .route(web::get().to(account::change_name::get::change_name_form))
-                        .route(web::post().to(account::change_name::post::change_name)),
-                )
-                .service(
-                    web::resource("/change_password")
-                        .route(web::get().to(account::change_password::get::change_password_form))
-                        .route(web::post().to(account::change_password::post::change_password)),
-                ),
+                .route("/home", web::get().to(account::get::account)),
         );
 }

@@ -53,16 +53,16 @@ pub fn update_comment(pool: &Pool, changeset: &UpdateComment) -> Result<(), anyh
 
 pub fn insert_new_comment(pool: &Pool, new_comment: &NewComment) -> Result<Comment, anyhow::Error> {
     let conn = pool.get()?;
+    let time = get_current_time_str();
     let comment = Comment {
         id: CommentID::generate_random(),
         author_id: new_comment.author_id.clone(),
         post_id: new_comment.post_id.clone(),
-        parent_id: new_comment.parent_id.cloned(),
+        reply_to_id: new_comment.parent_id.cloned(),
         contents: new_comment.contents.to_string(),
-        created_at: get_current_time_str(),
+        created_at: time.clone(),
+        updated_at: time,
         is_deleted: false,
-        main_parent_id: None,
-        depth: 0,
     };
     insert_into(comments).values(&comment).execute(&conn)?;
     Ok(comment)
@@ -75,7 +75,7 @@ pub fn get_toplevel_comments_for_blog_post(
     let conn = pool.get()?;
     Ok(comments
         .filter(post_id.eq(blog_post_id))
-        .filter(parent_id.is_null())
+        .filter(reply_to_id.is_null())
         .load::<Comment>(&conn)?)
 }
 
@@ -85,6 +85,6 @@ pub fn get_child_comments(
 ) -> Result<Vec<Comment>, anyhow::Error> {
     let conn = pool.get()?;
     Ok(comments
-        .filter(parent_id.eq(comment_id))
+        .filter(reply_to_id.eq(comment_id))
         .load::<Comment>(&conn)?)
 }

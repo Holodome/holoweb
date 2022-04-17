@@ -12,7 +12,6 @@ use askama::Template;
 #[template(path = "blog_posts.html")]
 struct BlogPostsTemplate {
     current_user_id: Option<UserID>,
-    page: Page,
     blog_posts: Vec<BlogPost>,
 }
 
@@ -32,7 +31,6 @@ pub async fn all_blog_posts(
 
     render_template(BlogPostsTemplate {
         current_user_id: user_id,
-        page,
         blog_posts,
     })
 }
@@ -42,7 +40,7 @@ pub async fn all_blog_posts(
 struct BlogPostTemplate {
     current_user_id: Option<UserID>,
     blog_post: BlogPost,
-    comments: Vec<Comment>,
+    rendered_comments: String,
 }
 
 #[tracing::instrument("Blog post", skip(pool))]
@@ -62,6 +60,6 @@ pub async fn blog_post(
     render_template(BlogPostTemplate {
         current_user_id: user_id,
         blog_post,
-        comments,
+        rendered_comments: "".to_string(),
     })
 }

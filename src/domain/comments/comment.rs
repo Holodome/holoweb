@@ -6,12 +6,14 @@ use crate::schema::comments;
 #[derive(Debug, diesel::Queryable, diesel::Insertable, PartialEq)]
 pub struct Comment {
     pub id: CommentID,
+    pub contents: String,
+
     pub author_id: UserID,
     pub post_id: BlogPostID,
-    pub parent_id: Option<CommentID>,
-    pub contents: String,
+    pub reply_to_id: Option<CommentID>,
+
     pub created_at: String,
+    pub updated_at: String,
+
     pub is_deleted: bool,
-    pub main_parent_id: Option<BlogPostID>,
-    pub depth: i32,
 }

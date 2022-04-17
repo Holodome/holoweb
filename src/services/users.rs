@@ -61,6 +61,7 @@ pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, UserErro
             .as_millis()
             .to_string(),
         is_banned: false,
+        role: "admin".to_string(),
     };
 
     insert_into(users)
