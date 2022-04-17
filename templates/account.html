@@ -1,2 +1,106 @@
 {% extends "base.html" %}
 
+{% block title %}Account{% endblock %}
+
+
+{% block content %}
+
+<div class="ui main text container">
+  <div class="ui horizontal divider"></div>
+
+  <h1 class="ui center aligned huge header">
+    Account
+  </h1>
+  <div class="ui horizontal divider"></div>
+
+  <div class="ui section">
+    <h2 class="ui header">
+      Name
+    </h2>
+    <div class="ui input">
+      <input type="text" placeholder="name" value="Holodome">
+    </div>
+
+    <button class="ui button">Change name</button>
+  </div>
+
+  <div class="ui section divider"></div>
+
+  <div class="ui section">
+    <h2 class="ui header">
+      Email
+    </h2>
+    <div class="ui input">
+      <input type="email" placeholder="email" value="holodome@gmail.com">
+    </div>
+
+    <button class="ui button">Change email</button>
+  </div>
+
+  <div class="ui section divider"></div>
+
+  <h2>Content</h2>
+
+  <div class="ui section">
+    <h3 class="ui header">
+      Projects
+    </h3>
+    <div class="ui divided list">
+      {% for project_info in projects %}
+        <div class="item">
+          <div class="content">
+            <a class="header" href="/projects/{{ project_info.id }}"></a>
+            <div class="description">{{ project_info.brief }}</div>
+            <div class="metadata">{{ project_info.role }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="ui horizontal divider"></div>
+
+  <div class="ui section">
+    <h3 class="ui header">
+      Projects
+    </h3>
+    <div class="ui divided list">
+      {% for blog_post_info in blog_posts %}
+      <div class="item">
+        <div class="content">
+          <a class="header" href="/blog_posts/{{ blog_post_info.id }}"></a>
+          <div class="description">{{ blog_post_info.brief }}</div>
+          <div class="metadata">{{ blog_post_info.role }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="ui horizontal divider"></div>
+
+  <div class="ui section">
+    <h3 class="ui header">
+      Comments
+    </h3>
+    <div class="ui divided list">
+      {% for comment_info in comments %}
+        <div class="comment">
+          <div class="ui large breadcrumb">
+            <a class="section" href="/projects/{{ comment_info.project.id }}">{{ comment_info.project.title }}</a>
+            <div class="divider"> / </div>
+            <a class="section" href="/blog_posts/{{ comment_info.blog_post.id }}">{{ comment_info.blog_post.title }}</a>
+          </div>
+
+          <div class="metadata">
+            <a>{{ comment_info.date }}</a>
+          </div>
+          <div class="text">{{ comment_info.contents }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
