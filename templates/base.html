@@ -36,6 +36,36 @@
   </div>
 </header>
 
+{% for message in messages.iter() %}
+  {% match message.level() %}
+    {% when actix_web_flash_messages::Level::Info %}
+      <div class="ui info message">
+        <div class="header">
+          {{ message.content() }}
+        </div>
+      </div>
+    {% when actix_web_flash_messages::Level::Success %}
+      <div class="ui success message">
+        <div class="header">
+          {{ message.content() }}
+        </div>
+      </div>
+    {% when actix_web_flash_messages::Level::Warning %}
+      <div class="ui warning message">
+        <div class="header">
+          {{ message.content() }}
+        </div>
+      </div>
+    {% when actix_web_flash_messages::Level::Error %}
+      <div class="ui error message">
+        <div class="header">
+          {{ message.content() }}
+        </div>
+      </div>
+    {% else %}
+  {% endmatch %}
+{% endfor %}
+
 {% block content %}
 
 {% endblock %}
