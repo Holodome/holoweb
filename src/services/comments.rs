@@ -2,7 +2,7 @@ use crate::domain::blog_posts::BlogPostID;
 use crate::domain::comments::{Comment, CommentID, NewComment, UpdateComment};
 use crate::domain::users::UserID;
 use crate::schema::comments::dsl::*;
-use crate::services::{get_current_time_str, Page};
+use crate::services::get_current_time_str;
 use crate::Pool;
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
@@ -20,26 +20,20 @@ pub fn get_comment_by_id(
 pub fn get_comments_of_author(
     pool: &Pool,
     post_author_id: &UserID,
-    page: &Page,
 ) -> Result<Vec<Comment>, anyhow::Error> {
     let conn = pool.get()?;
     Ok(comments
         .filter(author_id.eq(post_author_id))
-        .offset((page.number * page.size) as i64)
-        .limit(page.size as i64)
         .load::<Comment>(&conn)?)
 }
 
 pub fn get_comments_for_blog_post(
     pool: &Pool,
     blog_post_id: &BlogPostID,
-    page: &Page,
 ) -> Result<Vec<Comment>, anyhow::Error> {
     let conn = pool.get()?;
     Ok(comments
         .filter(post_id.eq(blog_post_id))
-        .offset((page.number * page.size) as i64)
-        .limit(page.size as i64)
         .load::<Comment>(&conn)?)
 }
 

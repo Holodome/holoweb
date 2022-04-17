@@ -3,7 +3,7 @@ use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::blog_posts::{BlogPostID, NewBlogPost, UpdateBlogPost};
 use holosite::services::{
     get_all_blog_posts, get_blog_post_by_id, get_blog_post_by_title, insert_new_blog_post,
-    update_blog_post, BlogPostError, Page,
+    update_blog_post, BlogPostError,
 };
 
 #[test]
@@ -30,7 +30,7 @@ fn add_new_blog_post_works() {
 }
 
 #[test]
-fn add_blog_post_and_get_it_by_title_works() {
+fn add_blog_post_and_get_it_by_id_works() {
     let db = TestDB::spawn();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
@@ -48,7 +48,7 @@ fn add_blog_post_and_get_it_by_title_works() {
 }
 
 #[test]
-fn add_blog_post_and_get_it_by_id_works() {
+fn add_blog_post_and_get_it_by_title_works() {
     let db = TestDB::spawn();
     let test_post = TestBlogPost::generate();
     let test_user = TestUser::generate();
@@ -211,7 +211,7 @@ fn get_all_blog_posts_works() {
         })
         .collect();
 
-    let res = get_all_blog_posts(db.pool(), &Page::infinite());
+    let res = get_all_blog_posts(db.pool());
     assert_ok!(&res);
     let res = res.unwrap();
     assert_eq!(res.len(), post_ids.len());

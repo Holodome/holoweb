@@ -2,31 +2,8 @@ mod blog_posts;
 mod comments;
 mod credentials;
 mod password;
+mod projects;
 mod users;
-
-#[derive(serde::Deserialize, Clone)]
-pub struct Page {
-    pub number: usize,
-    pub size: usize,
-}
-
-impl Page {
-    pub fn infinite() -> Self {
-        Self {
-            number: 0,
-            size: i32::MAX as usize,
-        }
-    }
-}
-
-impl Default for Page {
-    fn default() -> Self {
-        Self {
-            number: 0,
-            size: 10,
-        }
-    }
-}
 
 fn get_current_time_str() -> String {
     std::time::SystemTime::now()

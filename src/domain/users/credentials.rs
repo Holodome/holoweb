@@ -10,7 +10,7 @@ pub struct StoredCredentials {
     pub user_id: UserID,
 }
 
-#[derive(Debug, Clone, diesel::Queryable)]
+#[derive(Debug, Clone)]
 pub struct Credentials {
     pub name: UserName,
     pub password: UserPassword,

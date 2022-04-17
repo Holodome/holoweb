@@ -1,5 +1,5 @@
 use crate::domain::users::hashed_user_password::HashedUserPassword;
-use crate::domain::users::{UserEmail, UserID, UserName, UserPasswordSalt};
+use crate::domain::users::{UserEmail, UserID, UserName, UserPasswordSalt, UserRole};
 use crate::schema::users;
 
 #[derive(Debug, diesel::Queryable, diesel::Insertable, PartialEq)]
@@ -14,5 +14,5 @@ pub struct User {
     pub password_salt: UserPasswordSalt,
 
     pub is_banned: bool,
-    pub role: String,
+    pub role: UserRole,
 }

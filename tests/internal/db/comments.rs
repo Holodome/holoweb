@@ -3,7 +3,7 @@ use claim::{assert_ok, assert_some};
 use holosite::domain::comments::{CommentID, NewComment, UpdateComment};
 use holosite::services::{
     get_comment_by_id, get_comments_for_blog_post, get_comments_of_author, insert_new_comment,
-    update_comment, Page,
+    update_comment,
 };
 
 #[test]
@@ -57,7 +57,7 @@ fn get_comment_by_author_works() {
     let comment = TestComment::generate();
     comment.register_internally(db.pool(), &blog_post_id, &user_id);
 
-    let res = get_comments_of_author(db.pool(), &user_id, &Page::infinite());
+    let res = get_comments_of_author(db.pool(), &user_id);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_eq!(res.len(), 1);
@@ -79,7 +79,7 @@ fn get_comment_by_author_returns_all_comments() {
         })
         .collect();
 
-    let res = get_comments_of_author(db.pool(), &user_id, &Page::infinite());
+    let res = get_comments_of_author(db.pool(), &user_id);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_eq!(res.len(), comment_ids.len());
@@ -98,7 +98,7 @@ fn get_comment_by_blog_post_works() {
     let comment = TestComment::generate();
     comment.register_internally(db.pool(), &blog_post_id, &user_id);
 
-    let res = get_comments_for_blog_post(db.pool(), &blog_post_id, &Page::infinite());
+    let res = get_comments_for_blog_post(db.pool(), &blog_post_id);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_eq!(res.len(), 1);
@@ -122,7 +122,7 @@ fn get_comment_by_blog_post_returns_blog_posts_from_different_authors() {
         })
         .collect();
 
-    let res = get_comments_for_blog_post(db.pool(), &blog_post_id, &Page::infinite());
+    let res = get_comments_for_blog_post(db.pool(), &blog_post_id);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_eq!(res.len(), comment_ids.len());
@@ -146,7 +146,7 @@ fn get_comment_by_blog_post_returns_all_comments() {
         })
         .collect();
 
-    let res = get_comments_for_blog_post(db.pool(), &blog_post_id, &Page::infinite());
+    let res = get_comments_for_blog_post(db.pool(), &blog_post_id);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_eq!(res.len(), comment_ids.len());
