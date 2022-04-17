@@ -7,7 +7,7 @@ env:
 
 jobs:
   test:
-    name: Integration tests
+    name: Integration & Unit testing
     runs-on: ubuntu-latest
     services:
       redis:
