@@ -1,5 +1,5 @@
 redis_uri: 127.0.0.1:6379
-database_uri: /.data/db.sqlite
+database_uri: .data/db.sqlite
 app:
   port: 8080
   hmac_secret: super-long-and-secret-random-key-needed-to-verify-message-integrity

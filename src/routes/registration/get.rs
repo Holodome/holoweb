@@ -1,4 +1,3 @@
-use crate::domain::users::UserID;
 use crate::utils::render_template;
 
 use actix_web::HttpResponse;

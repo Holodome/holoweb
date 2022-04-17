@@ -1,6 +1,6 @@
 use crate::domain::blog_posts::BlogPostID;
 use crate::domain::projects::{NewProject, Project, ProjectID, UpdateProject};
-use crate::domain::users::{User, UserID};
+use crate::domain::users::UserID;
 use crate::schema::projects::dsl::*;
 use crate::Pool;
 use diesel::{

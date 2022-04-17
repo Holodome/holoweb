@@ -3,10 +3,9 @@ use crate::domain::users::UserID;
 use crate::services::{get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post};
 use crate::utils::{e500, render_template};
 
-use crate::domain::comments::Comment;
 use crate::Pool;
 use actix_web::{web, HttpResponse};
-use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
+use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 
 #[derive(Template)]
