@@ -155,7 +155,8 @@ mod tests {
             is_deleted: false,
         }];
         let rendered = test_render_comments(comments).unwrap();
-        let expected = include_str!("../../../tests/data/render_comments_render_comment.html").to_string();
+        let expected =
+            include_str!("../../../tests/data/render_comments_render_comment.html").to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
@@ -188,7 +189,8 @@ mod tests {
             },
         ];
         let rendered = test_render_comments(comments).unwrap();
-        let expected = include_str!("../../../tests/data/render_comments_render_reply.html").to_string();
+        let expected =
+            include_str!("../../../tests/data/render_comments_render_reply.html").to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
@@ -231,7 +233,9 @@ mod tests {
             },
         ];
         let rendered = test_render_comments(comments).unwrap();
-        let expected = include_str!("../../../tests/data/render_comments_render_multiple_replies.html").to_string();
+        let expected =
+            include_str!("../../../tests/data/render_comments_render_multiple_replies.html")
+                .to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
@@ -263,7 +267,10 @@ mod tests {
             },
         ];
         let rendered = test_render_comments(comments).unwrap();
-        let expected = include_str!("../../../tests/data/render_comments_render_multiple_toplevel_comments.html").to_string();
+        let expected = include_str!(
+            "../../../tests/data/render_comments_render_multiple_toplevel_comments.html"
+        )
+        .to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
