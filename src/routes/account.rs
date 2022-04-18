@@ -1,4 +1,4 @@
-use crate::domain::users::{UserID, UserName};
+use crate::domain::users::UserID;
 use crate::services::get_user_by_id;
 use crate::utils::{e500, render_template};
 
@@ -56,8 +56,8 @@ pub async fn account(
         projects: vec![],
         blog_posts: vec![],
         comments: vec![],
-        name: &user.name.as_ref(),
-        email: &user.email.as_ref(),
+        name: user.name.as_ref(),
+        email: user.email.as_ref(),
     })
 }
 

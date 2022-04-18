@@ -1,6 +1,5 @@
 use crate::error_handlers::redirect_on_same_page;
 use crate::middleware::require_login;
-use crate::utils::see_other;
 use actix_web::middleware::ErrorHandlers;
 use actix_web::{http, web};
 use actix_web_lab::middleware::from_fn;

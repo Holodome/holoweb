@@ -1,16 +1,13 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID};
-use crate::domain::users::UserID;
 use crate::services::{get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post};
 use crate::utils::{e500, render_template};
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use crate::domain::comments::{Comment, CommentID};
+use crate::domain::comments::Comment;
 use crate::Pool;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
-use diesel::insert_into;
-use serde::de::Unexpected::Str;
 
 #[derive(Template)]
 #[template(path = "blog_posts.html")]
@@ -143,6 +140,8 @@ pub async fn blog_post(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::comments::CommentID;
+    use crate::domain::users::UserID;
 
     fn remove_spaces(s: &str) -> String {
         s.chars().filter(|c| !c.is_whitespace()).collect()
@@ -159,7 +158,7 @@ mod tests {
     ) -> Comment {
         Comment {
             id: id.unwrap_or_else(|| CommentID::generate_random()),
-            contents: contents,
+            contents,
             author_id: UserID::generate_random(),
             post_id: BlogPostID::generate_random(),
             reply_to_id: reply_to,

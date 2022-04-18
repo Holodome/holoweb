@@ -5,8 +5,8 @@ use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
 use std::io::Write;
 
-const ALL: &'static str = "all";
-const AUTHENTICATED: &'static str = "authenticated";
+const ALL: &str = "all";
+const AUTHENTICATED: &str = "authenticated";
 
 #[derive(
     Debug,
