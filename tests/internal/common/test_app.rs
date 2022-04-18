@@ -134,32 +134,8 @@ impl TestApp {
         .await
     }
 
-    pub async fn get_home_page(&self) -> Response {
-        self.get_page("/").await
-    }
-
-    pub async fn get_home_page_html(&self) -> String {
-        self.get_home_page().await.text().await.unwrap()
-    }
-
     pub async fn get_account_page_html(&self) -> String {
         self.get_page("/account/home").await.text().await.unwrap()
-    }
-
-    pub async fn get_change_password(&self) -> Response {
-        self.get_page("/account/change_password").await
-    }
-
-    pub async fn get_change_password_page_html(&self) -> String {
-        self.get_change_password().await.text().await.unwrap()
-    }
-
-    pub async fn get_change_name(&self) -> Response {
-        self.get_page("/account/change_name").await
-    }
-
-    pub async fn get_change_name_page_html(&self) -> String {
-        self.get_change_name().await.text().await.unwrap()
     }
 
     pub async fn get_create_blog_post_page(&self) -> Response {

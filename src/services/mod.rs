@@ -1,7 +1,6 @@
 mod blog_posts;
 mod comments;
 mod credentials;
-mod password;
 mod projects;
 mod users;
 
@@ -16,5 +15,4 @@ fn get_current_time_str() -> String {
 pub use blog_posts::*;
 pub use comments::*;
 pub use credentials::*;
-pub use password::*;
 pub use users::*;

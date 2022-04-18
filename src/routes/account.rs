@@ -1,12 +1,17 @@
-use crate::domain::users::UserID;
-use crate::services::get_user_by_id;
-use crate::utils::{e500, render_template};
+use crate::domain::users::{Credentials, UpdateUser, UserID, UserName, UserPassword};
+use crate::services::{
+    get_user_by_id, get_user_by_name, update_user, validate_credentials, AuthError, UserError,
+};
+use crate::utils::{e500, redirect_with_error, render_template, see_other};
+use std::fmt::Formatter;
 
 use crate::domain::blog_posts::BlogPost;
 use crate::domain::projects::Project;
 use crate::Pool;
+use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
-use actix_web_flash_messages::IncomingFlashMessages;
+use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
+use actix_web_lab::web::redirect;
 use askama::Template;
 
 struct ProjectInfo<'a> {
@@ -61,12 +66,59 @@ pub async fn account(
     })
 }
 
-#[derive(serde::Deserialize)]
-pub struct ChangeNameQuery {}
+#[derive(thiserror::Error)]
+pub enum ChangeNameError {
+    #[error("Current password is invalid")]
+    InvalidCurrentPassword(#[source] anyhow::Error),
+    #[error("Taken name")]
+    TakenName,
+    #[error("Invalid name")]
+    InvalidName(#[source] anyhow::Error),
+    #[error("Something went wrong")]
+    UnexpectedError(#[from] anyhow::Error),
+}
 
-#[tracing::instrument("Change name")]
-pub async fn change_name() -> actix_web::Result<HttpResponse> {
-    todo!()
+impl std::fmt::Debug for ChangeNameError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use crate::utils::error_chain_fmt;
+
+        error_chain_fmt(self, f)
+    }
+}
+
+#[derive(serde::Deserialize)]
+pub struct ChangeNameForm {
+    new_name: String,
+}
+
+#[tracing::instrument(skip(form, pool))]
+pub async fn change_name(
+    form: web::Form<ChangeNameForm>,
+    pool: web::Data<Pool>,
+    user_id: UserID,
+) -> Result<HttpResponse, InternalError<ChangeNameError>> {
+    let user_name = UserName::parse(form.0.new_name)
+        .map_err(|e| redirect_with_error("/account/home", ChangeNameError::InvalidName(e)))?;
+
+    let changeset = UpdateUser {
+        id: &user_id,
+        name: Some(&user_name),
+        email: None,
+        password: None,
+        is_banned: None,
+    };
+
+    update_user(&pool, &changeset).map_err(|e| {
+        redirect_with_error(
+            "/account/home",
+            match e {
+                UserError::TakenName => ChangeNameError::TakenName,
+                _ => ChangeNameError::UnexpectedError(e.into()),
+            },
+        )
+    })?;
+    FlashMessage::info("Your name has been changed").send();
+    Ok(see_other("/account/home"))
 }
 
 #[tracing::instrument("Change email")]
