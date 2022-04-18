@@ -1,8 +1,17 @@
+use crate::domain::users::{NewUser, NewUserError, PasswordError};
+use crate::middleware::Session;
+use crate::services::{insert_new_user, UserError};
 use crate::utils::render_template;
-
+use crate::utils::see_other;
+use crate::Pool;
+use actix_web::error::InternalError;
+use actix_web::web;
 use actix_web::HttpResponse;
+use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
+use secrecy::{ExposeSecret, Secret};
+use std::fmt::Formatter;
 
 #[derive(Template)]
 #[template(path = "registration.html")]
@@ -16,16 +25,6 @@ pub async fn registration_form(
 ) -> Result<HttpResponse, actix_web::Error> {
     render_template(RegistrationTemplate { messages })
 }
-use crate::domain::users::{NewUser, NewUserError, PasswordError};
-use crate::middleware::Session;
-use crate::services::{insert_new_user, UserError};
-use crate::utils::see_other;
-use crate::Pool;
-use actix_web::error::InternalError;
-use actix_web::web;
-use actix_web_flash_messages::FlashMessage;
-use secrecy::{ExposeSecret, Secret};
-use std::fmt::Formatter;
 
 #[derive(thiserror::Error)]
 pub enum RegistrationError {

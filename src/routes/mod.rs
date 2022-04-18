@@ -41,8 +41,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                         )
                         .handler(http::StatusCode::BAD_REQUEST, redirect_on_same_page),
                 )
-                .route(web::get().to(login::get::login_form))
-                .route(web::post().to(login::post::login)),
+                .route(web::get().to(login::login_form))
+                .route(web::post().to(login::login)),
         )
         .service(
             web::scope("/blog_posts")

@@ -1,11 +1,25 @@
 use crate::domain::users::Credentials;
 use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
+use crate::utils::render_template;
 use crate::utils::see_other;
 use crate::Pool;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, ResponseError};
+use actix_web_flash_messages::IncomingFlashMessages;
+use askama::Template;
 use secrecy::Secret;
+
+#[derive(Template)]
+#[template(path = "login.html")]
+struct LoginTemplate {
+    messages: IncomingFlashMessages,
+}
+
+#[tracing::instrument(skip(messages))]
+pub async fn login_form(messages: IncomingFlashMessages) -> actix_web::Result<HttpResponse> {
+    render_template(LoginTemplate { messages })
+}
 
 #[derive(thiserror::Error)]
 pub enum LoginError {
