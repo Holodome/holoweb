@@ -173,7 +173,7 @@ mod tests {
         let comments = vec![generate_comment("hello world".to_string(), None, None)];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
-            include_str!("../../../tests/data/render_comments_render_comment.html").to_string();
+            include_str!("../../tests/data/render_comments_render_comment.html").to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
@@ -189,7 +189,7 @@ mod tests {
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
-            include_str!("../../../tests/data/render_comments_render_reply.html").to_string();
+            include_str!("../../tests/data/render_comments_render_reply.html").to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
@@ -206,7 +206,7 @@ mod tests {
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
-            include_str!("../../../tests/data/render_comments_render_multiple_replies.html")
+            include_str!("../../tests/data/render_comments_render_multiple_replies.html")
                 .to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
@@ -221,10 +221,9 @@ mod tests {
             generate_comment("3".to_string(), None, None),
         ];
         let rendered = test_render_comments(comments).unwrap();
-        let expected = include_str!(
-            "../../../tests/data/render_comments_render_multiple_toplevel_comments.html"
-        )
-        .to_string();
+        let expected =
+            include_str!("../../tests/data/render_comments_render_multiple_toplevel_comments.html")
+                .to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
@@ -245,7 +244,7 @@ mod tests {
             generate_comment("6".to_string(), None, Some(id2.clone())),
         ];
         let rendered = test_render_comments(comments).unwrap();
-        let expected = include_str!("../../../tests/data/render_comments_render_multiple_levels_of_nesting_and_multiple_children.html").to_string();
+        let expected = include_str!("../../tests/data/render_comments_render_multiple_levels_of_nesting_and_multiple_children.html").to_string();
 
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);

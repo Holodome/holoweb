@@ -6,6 +6,7 @@ use actix_web_lab::middleware::from_fn;
 
 mod account;
 mod blog_posts;
+mod comments;
 mod health_check;
 mod login;
 mod logout;
@@ -46,17 +47,17 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::scope("/blog_posts")
-                .route("/all", web::get().to(blog_posts::get::all_blog_posts))
-                .route("/{post_id}/view", web::get().to(blog_posts::get::blog_post))
+                .route("/all", web::get().to(blog_posts::all_blog_posts))
+                .route("/{post_id}/view", web::get().to(blog_posts::blog_post))
                 .service(
                     web::resource("/{post_id}/comments/create")
                         .wrap(from_fn(require_login))
-                        .route(web::post().to(blog_posts::comments::create::create_comment)),
+                        .route(web::post().to(comments::create_comment)),
                 )
                 .service(
                     web::resource("/{post_id}/comments/{comment_id}/edit")
                         .wrap(from_fn(require_login))
-                        .route(web::post().to(blog_posts::comments::edit::edit_comment)),
+                        .route(web::post().to(comments::edit_comment)),
                 ),
         );
 }
