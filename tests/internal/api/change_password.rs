@@ -1,5 +1,5 @@
 use crate::api::assert_is_redirect_to;
-use crate::common::{TestApp, TestUser};
+use crate::common::TestApp;
 use uuid::Uuid;
 
 #[tokio::test]
@@ -37,7 +37,7 @@ async fn new_password_fields_must_match() {
             "repeat_new_password": &another_new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/change_password");
+    assert_is_redirect_to(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("Repeat password does not match new password"));
@@ -63,7 +63,7 @@ async fn current_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/change_password");
+    assert_is_redirect_to(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("Current password is incorrect"));
@@ -88,7 +88,7 @@ async fn new_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/change_password");
+    assert_is_redirect_to(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("New password is invalid"));
