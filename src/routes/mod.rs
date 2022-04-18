@@ -20,8 +20,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::resource("/registration")
-                .route(web::get().to(registration::get::registration_form))
-                .route(web::post().to(registration::post::registration)),
+                .route(web::get().to(registration::registration_form))
+                .route(web::post().to(registration::registration)),
         )
         .service(
             web::scope("/account")
