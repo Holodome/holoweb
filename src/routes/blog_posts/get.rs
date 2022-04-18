@@ -75,11 +75,14 @@ where
                 .map(|c| rendered.remove(c.id.as_ref().as_str()).unwrap())
                 .collect();
 
+            // TODO: Handle deleted in render
             let contents = if current.is_deleted {
                 "<deleted>"
             } else {
                 current.contents.as_str()
             };
+            // TODO: Author
+            // TODO: Date
             let s = CommentRender {
                 author: "TODO",
                 date: "TODO",
@@ -149,18 +152,26 @@ mod tests {
         render_comments(comments, |a, b| a.contents.cmp(&b.contents))
     }
 
-    #[test]
-    fn render_comment_works() {
-        let comments = vec![Comment {
-            id: CommentID::generate_random(),
-            contents: "hello world".to_string(),
+    fn generate_comment(
+        contents: String,
+        id: Option<CommentID>,
+        reply_to: Option<CommentID>,
+    ) -> Comment {
+        Comment {
+            id: id.unwrap_or_else(|| CommentID::generate_random()),
+            contents: contents,
             author_id: UserID::generate_random(),
             post_id: BlogPostID::generate_random(),
-            reply_to_id: None,
+            reply_to_id: reply_to,
             created_at: "".to_string(),
             updated_at: "".to_string(),
             is_deleted: false,
-        }];
+        }
+    }
+
+    #[test]
+    fn render_comment_works() {
+        let comments = vec![generate_comment("hello world".to_string(), None, None)];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
             include_str!("../../../tests/data/render_comments_render_comment.html").to_string();
@@ -174,26 +185,8 @@ mod tests {
     fn render_reply_works() {
         let id0 = CommentID::generate_random();
         let comments = vec![
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "world".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id0.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: id0,
-                contents: "hello".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: None,
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
+            generate_comment("hello".to_string(), Some(id0.clone()), None),
+            generate_comment("world".to_string(), None, Some(id0.clone())),
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
@@ -208,36 +201,9 @@ mod tests {
     fn render_multiple_replies_works() {
         let id0 = CommentID::generate_random();
         let comments = vec![
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "2".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id0.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "3".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id0.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: id0,
-                contents: "1".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: None,
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
+            generate_comment("1".to_string(), Some(id0.clone()), None),
+            generate_comment("2".to_string(), None, Some(id0.clone())),
+            generate_comment("3".to_string(), None, Some(id0.clone())),
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
@@ -252,26 +218,8 @@ mod tests {
     #[test]
     fn render_multiple_toplevel_comments() {
         let comments = vec![
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "2".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: None,
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "3".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: None,
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
+            generate_comment("2".to_string(), None, None),
+            generate_comment("3".to_string(), None, None),
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected = include_str!(
@@ -290,66 +238,12 @@ mod tests {
         let id1 = CommentID::generate_random();
         let id2 = CommentID::generate_random();
         let comments = vec![
-            Comment {
-                id: id0.clone(),
-                contents: "1".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: None,
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "2".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id0.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: id1.clone(),
-                contents: "3".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id0.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: id2.clone(),
-                contents: "4".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id1.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "5".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id2.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
-            Comment {
-                id: CommentID::generate_random(),
-                contents: "6".to_string(),
-                author_id: UserID::generate_random(),
-                post_id: BlogPostID::generate_random(),
-                reply_to_id: Some(id2.clone()),
-                created_at: "".to_string(),
-                updated_at: "".to_string(),
-                is_deleted: false,
-            },
+            generate_comment("1".to_string(), Some(id0.clone()), None),
+            generate_comment("2".to_string(), None, Some(id0.clone())),
+            generate_comment("3".to_string(), Some(id1.clone()), Some(id0.clone())),
+            generate_comment("4".to_string(), Some(id2.clone()), Some(id1.clone())),
+            generate_comment("5".to_string(), None, Some(id2.clone())),
+            generate_comment("6".to_string(), None, Some(id2.clone())),
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected = include_str!("../../../tests/data/render_comments_render_multiple_levels_of_nesting_and_multiple_children.html").to_string();
