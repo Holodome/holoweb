@@ -62,9 +62,7 @@ pub async fn account(
 }
 
 #[derive(serde::Deserialize)]
-pub struct ChangeNameQuery {
-
-}
+pub struct ChangeNameQuery {}
 
 #[tracing::instrument("Change name")]
 pub async fn change_name() -> actix_web::Result<HttpResponse> {

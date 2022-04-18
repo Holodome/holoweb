@@ -1,9 +1,9 @@
 use crate::error_handlers::redirect_on_same_page;
 use crate::middleware::require_login;
+use crate::utils::see_other;
 use actix_web::middleware::ErrorHandlers;
 use actix_web::{http, web};
 use actix_web_lab::middleware::from_fn;
-use crate::utils::see_other;
 
 mod account;
 mod blog_posts;
@@ -30,7 +30,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                 .route("/home", web::get().to(account::account))
                 .route("/change_name", web::post().to(account::change_name))
                 .route("/change_password", web::post().to(account::change_password))
-                .route("/change_email", web::post().to(account::change_email))
+                .route("/change_email", web::post().to(account::change_email)),
         )
         .service(
             web::resource("/login")

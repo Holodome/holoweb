@@ -1,0 +1,19 @@
+<div class="comment">
+  <div class="content">
+    <a class="author">{{ author }}</a>
+    <div class="metadata">
+      <span class="date">{{ date }}</span>
+    </div>
+    <div class="text">
+      <p>{{ contents }}</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  <div class="comments">
+    {% for child in rendered_children %}
+      {{ child }}
+    {% endfor %}
+  </div>
+</div>
