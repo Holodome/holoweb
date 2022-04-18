@@ -41,7 +41,10 @@ struct CommentRender<'a> {
     rendered_children: Vec<String>,
 }
 
-fn render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
+fn render_comments<F>(comments: Vec<Comment>, mut comparator: F) -> Result<String, anyhow::Error>
+where
+    F: FnMut(&&Comment, &&Comment) -> core::cmp::Ordering,
+{
     let mut children = HashMap::<&str, Vec<&Comment>>::new();
     let mut orphans = Vec::new();
     for comment in comments.iter() {
@@ -55,17 +58,18 @@ fn render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
         }
     }
 
+    orphans.sort_by(&mut comparator);
+
     let mut visited = HashSet::<&str>::new();
     let mut rendered = HashMap::<&str, String>::new();
-    let mut stack = VecDeque::from(orphans);
+    let mut stack = VecDeque::from(orphans.clone());
     while !stack.is_empty() {
         let current = stack.pop_front().unwrap();
         let current_id = current.id.as_ref().as_str();
         let children = children.entry(current_id).or_default();
 
         if visited.contains(current_id) {
-            // TODO: Normal sorting
-            children.sort_by(|a, b| a.contents.cmp(&b.contents));
+            children.sort_by(&mut comparator);
             let rendered_children = children
                 .iter()
                 .map(|c| rendered.remove(c.id.as_ref().as_str()).unwrap())
@@ -91,8 +95,13 @@ fn render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
         }
     }
 
-    Ok(rendered.into_values().collect::<Vec<_>>().join(""))
+    Ok(orphans
+        .iter()
+        .map(|o| rendered.remove(o.id.as_ref().as_str()).unwrap())
+        .collect::<Vec<String>>()
+        .join(""))
 }
+
 #[derive(Template)]
 #[template(path = "blog_post.html")]
 struct BlogPostTemplate {
@@ -129,6 +138,10 @@ mod tests {
         s.chars().filter(|c| !c.is_whitespace()).collect()
     }
 
+    fn test_render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
+        render_comments(comments, |a, b| a.contents.cmp(&b.contents))
+    }
+
     #[test]
     fn render_comment_works() {
         let comments = vec![Comment {
@@ -141,25 +154,9 @@ mod tests {
             updated_at: "".to_string(),
             is_deleted: false,
         }];
-        let rendered = render_comments(comments).unwrap();
-        let expected = r#"
-<div class="comment">
-  <div class="content">
-    <a class="author">TODO</a>
-    <div class="metadata">
-      <span class="date">TODO</span>
-    </div>
-    <div class="text">
-      <p>hello world</p>
-    </div>
-    <div class="actions">
-      <a class="reply">Reply</a>
-    </div>
-  </div>
-  <div class="comments">
-  </div>
-</div>"#
-            .to_string();
+        let rendered = test_render_comments(comments).unwrap();
+        let expected = include_str!("../../../tests/data/render_comments_render_comment.html").to_string();
+
         let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
         assert_eq!(rendered_without_spaces, expected_without_spaces);
@@ -190,41 +187,10 @@ mod tests {
                 is_deleted: false,
             },
         ];
-        let rendered = render_comments(comments).unwrap();
-        let expected = r#"
-<div class="comment">
-  <div class="content">
-    <a class="author">TODO</a>
-    <div class="metadata">
-      <span class="date">TODO</span>
-    </div>
-    <div class="text">
-      <p>hello</p>
-    </div>
-    <div class="actions">
-      <a class="reply">Reply</a>
-    </div>
-  </div>
-  <div class="comments">
-    <div class="comment">
-      <div class="content">
-        <a class="author">TODO</a>
-        <div class="metadata">
-          <span class="date">TODO</span>
-        </div>
-        <div class="text">
-          <p>world</p>
-        </div>
-        <div class="actions">
-          <a class="reply">Reply</a>
-        </div>
-      </div>
-      <div class="comments">
-      </div>
-    </div>
-  </div>
-</div>"#;
-        let expected_without_spaces = remove_spaces(expected);
+        let rendered = test_render_comments(comments).unwrap();
+        let expected = include_str!("../../../tests/data/render_comments_render_reply.html").to_string();
+
+        let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
         assert_eq!(rendered_without_spaces, expected_without_spaces);
     }
@@ -264,57 +230,10 @@ mod tests {
                 is_deleted: false,
             },
         ];
-        let rendered = render_comments(comments).unwrap();
-        let expected = r#"
-<div class="comment">
-  <div class="content">
-    <a class="author">TODO</a>
-    <div class="metadata">
-      <span class="date">TODO</span>
-    </div>
-    <div class="text">
-      <p>1</p>
-    </div>
-    <div class="actions">
-      <a class="reply">Reply</a>
-    </div>
-  </div>
-  <div class="comments">
-    <div class="comment">
-      <div class="content">
-        <a class="author">TODO</a>
-        <div class="metadata">
-          <span class="date">TODO</span>
-        </div>
-        <div class="text">
-          <p>2</p>
-        </div>
-        <div class="actions">
-          <a class="reply">Reply</a>
-        </div>
-      </div>
-      <div class="comments">
-      </div>
-    </div>
-    <div class="comment">
-      <div class="content">
-        <a class="author">TODO</a>
-        <div class="metadata">
-          <span class="date">TODO</span>
-        </div>
-        <div class="text">
-          <p>3</p>
-        </div>
-        <div class="actions">
-          <a class="reply">Reply</a>
-        </div>
-      </div>
-      <div class="comments">
-      </div>
-    </div>
-  </div>
-</div>"#;
-        let expected_without_spaces = remove_spaces(expected);
+        let rendered = test_render_comments(comments).unwrap();
+        let expected = include_str!("../../../tests/data/render_comments_render_multiple_replies.html").to_string();
+
+        let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
         assert_eq!(rendered_without_spaces, expected_without_spaces);
     }
@@ -343,42 +262,10 @@ mod tests {
                 is_deleted: false,
             },
         ];
-        let rendered = render_comments(comments).unwrap();
-        let expected = r#"
-<div class="comment">
-  <div class="content">
-    <a class="author">TODO</a>
-    <div class="metadata">
-      <span class="date">TODO</span>
-    </div>
-    <div class="text">
-      <p>2</p>
-    </div>
-    <div class="actions">
-      <a class="reply">Reply</a>
-    </div>
-  </div>
-  <div class="comments">
-  </div>
-</div>
-<div class="comment">
-  <div class="content">
-    <a class="author">TODO</a>
-    <div class="metadata">
-      <span class="date">TODO</span>
-    </div>
-    <div class="text">
-      <p>3</p>
-    </div>
-    <div class="actions">
-      <a class="reply">Reply</a>
-    </div>
-  </div>
-  <div class="comments">
-  </div>
-</div>
-"#;
-        let expected_without_spaces = remove_spaces(expected);
+        let rendered = test_render_comments(comments).unwrap();
+        let expected = include_str!("../../../tests/data/render_comments_render_multiple_toplevel_comments.html").to_string();
+
+        let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
         assert_eq!(rendered_without_spaces, expected_without_spaces);
     }
@@ -450,106 +337,10 @@ mod tests {
                 is_deleted: false,
             },
         ];
-        let rendered = render_comments(comments).unwrap();
-        let expected = r#"
-        <div class="comment">
-  <div class="content">
-    <a class="author">TODO</a>
-    <div class="metadata">
-      <span class="date">TODO</span>
-    </div>
-    <div class="text">
-      <p>1</p>
-    </div>
-    <div class="actions">
-      <a class="reply">Reply</a>
-    </div>
-  </div>
-  <div class="comments">
-    <div class="comment">
-      <div class="content">
-        <a class="author">TODO</a>
-        <div class="metadata">
-          <span class="date">TODO</span>
-        </div>
-        <div class="text">
-          <p>2</p>
-        </div>
-        <div class="actions">
-          <a class="reply">Reply</a>
-        </div>
-      </div>
-      <div class="comments">
-      </div>
-    </div>
-    <div class="comment">
-      <div class="content">
-        <a class="author">TODO</a>
-        <div class="metadata">
-          <span class="date">TODO</span>
-        </div>
-        <div class="text">
-          <p>3</p>
-        </div>
-        <div class="actions">
-          <a class="reply">Reply</a>
-        </div>
-      </div>
-      <div class="comments">
-        <div class="comment">
-          <div class="content">
-            <a class="author">TODO</a>
-            <div class="metadata">
-              <span class="date">TODO</span>
-            </div>
-            <div class="text">
-              <p>4</p>
-            </div>
-            <div class="actions">
-              <a class="reply">Reply</a>
-            </div>
-          </div>
-          <div class="comments">
-            <div class="comment">
-              <div class="content">
-                <a class="author">TODO</a>
-                <div class="metadata">
-                  <span class="date">TODO</span>
-                </div>
-                <div class="text">
-                  <p>5</p>
-                </div>
-                <div class="actions">
-                  <a class="reply">Reply</a>
-                </div>
-              </div>
-              <div class="comments">
-              </div>
-            </div>
-            <div class="comment">
-              <div class="content">
-                <a class="author">TODO</a>
-                <div class="metadata">
-                  <span class="date">TODO</span>
-                </div>
-                <div class="text">
-                  <p>6</p>
-                </div>
-                <div class="actions">
-                  <a class="reply">Reply</a>
-                </div>
-              </div>
-              <div class="comments">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-"#;
-        let expected_without_spaces = remove_spaces(expected);
+        let rendered = test_render_comments(comments).unwrap();
+        let expected = include_str!("../../../tests/data/render_comments_render_multiple_levels_of_nesting_and_multiple_children.html").to_string();
+
+        let expected_without_spaces = remove_spaces(&expected);
         let rendered_without_spaces = remove_spaces(&rendered);
         assert_eq!(rendered_without_spaces, expected_without_spaces);
     }
