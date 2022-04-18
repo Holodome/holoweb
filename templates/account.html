@@ -18,7 +18,7 @@
       Name
     </h2>
     <div class="ui input">
-      <input type="text" placeholder="name" value="Holodome">
+      <input type="text" placeholder="name" value="{{ name }}">
     </div>
 
     <button class="ui button">Change name</button>
@@ -31,7 +31,7 @@
       Email
     </h2>
     <div class="ui input">
-      <input type="email" placeholder="email" value="holodome@gmail.com">
+      <input type="email" placeholder="email" value="{{ email }}">
     </div>
 
     <button class="ui button">Change email</button>
@@ -49,7 +49,7 @@
       {% for project_info in projects %}
         <div class="item">
           <div class="content">
-            <a class="header" href="/projects/{{ project_info.id }}"></a>
+            <a class="header" href="/projects/{{ project_info.id }}">{{ project_info.title }}</a>
             <div class="description">{{ project_info.brief }}</div>
             <div class="metadata">{{ project_info.role }}</div>
           </div>
@@ -68,7 +68,7 @@
       {% for blog_post_info in blog_posts %}
       <div class="item">
         <div class="content">
-          <a class="header" href="/blog_posts/{{ blog_post_info.id }}"></a>
+          <a class="header" href="/blog_posts/{{ blog_post_info.id }}">{{ blog_post_info.title }}</a>
           <div class="description">{{ blog_post_info.brief }}</div>
           <div class="metadata">{{ blog_post_info.role }}</div>
         </div>
