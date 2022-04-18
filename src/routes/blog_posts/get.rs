@@ -33,11 +33,11 @@ pub async fn all_blog_posts(
 }
 
 #[derive(Template)]
-#[template(path = "comment.html", escape="none")]
-struct CommentRender {
-    author: String,
-    date: String,
-    contents: String,
+#[template(path = "comment.html", escape = "none")]
+struct CommentRender<'a> {
+    author: &'a str,
+    date: &'a str,
+    contents: &'a str,
     rendered_children: Vec<String>,
 }
 
@@ -64,19 +64,22 @@ fn render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
         let children = children.entry(current_id).or_default();
 
         if visited.contains(current_id) {
+            // TODO: Normal sorting
+            children.sort_by(|a, b| a.contents.cmp(&b.contents));
             let rendered_children = children
                 .iter()
                 .map(|c| rendered.remove(c.id.as_ref().as_str()).unwrap())
                 .collect();
 
             let s = CommentRender {
-                author: "author".to_string(),
-                date: "date".to_string(),
-                contents: current.contents.clone(),
+                author: "TODO",
+                date: "TODO",
+                contents: current.contents.as_str(),
                 rendered_children,
             }
             .render()?;
             rendered.insert(current_id, s);
+
             continue;
         } else {
             visited.insert(current_id);
@@ -118,54 +121,436 @@ pub async fn blog_post(
     })
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::domain::comments::Comment;
     use super::*;
 
-    #[test]
-    fn render_comment_work() {
-        let comments = vec![Comment {
-            id: CommentID::generate_random(),
-            contents: "hello world".to_string(),
-            author_id: UserID::generate_random(),
-            post_id: BlogPostID::generate_random(),
-            reply_to_id: None,
-            created_at: "".to_string(),
-            updated_at: "".to_string(),
-            is_deleted: false
-        }];
-        let rendered = render_comments(comments).unwrap();
-        println!("{}", rendered);
-        panic!();
+    fn remove_spaces(s: &str) -> String {
+        s.chars().filter(|c| !c.is_whitespace()).collect()
     }
 
     #[test]
-    fn render_comments_work() {
-        let id0 = CommentID::generate_random();
+    fn render_comment_works() {
         let comments = vec![Comment {
             id: CommentID::generate_random(),
             contents: "hello world".to_string(),
             author_id: UserID::generate_random(),
             post_id: BlogPostID::generate_random(),
-            reply_to_id: Some(id0.clone()),
-            created_at: "".to_string(),
-            updated_at: "".to_string(),
-            is_deleted: false
-        },
-        Comment {
-            id: id0,
-            contents: "hello".to_string(),
-            author_id: UserID::generate_random(),
-            post_id: BlogPostID::generate_random(),
             reply_to_id: None,
             created_at: "".to_string(),
             updated_at: "".to_string(),
-            is_deleted: false
+            is_deleted: false,
         }];
         let rendered = render_comments(comments).unwrap();
-        println!("{}", rendered);
-        panic!();
+        let expected = r#"
+<div class="comment">
+  <div class="content">
+    <a class="author">TODO</a>
+    <div class="metadata">
+      <span class="date">TODO</span>
+    </div>
+    <div class="text">
+      <p>hello world</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  <div class="comments">
+  </div>
+</div>"#
+            .to_string();
+        let expected_without_spaces = remove_spaces(&expected);
+        let rendered_without_spaces = remove_spaces(&rendered);
+        assert_eq!(rendered_without_spaces, expected_without_spaces);
+    }
+
+    #[test]
+    fn render_reply_works() {
+        let id0 = CommentID::generate_random();
+        let comments = vec![
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "world".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id0.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: id0,
+                contents: "hello".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: None,
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+        ];
+        let rendered = render_comments(comments).unwrap();
+        let expected = r#"
+<div class="comment">
+  <div class="content">
+    <a class="author">TODO</a>
+    <div class="metadata">
+      <span class="date">TODO</span>
+    </div>
+    <div class="text">
+      <p>hello</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  <div class="comments">
+    <div class="comment">
+      <div class="content">
+        <a class="author">TODO</a>
+        <div class="metadata">
+          <span class="date">TODO</span>
+        </div>
+        <div class="text">
+          <p>world</p>
+        </div>
+        <div class="actions">
+          <a class="reply">Reply</a>
+        </div>
+      </div>
+      <div class="comments">
+      </div>
+    </div>
+  </div>
+</div>"#;
+        let expected_without_spaces = remove_spaces(expected);
+        let rendered_without_spaces = remove_spaces(&rendered);
+        assert_eq!(rendered_without_spaces, expected_without_spaces);
+    }
+
+    #[test]
+    fn render_multiple_replies_works() {
+        let id0 = CommentID::generate_random();
+        let comments = vec![
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "2".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id0.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "3".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id0.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: id0,
+                contents: "1".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: None,
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+        ];
+        let rendered = render_comments(comments).unwrap();
+        let expected = r#"
+<div class="comment">
+  <div class="content">
+    <a class="author">TODO</a>
+    <div class="metadata">
+      <span class="date">TODO</span>
+    </div>
+    <div class="text">
+      <p>1</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  <div class="comments">
+    <div class="comment">
+      <div class="content">
+        <a class="author">TODO</a>
+        <div class="metadata">
+          <span class="date">TODO</span>
+        </div>
+        <div class="text">
+          <p>2</p>
+        </div>
+        <div class="actions">
+          <a class="reply">Reply</a>
+        </div>
+      </div>
+      <div class="comments">
+      </div>
+    </div>
+    <div class="comment">
+      <div class="content">
+        <a class="author">TODO</a>
+        <div class="metadata">
+          <span class="date">TODO</span>
+        </div>
+        <div class="text">
+          <p>3</p>
+        </div>
+        <div class="actions">
+          <a class="reply">Reply</a>
+        </div>
+      </div>
+      <div class="comments">
+      </div>
+    </div>
+  </div>
+</div>"#;
+        let expected_without_spaces = remove_spaces(expected);
+        let rendered_without_spaces = remove_spaces(&rendered);
+        assert_eq!(rendered_without_spaces, expected_without_spaces);
+    }
+
+    #[test]
+    fn render_multiple_toplevel_comments() {
+        let comments = vec![
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "2".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: None,
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "3".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: None,
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+        ];
+        let rendered = render_comments(comments).unwrap();
+        let expected = r#"
+<div class="comment">
+  <div class="content">
+    <a class="author">TODO</a>
+    <div class="metadata">
+      <span class="date">TODO</span>
+    </div>
+    <div class="text">
+      <p>2</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  <div class="comments">
+  </div>
+</div>
+<div class="comment">
+  <div class="content">
+    <a class="author">TODO</a>
+    <div class="metadata">
+      <span class="date">TODO</span>
+    </div>
+    <div class="text">
+      <p>3</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  <div class="comments">
+  </div>
+</div>
+"#;
+        let expected_without_spaces = remove_spaces(expected);
+        let rendered_without_spaces = remove_spaces(&rendered);
+        assert_eq!(rendered_without_spaces, expected_without_spaces);
+    }
+
+    #[test]
+    fn render_multiple_levels_of_nesting_and_multiple_children_works() {
+        let id0 = CommentID::generate_random();
+        let id1 = CommentID::generate_random();
+        let id2 = CommentID::generate_random();
+        let comments = vec![
+            Comment {
+                id: id0.clone(),
+                contents: "1".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: None,
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "2".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id0.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: id1.clone(),
+                contents: "3".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id0.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: id2.clone(),
+                contents: "4".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id1.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "5".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id2.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+            Comment {
+                id: CommentID::generate_random(),
+                contents: "6".to_string(),
+                author_id: UserID::generate_random(),
+                post_id: BlogPostID::generate_random(),
+                reply_to_id: Some(id2.clone()),
+                created_at: "".to_string(),
+                updated_at: "".to_string(),
+                is_deleted: false,
+            },
+        ];
+        let rendered = render_comments(comments).unwrap();
+        let expected = r#"
+        <div class="comment">
+  <div class="content">
+    <a class="author">TODO</a>
+    <div class="metadata">
+      <span class="date">TODO</span>
+    </div>
+    <div class="text">
+      <p>1</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  <div class="comments">
+    <div class="comment">
+      <div class="content">
+        <a class="author">TODO</a>
+        <div class="metadata">
+          <span class="date">TODO</span>
+        </div>
+        <div class="text">
+          <p>2</p>
+        </div>
+        <div class="actions">
+          <a class="reply">Reply</a>
+        </div>
+      </div>
+      <div class="comments">
+      </div>
+    </div>
+    <div class="comment">
+      <div class="content">
+        <a class="author">TODO</a>
+        <div class="metadata">
+          <span class="date">TODO</span>
+        </div>
+        <div class="text">
+          <p>3</p>
+        </div>
+        <div class="actions">
+          <a class="reply">Reply</a>
+        </div>
+      </div>
+      <div class="comments">
+        <div class="comment">
+          <div class="content">
+            <a class="author">TODO</a>
+            <div class="metadata">
+              <span class="date">TODO</span>
+            </div>
+            <div class="text">
+              <p>4</p>
+            </div>
+            <div class="actions">
+              <a class="reply">Reply</a>
+            </div>
+          </div>
+          <div class="comments">
+            <div class="comment">
+              <div class="content">
+                <a class="author">TODO</a>
+                <div class="metadata">
+                  <span class="date">TODO</span>
+                </div>
+                <div class="text">
+                  <p>5</p>
+                </div>
+                <div class="actions">
+                  <a class="reply">Reply</a>
+                </div>
+              </div>
+              <div class="comments">
+              </div>
+            </div>
+            <div class="comment">
+              <div class="content">
+                <a class="author">TODO</a>
+                <div class="metadata">
+                  <span class="date">TODO</span>
+                </div>
+                <div class="text">
+                  <p>6</p>
+                </div>
+                <div class="actions">
+                  <a class="reply">Reply</a>
+                </div>
+              </div>
+              <div class="comments">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+"#;
+        let expected_without_spaces = remove_spaces(expected);
+        let rendered_without_spaces = remove_spaces(&rendered);
+        assert_eq!(rendered_without_spaces, expected_without_spaces);
     }
 }
