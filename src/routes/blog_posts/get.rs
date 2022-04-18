@@ -75,10 +75,15 @@ where
                 .map(|c| rendered.remove(c.id.as_ref().as_str()).unwrap())
                 .collect();
 
+            let contents = if current.is_deleted {
+                "<deleted>"
+            } else {
+                current.contents.as_str()
+            };
             let s = CommentRender {
                 author: "TODO",
                 date: "TODO",
-                contents: current.contents.as_str(),
+                contents,
                 rendered_children,
             }
             .render()?;
@@ -122,11 +127,13 @@ pub async fn blog_post(
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
     let comments = get_comments_for_blog_post(&pool, &blog_post_id).map_err(e500)?;
+    let rendered_comments =
+        render_comments(comments, |a, b| a.contents.cmp(&b.contents)).map_err(e500)?;
 
     render_template(BlogPostTemplate {
         messages,
         blog_post,
-        rendered_comments: "".to_string(),
+        rendered_comments,
     })
 }
 
