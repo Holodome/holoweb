@@ -60,3 +60,23 @@ pub async fn account(
         email: &user.email.as_ref(),
     })
 }
+
+#[derive(serde::Deserialize)]
+pub struct ChangeNameQuery {
+
+}
+
+#[tracing::instrument("Change name")]
+pub async fn change_name() -> actix_web::Result<HttpResponse> {
+    todo!()
+}
+
+#[tracing::instrument("Change email")]
+pub async fn change_email() -> actix_web::Result<HttpResponse> {
+    todo!()
+}
+
+#[tracing::instrument("Change password")]
+pub async fn change_password() -> actix_web::Result<HttpResponse> {
+    todo!()
+}

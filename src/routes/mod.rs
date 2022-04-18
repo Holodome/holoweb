@@ -3,6 +3,7 @@ use crate::middleware::require_login;
 use actix_web::middleware::ErrorHandlers;
 use actix_web::{http, web};
 use actix_web_lab::middleware::from_fn;
+use crate::utils::see_other;
 
 mod account;
 mod blog_posts;
@@ -10,25 +11,6 @@ mod health_check;
 mod login;
 mod logout;
 mod registration;
-
-/*
-/health_check                      G
-/                                  G
-/registration                      GP
-/login                             GP
-/logout                            G
-/blog_posts
-   /all                            G
-   /create                         GP
-   /{id}/view                      G+L
-   /{id}/edit                      GP+L
-   /{id}/comments/create           P+L
-   /{id}/comments/{id}/edit        P+L
-/account                           +L
-   /change_name                    GP
-   /change_password                GP
-   /home                           G
-*/
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
@@ -41,6 +23,14 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             web::resource("/registration")
                 .route(web::get().to(registration::get::registration_form))
                 .route(web::post().to(registration::post::registration)),
+        )
+        .service(
+            web::scope("/account")
+                .wrap(from_fn(require_login))
+                .route("/home", web::get().to(account::account))
+                .route("/change_name", web::post().to(account::change_name))
+                .route("/change_password", web::post().to(account::change_password))
+                .route("/change_email", web::post().to(account::change_email))
         )
         .service(
             web::resource("/login")
@@ -69,10 +59,5 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                         .wrap(from_fn(require_login))
                         .route(web::post().to(blog_posts::comments::edit::edit_comment)),
                 ),
-        )
-        .service(
-            web::scope("/account")
-                .wrap(from_fn(require_login))
-                .route("/home", web::get().to(account::get::account)),
         );
 }
