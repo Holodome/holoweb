@@ -15,4 +15,5 @@ fn get_current_time_str() -> String {
 pub use blog_posts::*;
 pub use comments::*;
 pub use credentials::*;
+pub use projects::*;
 pub use users::*;
