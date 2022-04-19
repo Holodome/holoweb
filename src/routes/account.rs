@@ -8,7 +8,7 @@ use std::fmt::Formatter;
 use crate::domain::blog_posts::BlogPost;
 use crate::domain::projects::Project;
 use crate::Pool;
-use actix_web::error::{ InternalError};
+use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
 use askama::Template;
@@ -192,9 +192,8 @@ pub async fn change_password(
         return Err(redirect_with_error_to_account(e));
     }
 
-    let new_password = UserPassword::parse(form.new_password.clone()).map_err(|e| {
-        redirect_with_error_to_account(ChangePasswordError::InvalidNewPassword(e))
-    })?;
+    let new_password = UserPassword::parse(form.new_password.clone())
+        .map_err(|e| redirect_with_error_to_account(ChangePasswordError::InvalidNewPassword(e)))?;
     let hashed_new_password = HashedUserPassword::parse(&new_password, &user.password_salt);
 
     let changeset = UpdateUser {

@@ -137,6 +137,66 @@ pub async fn blog_post(
     })
 }
 
+struct BlogPostDisplay<'a> {
+    title: &'a str,
+    brief: &'a str,
+    contents: &'a str,
+}
+
+impl<'a> BlogPostDisplay<'a> {
+    pub fn new(b: &'a BlogPost) -> Self {
+        Self {
+            title: b.title.as_str(),
+            brief: b.brief.as_str(),
+            contents: b.contents.as_str(),
+        }
+    }
+}
+
+impl Default for BlogPostDisplay<'static> {
+    fn default() -> Self {
+        Self {
+            title: "Untitled",
+            brief: "",
+            contents: "",
+        }
+    }
+}
+
+#[derive(Template)]
+#[template(path = "edit_blog_post.html")]
+struct EditBlogPostTemplate<'a> {
+    messages: IncomingFlashMessages,
+    blog_post: BlogPostDisplay<'a>,
+}
+
+#[tracing::instrument("Edit blog post", skip(pool, messages))]
+pub async fn edit_blog_post_form(
+    pool: web::Data<Pool>,
+    params: web::Path<BlogPostID>,
+    messages: IncomingFlashMessages,
+) -> actix_web::Result<HttpResponse> {
+    let blog_post_id = params.into_inner();
+    let blog_post = get_blog_post_by_id(&pool, &blog_post_id).map_err(e500)?;
+    let blog_post = blog_post.ok_or_else(|| e500(anyhow::anyhow!("TODO")))?;
+
+    render_template(EditBlogPostTemplate {
+        messages,
+        blog_post: BlogPostDisplay::new(&blog_post),
+    })
+}
+
+#[tracing::instrument("Create blog post", skip(messages))]
+pub async fn create_blog_post_form(
+    messages: IncomingFlashMessages,
+) -> actix_web::Result<HttpResponse> {
+    let blog_post = BlogPostDisplay::default();
+    render_template(EditBlogPostTemplate {
+        messages,
+        blog_post,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

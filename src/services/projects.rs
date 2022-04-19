@@ -147,8 +147,6 @@ pub fn add_project_blog_post(
     Ok(())
 }
 
-
-
 fn get_project_error_from_database_error(e: diesel::result::Error) -> ProjectError {
     match e {
         diesel::result::Error::DatabaseError(DatabaseErrorKind::UniqueViolation, ref data) => {

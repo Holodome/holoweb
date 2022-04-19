@@ -51,6 +51,16 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                 .route("/all", web::get().to(blog_posts::all_blog_posts))
                 .route("/{post_id}/view", web::get().to(blog_posts::blog_post))
                 .service(
+                    web::resource("/create")
+                        .wrap(from_fn(require_login))
+                        .route(web::get().to(blog_posts::create_blog_post_form)),
+                )
+                .service(
+                    web::resource("/{post_id}/edit")
+                        .wrap(from_fn(require_login))
+                        .route(web::get().to(blog_posts::edit_blog_post_form)),
+                )
+                .service(
                     web::resource("/{post_id}/comments/create")
                         .wrap(from_fn(require_login))
                         .route(web::post().to(comments::create_comment)),
