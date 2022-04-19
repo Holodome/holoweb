@@ -79,7 +79,7 @@ pub fn insert_new_project(pool: &Pool, new_project: &NewProject) -> Result<Proje
             .map_err(get_project_error_from_database_error)?;
         project
     };
-    add_project_editor(&pool, &project.id, &project.author_id)?;
+    add_project_editor(pool, &project.id, &project.author_id)?;
     Ok(project)
 }
 

@@ -10,13 +10,15 @@
     {{ blog_post.title }}
   </h1>
 
+  <p> {{ blog_post.brief }} </p>
+
   <div class="ui text container">
     {{ blog_post.contents }}
   </div>
 
   <h2 class="ui horizontal divider header">Comments</h2>
   <div>
-    <form class="ui reply form" action="/blog_posts/{{blog_post.id}}/create">
+    <form class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create">
       <div class="field">
         <textarea></textarea>
       </div>

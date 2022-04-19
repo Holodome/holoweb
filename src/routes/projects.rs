@@ -1,13 +1,13 @@
-use crate::domain::projects::Project;
-use actix_web_flash_messages::IncomingFlashMessages;
-use askama::Template;
+// use crate::domain::projects::Project;
+// use actix_web_flash_messages::IncomingFlashMessages;
+// use askama::Template;
 
-#[derive(Template)]
-#[template(path = "projects.html")]
-struct ProjectsTemplate {
-    messages: IncomingFlashMessages,
-    projects: Vec<Project>,
-}
+// #[derive(Template)]
+// #[template(path = "projects.html")]
+// struct ProjectsTemplate {
+//     messages: IncomingFlashMessages,
+//     projects: Vec<Project>,
+// }
 
 // #[tracing::instrument("All projects", skip(pool, messages))]
 // pub async fn all_projects(
