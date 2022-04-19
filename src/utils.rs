@@ -1,6 +1,8 @@
+use actix_web::error::InternalError;
 use actix_web::http::header::ContentType;
 use actix_web::http::header::LOCATION;
 use actix_web::HttpResponse;
+use actix_web_flash_messages::FlashMessage;
 use askama::Template;
 
 /// Mapper to InternalServerError. This is preferred way to unwrap result returning functions.
@@ -48,4 +50,12 @@ pub fn see_other(location: &str) -> HttpResponse {
     HttpResponse::SeeOther()
         .insert_header((LOCATION, location))
         .finish()
+}
+
+pub fn redirect_with_error<E>(route: &str, e: E) -> InternalError<E>
+where
+    E: std::fmt::Display,
+{
+    FlashMessage::error(e.to_string()).send();
+    InternalError::from_response(e, see_other(route))
 }

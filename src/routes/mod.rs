@@ -6,34 +6,15 @@ use actix_web_lab::middleware::from_fn;
 
 mod account;
 mod blog_posts;
+mod comments;
 mod health_check;
-mod home;
 mod login;
 mod logout;
+mod projects;
 mod registration;
-
-/*
-/health_check                      G
-/                                  G
-/registration                      GP
-/login                             GP
-/logout                            G
-/blog_posts
-   /all                            G
-   /create                         GP
-   /{id}/view                      G+L
-   /{id}/edit                      GP+L
-   /{id}/comments/create           P+L
-   /{id}/comments/{id}/edit        P+L
-/account                           +L
-   /change_name                    GP
-   /change_password                GP
-   /home                           G
-*/
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
-        .route("/", web::get().to(home::home))
         .service(
             web::resource("/logout")
                 .wrap(from_fn(require_login))
@@ -41,8 +22,16 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::resource("/registration")
-                .route(web::get().to(registration::get::registration_form))
-                .route(web::post().to(registration::post::registration)),
+                .route(web::get().to(registration::registration_form))
+                .route(web::post().to(registration::registration)),
+        )
+        .service(
+            web::scope("/account")
+                .wrap(from_fn(require_login))
+                .route("/home", web::get().to(account::account))
+                .route("/change_name", web::post().to(account::change_name))
+                .route("/change_password", web::post().to(account::change_password))
+                .route("/change_email", web::post().to(account::change_email)),
         )
         .service(
             web::resource("/login")
@@ -54,49 +43,34 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                         )
                         .handler(http::StatusCode::BAD_REQUEST, redirect_on_same_page),
                 )
-                .route(web::get().to(login::get::login_form))
-                .route(web::post().to(login::post::login)),
+                .route(web::get().to(login::login_form))
+                .route(web::post().to(login::login)),
         )
         .service(
             web::scope("/blog_posts")
-                .route("/all", web::get().to(blog_posts::get::all_blog_posts))
+                .route("/all", web::get().to(blog_posts::all_blog_posts))
+                .route("/{post_id}/view", web::get().to(blog_posts::blog_post))
                 .service(
                     web::resource("/create")
                         .wrap(from_fn(require_login))
-                        .route(web::get().to(blog_posts::create::get::create_blog_post_form))
-                        .route(web::post().to(blog_posts::create::post::create_blog_post)),
+                        .route(web::get().to(blog_posts::create_blog_post_form))
+                        .route(web::post().to(blog_posts::create_blog_post)),
                 )
-                .route("/{post_id}/view", web::get().to(blog_posts::get::blog_post))
                 .service(
                     web::resource("/{post_id}/edit")
                         .wrap(from_fn(require_login))
-                        .route(web::get().to(blog_posts::edit::get::edit_blog_post_form))
-                        .route(web::post().to(blog_posts::edit::post::edit_blog_post)),
+                        .route(web::get().to(blog_posts::edit_blog_post_form))
+                        .route(web::post().to(blog_posts::edit_blog_post)),
                 )
                 .service(
                     web::resource("/{post_id}/comments/create")
                         .wrap(from_fn(require_login))
-                        .route(web::post().to(blog_posts::comments::create::create_comment)),
+                        .route(web::post().to(comments::create_comment)),
                 )
                 .service(
                     web::resource("/{post_id}/comments/{comment_id}/edit")
                         .wrap(from_fn(require_login))
-                        .route(web::post().to(blog_posts::comments::edit::edit_comment)),
-                ),
-        )
-        .service(
-            web::scope("/account")
-                .wrap(from_fn(require_login))
-                .route("/home", web::get().to(account::get::account))
-                .service(
-                    web::resource("/change_name")
-                        .route(web::get().to(account::change_name::get::change_name_form))
-                        .route(web::post().to(account::change_name::post::change_name)),
-                )
-                .service(
-                    web::resource("/change_password")
-                        .route(web::get().to(account::change_password::get::change_password_form))
-                        .route(web::post().to(account::change_password::post::change_password)),
+                        .route(web::post().to(comments::edit_comment)),
                 ),
         );
 }

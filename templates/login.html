@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
+{% block title %}Login{% endblock %}
+
 {% block head %}
 <script src="/static/js/login.js"></script>
+<link rel="stylesheet" href="/static/css/login.css" type="text/css">
 {% endblock %}
 
 {% block content %}
 
-<div class="ui raised very padded text container segment">
 <div class="ui middle aligned center aligned grid">
   <div class="column">
     <div class="ui image header">
@@ -36,21 +38,10 @@
       </div>
     </form>
 
-    {% for error in flash_messages.errors %}
-    <div class="ui negative message">
-      {{ error }}
-    </div>
-    {% endfor %}
-    {% for info in flash_messages.infos %}
-    <div class="ui positive message">
-      {{ info }}
-    </div>
-    {% endfor %}
     <div class="ui message">
-      New to us? <a href="/register">Sign Up</a>
+      New to us? <a href="/registration">Sign Up</a>
     </div>
   </div>
-</div>
 </div>
 
 {% endblock %}

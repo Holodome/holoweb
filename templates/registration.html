@@ -1,45 +1,45 @@
 {% extends "base.html" %}
 
+{% block title %}Registration{% endblock %}
+
+{% block head %}
+<script src="/static/js/registartion.js"></script>
+<link rel="stylesheet" href="/static/css/registration.css" type="text/css">
+{% endblock %}
+
 {% block content %}
 
-<div class="ui raised very padded text container segment">
-  <div class="ui middle aligned center aligned grid">
-    <div class="column">
-      <div class="ui image header">
-        <div class="content">
-          Create new account
+<div class="ui middle aligned center aligned grid">
+  <div class="column">
+    <div class="ui image header">
+      <div class="content">
+        Create new account
+      </div>
+    </div>
+    <form class="ui large form" action="/registration" method="post">
+      <div class="ui stacked segment">
+        <div class="field">
+          <div class="ui input">
+            <input type="text" name="name" placeholder="Name">
+          </div>
         </div>
-      </div>
-      <form class="ui large form" action="/registration" method="post">
-        <div class="ui stacked segment">
-          <div class="field">
-            <div class="ui input">
-              <input type="text" name="name" placeholder="Name">
-            </div>
+        <div class="field">
+          <div class="ui input">
+            <input type="password" name="password" placeholder="Password">
           </div>
-          <div class="field">
-            <div class="ui input">
-              <input type="password" name="password" placeholder="Password">
-            </div>
-          </div>
-          <div class="field">
-            <div class="ui input">
-              <input type="password" name="repeat_password" placeholder="Repeat password">
-            </div>
-          </div>
-          <button class="ui fluid large submit button" type="submit">Register</button>
         </div>
-
-      </form>
-
-      {% for error in flash_messages.errors %}
-      <div class="ui negative message">
-        {{ error }}
+        <div class="field">
+          <div class="ui input">
+            <input type="password" name="repeat_password" placeholder="Repeat password">
+          </div>
+        </div>
+        <button class="ui fluid large submit button" type="submit">Register</button>
       </div>
-      {% endfor %}
-      <div class="ui message">
-        New to us? <a href="/registration">Sign Up</a>
-      </div>
+
+    </form>
+
+    <div class="ui message">
+      Already have an account? <a href="/login">Login</a>
     </div>
   </div>
 </div>

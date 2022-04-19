@@ -1,36 +1,10 @@
 {% extends "base.html" %}
 
+{% block title %}Edit {{ blog_post.title }}{% endblock %}
+
 {% block content %}
 
-<div class="ui raised very padded text container segment">
-  <div class="ui middle aligned center aligned grid">
-    <div class="column">
-      <div class="ui image header">
-        <div class="content">
-          Edit blog post
-        </div>
-      </div>
-      <form class="ui large form" action="/blog_posts/edit/{{ blog_post.id }}" method="post">
-        <div class="ui stacked segment">
-          <div class="field">
-            <div class="ui input">
-              <input type="text" name="title" placeholder="Title" value="{{ blog_post.title }}">
-            </div>
-          </div>
-          <div class="field">
-            <div class="ui input">
-              <input type="text" name="brief" placeholder="Brief" value="{{ blog_post.brief }}">
-            </div>
-          </div>
-          <div class="field">
-            <label>Contents</label>
-            <textarea name="contents">{{ blog_post.contents }}</textarea>
-          </div>
-          <button class="ui fluid large submit button" type="submit">Edit</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
+<p> {{ blog_post.title }} </p>
+<p> {{ blog_post.brief }} </p>
+<p> {{ blog_post.contents }} </p>
 {% endblock %}

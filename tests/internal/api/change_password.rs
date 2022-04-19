@@ -1,19 +1,6 @@
 use crate::api::assert_is_redirect_to;
-use crate::common::{TestApp, TestUser};
+use crate::common::TestApp;
 use uuid::Uuid;
-
-#[tokio::test]
-async fn you_must_be_logged_in_to_see_change_password_form() {
-    let app = TestApp::spawn().await;
-    let response = app.get_change_password().await;
-    assert_is_redirect_to(&response, "/login");
-
-    let test_user = TestUser::generate();
-    test_user.register_internally(app.pool());
-    test_user.login(&app).await;
-    let response = app.get_change_password().await;
-    assert_eq!(response.status(), 200);
-}
 
 #[tokio::test]
 async fn you_must_be_logged_in_to_change_password() {
@@ -50,9 +37,9 @@ async fn new_password_fields_must_match() {
             "repeat_new_password": &another_new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/change_password");
+    assert_is_redirect_to(&response, "/account/home");
 
-    let html = app.get_change_password_page_html().await;
+    let html = app.get_account_page_html().await;
     assert!(html.contains("Repeat password does not match new password"));
 }
 
@@ -76,9 +63,9 @@ async fn current_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/change_password");
+    assert_is_redirect_to(&response, "/account/home");
 
-    let html = app.get_change_password_page_html().await;
+    let html = app.get_account_page_html().await;
     assert!(html.contains("Current password is incorrect"));
 }
 
@@ -101,9 +88,9 @@ async fn new_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/change_password");
+    assert_is_redirect_to(&response, "/account/home");
 
-    let html = app.get_change_password_page_html().await;
+    let html = app.get_account_page_html().await;
     assert!(html.contains("New password is invalid"));
 }
 
@@ -126,9 +113,9 @@ async fn change_password_works() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account");
+    assert_is_redirect_to(&response, "/account/home");
 
-    let html = app.get_change_password_page_html().await;
+    let html = app.get_account_page_html().await;
     assert!(html.contains("Your password has been changed"));
 
     let response = app.post_logout().await;

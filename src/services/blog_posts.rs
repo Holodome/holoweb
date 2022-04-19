@@ -1,7 +1,7 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
 use crate::domain::users::UserID;
 use crate::schema::blog_posts::dsl::*;
-use crate::services::{get_current_time_str, Page};
+use crate::services::get_current_time_str;
 use crate::Pool;
 use diesel::result::{DatabaseErrorKind, Error};
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
@@ -52,6 +52,7 @@ pub fn insert_new_blog_post(
     let conn = pool
         .get()
         .map_err(|e| BlogPostError::UnexpectedError(e.into()))?;
+    let time = get_current_time_str();
     let blog_post = BlogPost {
         id: BlogPostID::generate_random(),
 
@@ -59,7 +60,8 @@ pub fn insert_new_blog_post(
         brief: new_blog_post.brief.to_string(),
         contents: new_blog_post.contents.to_string(),
         author_id: new_blog_post.author_id.clone(),
-        created_at: get_current_time_str(),
+        created_at: time.clone(),
+        updated_at: time,
         visibility: "all".to_string(),
     };
     insert_into(blog_posts)
@@ -83,22 +85,16 @@ pub fn update_blog_post(pool: &Pool, changeset: &UpdateBlogPost) -> Result<(), B
 pub fn get_blog_posts_of_author(
     pool: &Pool,
     author: UserID,
-    page: &Page,
 ) -> Result<Vec<BlogPost>, anyhow::Error> {
     let conn = pool.get()?;
     Ok(blog_posts
         .filter(author_id.eq(author))
-        .offset((page.number * page.size) as i64)
-        .limit(page.size as i64)
         .load::<BlogPost>(&conn)?)
 }
 
-pub fn get_all_blog_posts(pool: &Pool, page: &Page) -> Result<Vec<BlogPost>, anyhow::Error> {
+pub fn get_all_blog_posts(pool: &Pool) -> Result<Vec<BlogPost>, anyhow::Error> {
     let conn = pool.get()?;
-    Ok(blog_posts
-        .offset((page.number * page.size) as i64)
-        .limit(page.size as i64)
-        .load::<BlogPost>(&conn)?)
+    Ok(blog_posts.load::<BlogPost>(&conn)?)
 }
 
 fn get_blog_post_error_error_from_database_error(e: Error) -> BlogPostError {

@@ -29,8 +29,7 @@ async fn create_blog_post_and_see_it_appears_at_dashboard() {
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
-    let response = app.post_create_blog_post(&blog_post.to_json()).await;
-    assert_is_redirect_to(&response, "/blog_posts/all");
+    app.post_create_blog_post(&blog_post.to_json()).await;
 
     let html = app.get_all_blog_posts_page_html().await;
     assert!(html.contains(&blog_post.title));

@@ -1,6 +1,6 @@
 # holoweb
 
-[![tests](https://github.com/Holodome/holoweb/actions/workflows/general.yml/badge.svg)](https://github.com/Holodome/holoweb/actions/workflows/general.yml)
+[![Testing](https://github.com/Holodome/holoweb/actions/workflows/general.yml/badge.svg)](https://github.com/Holodome/holoweb/actions/workflows/general.yml)
 
 This is a blog/forum/personal website project. The goal is to create MVP webserver
 implementing backend infrastructure.

@@ -6,6 +6,7 @@ table! {
         contents -> Text,
         author_id -> Text,
         created_at -> Text,
+        updated_at -> Text,
         visibility -> Text,
     }
 }
@@ -13,14 +14,13 @@ table! {
 table! {
     comments (id) {
         id -> Text,
+        contents -> Text,
         author_id -> Text,
         post_id -> Text,
-        parent_id -> Nullable<Text>,
-        contents -> Text,
+        reply_to_id -> Nullable<Text>,
         created_at -> Text,
+        updated_at -> Text,
         is_deleted -> Bool,
-        main_parent_id -> Nullable<Text>,
-        depth -> Integer,
     }
 }
 
@@ -32,11 +32,19 @@ table! {
 }
 
 table! {
+    project_editor_junctions (project_id, user_id) {
+        project_id -> Text,
+        user_id -> Text,
+    }
+}
+
+table! {
     projects (id) {
         id -> Text,
         title -> Text,
         brief -> Text,
         author_id -> Text,
+        visibility -> Text,
     }
 }
 
@@ -45,10 +53,11 @@ table! {
         id -> Text,
         name -> Text,
         email -> Text,
+        created_at -> Text,
         password -> Text,
         password_salt -> Text,
-        created_at -> Text,
         is_banned -> Bool,
+        role -> Text,
     }
 }
 
@@ -57,12 +66,15 @@ joinable!(comments -> blog_posts (post_id));
 joinable!(comments -> users (author_id));
 joinable!(project_blog_post_junctions -> blog_posts (post_id));
 joinable!(project_blog_post_junctions -> projects (project_id));
+joinable!(project_editor_junctions -> projects (project_id));
+joinable!(project_editor_junctions -> users (user_id));
 joinable!(projects -> users (author_id));
 
 allow_tables_to_appear_in_same_query!(
     blog_posts,
     comments,
     project_blog_post_junctions,
+    project_editor_junctions,
     projects,
     users,
 );
