@@ -1,10 +1,7 @@
-use crate::common::{TestDB, TestProject, TestUser};
+use crate::common::{TestBlogPost, TestDB, TestProject, TestUser};
 use claim::{assert_err, assert_ok, assert_some};
 use holosite::domain::projects::{NewProject, ProjectID, ProjectVisibility, UpdateProject};
-use holosite::services::{
-    get_all_projects, get_project_by_id, get_project_by_title, insert_new_project, update_project,
-    BlogPostError, ProjectError,
-};
+use holosite::services::{get_all_projects, get_project_by_id, get_project_by_title, insert_new_project, update_project, BlogPostError, ProjectError, get_project_editor_ids, add_project_editor, remove_project_editor, add_project_blog_post, get_project_blog_post_ids};
 
 #[test]
 fn add_new_project_works() {
@@ -34,9 +31,9 @@ fn add_project_and_get_it_by_id_works() {
     let test_project = TestProject::generate();
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(db.pool());
-    let post_id = test_project.register_internally(db.pool(), &user_id);
+    let project_id = test_project.register_internally(db.pool(), &user_id);
 
-    let res = get_project_by_id(db.pool(), &post_id);
+    let res = get_project_by_id(db.pool(), &project_id);
     assert_ok!(&res);
     let res = res.unwrap();
     assert_some!(&res);
@@ -186,4 +183,52 @@ fn get_all_projects_works() {
     for i in 0..res.len() {
         assert_eq!(res[i].id, post_ids[i]);
     }
+}
+
+#[test]
+fn test_project_editors_workflow() {
+    let db = TestDB::spawn();
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(db.pool());
+    let test_project = TestProject::generate();
+    let project_id = test_project.register_internally(db.pool(), &user_id);
+
+    let project_editors = get_project_editor_ids(db.pool(), &project_id);
+    assert_ok!(&project_editors);
+    let project_editors = project_editors.unwrap();
+    assert_eq!(project_editors.len(), 1);
+    assert_eq!(project_editors[0], user_id);
+
+    let other_user = TestUser::generate();
+    let other_user_id = other_user.register_internally(db.pool());
+    add_project_editor(db.pool(), &project_id, &other_user_id).unwrap();
+
+    let project_editors = get_project_editor_ids(db.pool(), &project_id);
+    assert_ok!(&project_editors);
+    let project_editors = project_editors.unwrap();
+    assert_eq!(project_editors.len(), 2);
+
+    remove_project_editor(db.pool(), &project_id, &other_user_id).unwrap();
+    let project_editors = get_project_editor_ids(db.pool(), &project_id);
+    assert_ok!(&project_editors);
+    let project_editors = project_editors.unwrap();
+    assert_eq!(project_editors.len(), 1);
+    assert_eq!(project_editors[0], user_id);
+}
+
+#[test]
+fn test_project_blog_posts_workflow() {
+    let db = TestDB::spawn();
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(db.pool());
+    let test_project = TestProject::generate();
+    let project_id = test_project.register_internally(db.pool(), &user_id);
+    let blog_post = TestBlogPost::generate();
+    let blog_post_id = blog_post.register_internally(db.pool(), &user_id);
+
+    add_project_blog_post(db.pool(), &project_id, &blog_post_id).unwrap();
+
+    let blog_posts = get_project_blog_post_ids(db.pool(), &project_id).unwrap();
+    assert_eq!(blog_posts.len(), 1);
+    assert_eq!(blog_posts[0], blog_post_id);
 }

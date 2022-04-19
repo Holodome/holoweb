@@ -68,7 +68,6 @@ create table project_editor_junctions (
         project_id, user_id
     ),
 
-
     foreign key (project_id) references projects(id),
     foreign key (user_id) references users(id)
 );

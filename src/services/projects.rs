@@ -57,25 +57,29 @@ pub fn update_project(pool: &Pool, changeset: &UpdateProject) -> Result<(), Proj
     update(projects.filter(id.eq(&changeset.id)))
         .set(changeset)
         .execute(&conn)
-        .map_err(get_project_error_error_from_database_error)?;
+        .map_err(get_project_error_from_database_error)?;
     Ok(())
 }
 
 pub fn insert_new_project(pool: &Pool, new_project: &NewProject) -> Result<Project, ProjectError> {
-    let conn = pool
-        .get()
-        .map_err(|e| ProjectError::UnexpectedError(e.into()))?;
-    let project = Project {
-        id: ProjectID::generate_random(),
-        title: new_project.title.to_string(),
-        brief: new_project.brief.to_string(),
-        author_id: new_project.author_id.clone(),
-        visibility: new_project.visibility.clone(),
+    let project = {
+        let conn = pool
+            .get()
+            .map_err(|e| ProjectError::UnexpectedError(e.into()))?;
+        let project = Project {
+            id: ProjectID::generate_random(),
+            title: new_project.title.to_string(),
+            brief: new_project.brief.to_string(),
+            author_id: new_project.author_id.clone(),
+            visibility: new_project.visibility.clone(),
+        };
+        insert_into(projects)
+            .values(&project)
+            .execute(&conn)
+            .map_err(get_project_error_from_database_error)?;
+        project
     };
-    insert_into(projects)
-        .values(&project)
-        .execute(&conn)
-        .map_err(get_project_error_error_from_database_error)?;
+    add_project_editor(&pool, &project.id, &project.author_id)?;
     Ok(project)
 }
 
@@ -126,7 +130,7 @@ pub fn get_project_blog_post_ids(
     let conn = pool.get()?;
     Ok(project_blog_post_junctions
         .filter(project_id.eq(project_id_))
-        .select(project_id)
+        .select(post_id)
         .load::<BlogPostID>(&conn)?)
 }
 
@@ -143,7 +147,9 @@ pub fn add_project_blog_post(
     Ok(())
 }
 
-fn get_project_error_error_from_database_error(e: diesel::result::Error) -> ProjectError {
+
+
+fn get_project_error_from_database_error(e: diesel::result::Error) -> ProjectError {
     match e {
         diesel::result::Error::DatabaseError(DatabaseErrorKind::UniqueViolation, ref data) => {
             let msg = data.message();
