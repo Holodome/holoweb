@@ -10,6 +10,7 @@ mod comments;
 mod health_check;
 mod login;
 mod logout;
+mod projects;
 mod registration;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {

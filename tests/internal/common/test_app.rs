@@ -1,6 +1,8 @@
 use crate::common::{get_test_config, init_tracing, TestDB};
 use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::CommentID;
+use holosite::domain::projects::ProjectID;
+use holosite::domain::users::UserID;
 use holosite::startup::Application;
 use holosite::Pool;
 use reqwest::Response;
@@ -134,6 +136,22 @@ impl TestApp {
         .await
     }
 
+    pub async fn post_create_project(&self, body: &impl serde::Serialize) -> Response {
+        self.post("/projects/create", body).await
+    }
+
+    pub async fn post_edit_project(
+        &self,
+        body: &impl serde::Serialize,
+        project_id: &ProjectID,
+    ) -> Response {
+        self.post(
+            format!("/projects/{}/edit", project_id.as_ref()).as_str(),
+            body,
+        )
+        .await
+    }
+
     pub async fn get_account_page_html(&self) -> String {
         self.get_page("/account/home").await.text().await.unwrap()
     }
@@ -166,6 +184,32 @@ impl TestApp {
 
     pub async fn get_view_blog_post_page_html(&self, id: &str) -> String {
         self.get_view_blog_post_page(id).await.text().await.unwrap()
+    }
+
+    pub async fn get_view_project_page(&self, id: &str) -> Response {
+        self.get_page(format!("/projects/{}/view", id).as_str())
+            .await
+    }
+
+    pub async fn get_view_project_page_html(&self, id: &str) -> String {
+        self.get_view_blog_post_page(id).await.text().await.unwrap()
+    }
+
+    pub async fn get_all_projects_page(&self) -> Response {
+        self.get_page("/projects/all").await
+    }
+
+    pub async fn get_all_projects_page_html(&self) -> String {
+        self.get_all_projects_page().await.text().await.unwrap()
+    }
+
+    pub async fn get_edit_project_page(&self, id: &str) -> Response {
+        self.get_page(format!("/blog_posts/{}/edit", id).as_str())
+            .await
+    }
+
+    pub async fn get_edit_project_page_html(&self, id: &str) -> String {
+        self.get_edit_project_page(id).await.text().await.unwrap()
     }
 
     async fn get_page(&self, rel_address: &str) -> Response {

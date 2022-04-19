@@ -1,6 +1,7 @@
 mod test_app;
 mod test_blog_post;
 mod test_comment;
+mod test_project;
 mod test_user;
 
 use holosite::config::Config;
@@ -8,6 +9,7 @@ use once_cell::sync::Lazy;
 pub use test_app::*;
 pub use test_blog_post::*;
 pub use test_comment::*;
+pub use test_project::*;
 pub use test_user::*;
 
 use holosite::startup::get_connection_pool;

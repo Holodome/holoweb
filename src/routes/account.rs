@@ -8,7 +8,7 @@ use std::fmt::Formatter;
 use crate::domain::blog_posts::BlogPost;
 use crate::domain::projects::Project;
 use crate::Pool;
-use actix_web::error::InternalError;
+use actix_web::error::{ InternalError};
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
 use askama::Template;
@@ -166,9 +166,11 @@ pub async fn change_password(
     }
 
     let user = get_user_by_id(&pool, &user_id)
-        .map_err(|e| e500)?
+        .map_err(|e| redirect_with_error_to_account(ChangePasswordError::UnexpectedError(e)))?
         .ok_or_else(|| {
-            e500
+            redirect_with_error_to_account(ChangePasswordError::UnexpectedError(anyhow::anyhow!(
+                "Failed to get user by id"
+            )))
         })?;
 
     let old_password = UserPassword::parse(form.current_password.clone()).map_err(|e| {
@@ -185,13 +187,13 @@ pub async fn change_password(
             AuthError::InvalidCredentials(_) => {
                 ChangePasswordError::InvalidCurrentPassword(e.into())
             }
-            AuthError::UnexpectedError(_) => e500(e.into()),
+            AuthError::UnexpectedError(_) => ChangePasswordError::UnexpectedError(e.into()),
         };
         return Err(redirect_with_error_to_account(e));
     }
 
     let new_password = UserPassword::parse(form.new_password.clone()).map_err(|e| {
-        redirect_with_error_to_account(ChangePasswordError::InvalidNewPassword(e.into()))
+        redirect_with_error_to_account(ChangePasswordError::InvalidNewPassword(e))
     })?;
     let hashed_new_password = HashedUserPassword::parse(&new_password, &user.password_salt);
 
@@ -202,7 +204,9 @@ pub async fn change_password(
         password: Some(&hashed_new_password),
         is_banned: None,
     };
-    update_user(&pool, &changeset).map_err(e500)?;
+    update_user(&pool, &changeset).map_err(|e| {
+        redirect_with_error_to_account(ChangePasswordError::UnexpectedError(e.into()))
+    })?;
 
     FlashMessage::info("Your password has been changed").send();
     Ok(see_other("/account/home"))

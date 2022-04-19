@@ -3,10 +3,28 @@ use crate::domain::projects::{NewProject, Project, ProjectID, UpdateProject};
 use crate::domain::users::UserID;
 use crate::schema::projects::dsl::*;
 use crate::Pool;
+use diesel::result::DatabaseErrorKind;
 use diesel::{
     insert_into, update, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
     RunQueryDsl,
 };
+use std::fmt::Formatter;
+
+#[derive(thiserror::Error)]
+pub enum ProjectError {
+    #[error("Title is already taken")]
+    TakenTitle,
+    #[error("Something went wrong")]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+impl std::fmt::Debug for ProjectError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use crate::utils::error_chain_fmt;
+
+        error_chain_fmt(self, f)
+    }
+}
 
 pub fn get_project_by_id(
     pool: &Pool,
@@ -27,16 +45,26 @@ pub fn get_project_by_title(pool: &Pool, t: &str) -> Result<Option<Project>, any
         .optional()?)
 }
 
-pub fn update_project(pool: &Pool, changeset: &UpdateProject) -> Result<(), anyhow::Error> {
+pub fn get_all_projects(pool: &Pool) -> Result<Vec<Project>, anyhow::Error> {
     let conn = pool.get()?;
+    Ok(projects.load::<Project>(&conn)?)
+}
+
+pub fn update_project(pool: &Pool, changeset: &UpdateProject) -> Result<(), ProjectError> {
+    let conn = pool
+        .get()
+        .map_err(|e| ProjectError::UnexpectedError(e.into()))?;
     update(projects.filter(id.eq(&changeset.id)))
         .set(changeset)
-        .execute(&conn)?;
+        .execute(&conn)
+        .map_err(get_project_error_error_from_database_error)?;
     Ok(())
 }
 
-pub fn create_project(pool: &Pool, new_project: &NewProject) -> Result<Project, anyhow::Error> {
-    let conn = pool.get()?;
+pub fn insert_new_project(pool: &Pool, new_project: &NewProject) -> Result<Project, ProjectError> {
+    let conn = pool
+        .get()
+        .map_err(|e| ProjectError::UnexpectedError(e.into()))?;
     let project = Project {
         id: ProjectID::generate_random(),
         title: new_project.title.to_string(),
@@ -44,7 +72,10 @@ pub fn create_project(pool: &Pool, new_project: &NewProject) -> Result<Project, 
         author_id: new_project.author_id.clone(),
         visibility: new_project.visibility.clone(),
     };
-    insert_into(projects).values(&project).execute(&conn)?;
+    insert_into(projects)
+        .values(&project)
+        .execute(&conn)
+        .map_err(get_project_error_error_from_database_error)?;
     Ok(project)
 }
 
@@ -110,4 +141,18 @@ pub fn add_project_blog_post(
         .values((project_id.eq(project_id_), post_id.eq(post)))
         .execute(&conn)?;
     Ok(())
+}
+
+fn get_project_error_error_from_database_error(e: diesel::result::Error) -> ProjectError {
+    match e {
+        diesel::result::Error::DatabaseError(DatabaseErrorKind::UniqueViolation, ref data) => {
+            let msg = data.message();
+            if msg.contains("title") {
+                ProjectError::TakenTitle
+            } else {
+                ProjectError::UnexpectedError(e.into())
+            }
+        }
+        _ => ProjectError::UnexpectedError(e.into()),
+    }
 }
