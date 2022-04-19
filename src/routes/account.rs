@@ -8,9 +8,8 @@ use std::fmt::Formatter;
 use crate::domain::blog_posts::BlogPost;
 use crate::domain::projects::Project;
 use crate::Pool;
-use actix_web::body::BoxBody;
 use actix_web::error::InternalError;
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
 use askama::Template;
 use secrecy::{ExposeSecret, Secret};
@@ -167,11 +166,9 @@ pub async fn change_password(
     }
 
     let user = get_user_by_id(&pool, &user_id)
-        .map_err(|e| redirect_with_error_to_account(ChangePasswordError::UnexpectedError(e)))?
+        .map_err(|e| e500)?
         .ok_or_else(|| {
-            redirect_with_error_to_account(ChangePasswordError::UnexpectedError(anyhow::anyhow!(
-                "Failed to get user"
-            )))
+            e500
         })?;
 
     let old_password = UserPassword::parse(form.current_password.clone()).map_err(|e| {
@@ -188,7 +185,7 @@ pub async fn change_password(
             AuthError::InvalidCredentials(_) => {
                 ChangePasswordError::InvalidCurrentPassword(e.into())
             }
-            AuthError::UnexpectedError(_) => ChangePasswordError::UnexpectedError(e.into()),
+            AuthError::UnexpectedError(_) => e500(e.into()),
         };
         return Err(redirect_with_error_to_account(e));
     }
@@ -205,9 +202,7 @@ pub async fn change_password(
         password: Some(&hashed_new_password),
         is_banned: None,
     };
-    update_user(&pool, &changeset).map_err(|e| {
-        redirect_with_error_to_account(ChangePasswordError::UnexpectedError(e.into()))
-    })?;
+    update_user(&pool, &changeset).map_err(e500)?;
 
     FlashMessage::info("Your password has been changed").send();
     Ok(see_other("/account/home"))
