@@ -1,6 +1,8 @@
 # holoweb
 
-[![Testing](https://github.com/Holodome/holoweb/actions/workflows/general.yml/badge.svg)](https://github.com/Holodome/holoweb/actions/workflows/general.yml)
+[![Integration testing](https://github.com/Holodome/holoweb/actions/workflows/integration-testing.yml/badge.svg?branch=master)](https://github.com/Holodome/holoweb/actions/workflows/integration-testing.yml)
+[![System testing](https://github.com/Holodome/holoweb/actions/workflows/system-testing.yml/badge.svg?branch=master)](https://github.com/Holodome/holoweb/actions/workflows/system-testing.yml)
+[![Deploy](https://github.com/Holodome/holoweb/actions/workflows/deploy.yml/badge.svg?branch=master)](https://github.com/Holodome/holoweb/actions/workflows/deploy.yml)
 
 This is a blog/forum/personal website project. The goal is to create MVP webserver
 implementing backend infrastructure.

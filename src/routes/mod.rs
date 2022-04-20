@@ -1,8 +1,9 @@
 use crate::error_handlers::redirect_on_same_page;
 use crate::middleware::require_login;
 use actix_web::middleware::ErrorHandlers;
-use actix_web::{http, web};
+use actix_web::{http, HttpResponse, web};
 use actix_web_lab::middleware::from_fn;
+use crate::utils::see_other;
 
 mod account;
 mod blog_posts;
@@ -13,8 +14,13 @@ mod logout;
 mod projects;
 mod registration;
 
+async fn redirect_to_blog_posts() -> HttpResponse {
+    see_other("/blog_posts/all")
+}
+
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
+        .route("/", web::get().to(redirect_to_blog_posts))
         .service(
             web::resource("/logout")
                 .wrap(from_fn(require_login))

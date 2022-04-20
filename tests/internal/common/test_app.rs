@@ -211,7 +211,7 @@ impl TestApp {
         self.get_edit_project_page(id).await.text().await.unwrap()
     }
 
-    async fn get_page(&self, rel_address: &str) -> Response {
+    pub async fn get_page(&self, rel_address: &str) -> Response {
         self.api_client
             .get(format!("{}{}", &self.address, rel_address))
             .send()
@@ -219,7 +219,7 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    async fn post<Body>(&self, rel_addr: &str, body: &Body) -> Response
+    pub async fn post<Body>(&self, rel_addr: &str, body: &Body) -> Response
     where
         Body: serde::Serialize,
     {
