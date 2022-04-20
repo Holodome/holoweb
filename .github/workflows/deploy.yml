@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 env:
   APP_IMAGE: holoweb
-  GENERATE_IMAGE: generate
+  TAG: latest
 
 jobs:
   build-and-push:
