@@ -1,0 +1,25 @@
+name: Deploy
+on:
+  push:
+    on: [push, pull_request]
+
+env:
+  APP_IMAGE: holoweb
+  GENERATE_IMAGE: generate
+  TAG:
+
+jobs:
+  build-and-push:
+    name: Build and push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v1
+
+      - name: Build the stack
+        run: docker-compose up -d
+
+      - name: API testing
+        run: |
+          ./scripts/system_test_api.sh

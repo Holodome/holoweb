@@ -2,7 +2,6 @@ use crate::common::{get_test_config, init_tracing, TestDB};
 use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::CommentID;
 use holosite::domain::projects::ProjectID;
-use holosite::domain::users::UserID;
 use holosite::startup::Application;
 use holosite::Pool;
 use reqwest::Response;

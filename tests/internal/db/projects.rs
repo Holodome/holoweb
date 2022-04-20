@@ -4,7 +4,7 @@ use holosite::domain::projects::{NewProject, ProjectID, ProjectVisibility, Updat
 use holosite::services::{
     add_project_blog_post, add_project_editor, get_all_projects, get_project_blog_post_ids,
     get_project_by_id, get_project_by_title, get_project_editor_ids, insert_new_project,
-    remove_project_editor, update_project, BlogPostError, ProjectError,
+    remove_project_editor, update_project, ProjectError,
 };
 
 #[test]
