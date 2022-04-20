@@ -4,8 +4,8 @@ mod change_name;
 mod change_password;
 mod comments;
 mod health_check;
-mod login;
 mod home;
+mod login;
 
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
     assert_eq!(

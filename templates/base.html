@@ -31,7 +31,7 @@
         Projects
       </a>
       <div class="right menu">
-        <a class="item" href="/account">
+        <a class="item" href="/account/home">
           Account
         </a>
       </div>
@@ -39,39 +39,43 @@
   </div>
 </header>
 
-{% for message in messages.iter() %}
-  {% match message.level() %}
-    {% when actix_web_flash_messages::Level::Info %}
-      <div class="ui info message">
-        <div class="header">
-          {{ message.content() }}
+<div class="ui middle aligned center aligned grid" style="margin-top: 50px">
+  {% for message in messages.iter() %}
+    {% match message.level() %}
+      {% when actix_web_flash_messages::Level::Info %}
+        <div class="ui info message">
+          <div class="header">
+            {{ message.content() }}
+          </div>
         </div>
-      </div>
-    {% when actix_web_flash_messages::Level::Success %}
-      <div class="ui success message">
-        <div class="header">
-          {{ message.content() }}
+      {% when actix_web_flash_messages::Level::Success %}
+        <div class="ui success message">
+          <div class="header">
+            {{ message.content() }}
+          </div>
         </div>
-      </div>
-    {% when actix_web_flash_messages::Level::Warning %}
-      <div class="ui warning message">
-        <div class="header">
-          {{ message.content() }}
+      {% when actix_web_flash_messages::Level::Warning %}
+        <div class="ui warning message">
+          <div class="header">
+            {{ message.content() }}
+          </div>
         </div>
-      </div>
-    {% when actix_web_flash_messages::Level::Error %}
-      <div class="ui error message">
-        <div class="header">
-          {{ message.content() }}
+      {% when actix_web_flash_messages::Level::Error %}
+        <div class="ui error message">
+          <div class="header">
+            {{ message.content() }}
+          </div>
         </div>
-      </div>
-    {% else %}
-  {% endmatch %}
-{% endfor %}
+      {% else %}
+    {% endmatch %}
+  {% endfor %}
+</div>
 
 {% block content %}
 
 {% endblock %}
+
+<div class="ui horizontal divider"> </div>
 
 <footer>
   <div class="ui inverted vertical footer segment">

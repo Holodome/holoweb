@@ -13,11 +13,13 @@ impl Session {
         self.0.renew();
     }
 
-    pub fn insert_user_id(&self, user_id: UserID) -> Result<(), serde_json::Error> {
-        self.0.insert(Self::USER_ID_KEY, user_id)
+    pub fn insert_user_id(&self, user_id: UserID) -> Result<(), anyhow::Error> {
+        self.0
+            .insert(Self::USER_ID_KEY, user_id)
+            .map_err(|e| anyhow::anyhow!("Failed to insert user id: {}", e))
     }
 
-    pub fn get_user_id(&self) -> Result<Option<UserID>, serde_json::Error> {
+    pub fn get_user_id(&self) -> Result<Option<UserID>, anyhow::Error> {
         let r = self.0.get(Self::USER_ID_KEY)?;
         Ok(r)
     }

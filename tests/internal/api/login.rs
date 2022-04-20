@@ -31,11 +31,11 @@ async fn error_flash_message_is_set_on_failure() {
 }
 
 #[tokio::test]
-async fn error_message_invalid_credentials_is_set_on_login() {
+async fn error_message_invalid_name_is_set_on_login() {
     let app = TestApp::spawn().await;
 
     let login_body = serde_json::json!({
-        "name": "1",
+        "name": "",
         "password": "1"
     });
     let response = app.post_login(&login_body).await;
@@ -44,11 +44,32 @@ async fn error_message_invalid_credentials_is_set_on_login() {
 
     // Check that error message is present now
     let html_page = app.get_login_page_html().await;
-    assert!(html_page.contains("Invalid credentials"));
+    assert!(html_page.contains("Invalid name"));
 
     // Check that error message is not present now
     let html_page = app.get_login_page_html().await;
-    assert!(!html_page.contains("Invalid credentials"));
+    assert!(!html_page.contains("Invalid name"));
+}
+
+#[tokio::test]
+async fn error_message_invalid_password_is_set_on_login() {
+    let app = TestApp::spawn().await;
+
+    let login_body = serde_json::json!({
+        "name": "Hello",
+        "password": ""
+    });
+    let response = app.post_login(&login_body).await;
+
+    assert_is_redirect_to(&response, "/login");
+
+    // Check that error message is present now
+    let html_page = app.get_login_page_html().await;
+    assert!(html_page.contains("Invalid password"));
+
+    // Check that error message is not present now
+    let html_page = app.get_login_page_html().await;
+    assert!(!html_page.contains("Invalid password"));
 }
 
 #[tokio::test]
