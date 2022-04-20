@@ -28,7 +28,7 @@ RUN apt-get update -y \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/debug/holosite holosite
+COPY --from=builder /app/target/release/holosite holosite
 COPY --from=database /app/.data .data
 COPY config config
 COPY static static
