@@ -1,12 +1,7 @@
-name: Deploy
+name: System testing
 on:
   push:
     on: [push, pull_request]
-
-env:
-  APP_IMAGE: holoweb
-  GENERATE_IMAGE: generate
-  TAG:
 
 jobs:
   build-and-push:
