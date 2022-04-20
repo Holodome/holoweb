@@ -10,7 +10,7 @@ FROM chef as builder
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
-RUN cargo build --relaese --bin holosite
+RUN cargo build --release --bin holosite
 
 FROM chef as database
 COPY .data .data
