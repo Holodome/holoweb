@@ -1,11 +1,9 @@
 name: System testing
-on:
-  push:
-    on: [push, pull_request]
+on: [push, pull_request]
 
 jobs:
-  build-and-push:
-    name: Build and push
+  system-api-test:
+    name: API Test
     runs-on: ubuntu-latest
 
     steps:
