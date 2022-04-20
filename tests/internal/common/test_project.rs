@@ -1,7 +1,6 @@
-use holosite::domain::blog_posts::{BlogPostID, NewBlogPost};
 use holosite::domain::projects::{NewProject, ProjectID, ProjectVisibility};
 use holosite::domain::users::UserID;
-use holosite::services::{insert_new_blog_post, insert_new_project};
+use holosite::services::insert_new_project;
 use holosite::Pool;
 use uuid::Uuid;
 

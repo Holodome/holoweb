@@ -1,0 +1,18 @@
+name: System testing
+on: [push, pull_request]
+
+jobs:
+  system-api-test:
+    name: API Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v1
+
+      - name: Build the stack
+        run: docker-compose up -d
+
+      - name: API testing
+        run: |
+          ./scripts/system_test_api.sh
