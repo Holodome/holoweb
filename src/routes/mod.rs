@@ -7,6 +7,7 @@ mod account;
 mod blog_posts;
 mod comments;
 mod health_check;
+mod internal;
 mod login;
 mod logout;
 mod projects;
