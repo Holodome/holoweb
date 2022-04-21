@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 mod account;
 mod blog_posts;
 mod change_name;

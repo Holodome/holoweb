@@ -1,6 +1,7 @@
 use crate::api::assert_is_redirect_to_resource;
 use crate::common::{TestApp, TestUser};
 use secrecy::ExposeSecret;
+use uuid::Uuid;
 
 #[tokio::test]
 async fn logout_returns_redirect_to_login_when_not_logged_in() {
@@ -171,4 +172,45 @@ async fn try_to_get_registration_page_after_login_is_redirect_to_account() {
 
     let response = app.get_registration_page().await;
     assert_is_redirect_to_resource(&response, "/account/home");
+}
+
+#[tokio::test]
+async fn user_name_persists_between_sequential_login_attempts() {
+    let app = TestApp::spawn().await;
+
+    let name = Uuid::new_v4().to_string();
+    let login_body = serde_json::json!({
+        "name": &name,
+        "password": ""
+    });
+    let response = app.post_login(&login_body).await;
+
+    assert_is_redirect_to_resource(&response, "/login");
+
+    let html_page = app.get_login_page_html().await;
+    assert!(html_page.contains(&name));
+
+    let html_page = app.get_login_page_html().await;
+    assert!(!html_page.contains(&name));
+}
+
+#[tokio::test]
+async fn user_name_persists_between_sequential_registration_attempts() {
+    let app = TestApp::spawn().await;
+
+    let name = Uuid::new_v4().to_string();
+    let login_body = serde_json::json!({
+        "name": &name,
+        "password": "",
+        "repeat_password": ""
+    });
+
+    let response = app.post_registration(&login_body).await;
+    assert_is_redirect_to_resource(&response, "/registration");
+
+    let html_page = app.get_registration_page_html().await;
+    assert!(html_page.contains(&name));
+
+    let html_page = app.get_registration_page_html().await;
+    assert!(!html_page.contains(&name));
 }

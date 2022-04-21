@@ -1,7 +1,7 @@
 use crate::domain::users::{NewUser, PasswordError, UserName, UserPassword};
 use crate::middleware::Session;
 use crate::services::{insert_new_user, UserError};
-use crate::utils::see_other;
+use crate::utils::{e500, see_other};
 use crate::utils::{redirect_with_error, render_template};
 use crate::Pool;
 use actix_web::error::InternalError;
@@ -12,6 +12,13 @@ use askama::Template;
 use secrecy::{ExposeSecret, Secret};
 use std::fmt::Formatter;
 
+const REGISTRATION_FORM_SESSION_KEY: &str = "registration_form";
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct RegistrationCache {
+    name: String,
+}
+
 #[derive(Template)]
 #[template(path = "registration.html")]
 struct RegistrationTemplate<'a> {
@@ -19,20 +26,18 @@ struct RegistrationTemplate<'a> {
     name: Option<&'a str>,
 }
 
-#[derive(serde::Deserialize)]
-pub struct RegistrationQueryData {
-    name: Option<String>,
-}
-
-#[tracing::instrument(skip(messages, query))]
+#[tracing::instrument(skip(messages, session))]
 pub async fn registration_form(
     messages: IncomingFlashMessages,
-    query: web::Query<RegistrationQueryData>,
+    session: Session,
 ) -> Result<HttpResponse, actix_web::Error> {
-    render_template(RegistrationTemplate {
-        messages,
-        name: query.0.name.as_deref(),
-    })
+    let form_data = session
+        .pop_form_data::<RegistrationCache>(REGISTRATION_FORM_SESSION_KEY)
+        .map_err(e500)?;
+
+    let name = form_data.as_ref().map(|f| f.name.as_str());
+
+    render_template(RegistrationTemplate { messages, name })
 }
 
 #[derive(thiserror::Error)]
@@ -70,8 +75,23 @@ pub async fn registration(
     pool: web::Data<Pool>,
     session: Session,
 ) -> Result<HttpResponse, InternalError<RegistrationError>> {
-    let registration_redirect =
-        |e| redirect_with_error(format!("/registration?name={}", &form.0.name).as_str(), e);
+    let registration_redirect = |e| {
+        let e = if let Err(new_e) = session.insert_form_data(
+            REGISTRATION_FORM_SESSION_KEY,
+            RegistrationCache {
+                name: form.0.name.clone(),
+            },
+        ) {
+            RegistrationError::UnexpectedError(anyhow::anyhow!(
+                "Failed to execute request: {:?} & failed to cache data: {:?}",
+                e,
+                new_e
+            ))
+        } else {
+            e
+        };
+        redirect_with_error("/registration", e)
+    };
 
     if form.0.password.expose_secret() != form.0.repeat_password.expose_secret() {
         return Err(registration_redirect(RegistrationError::PasswordsDontMatch));

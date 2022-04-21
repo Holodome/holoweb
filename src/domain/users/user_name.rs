@@ -23,19 +23,16 @@ pub struct UserName {
 impl UserName {
     pub fn parse(s: &str) -> Result<UserName, anyhow::Error> {
         if s.trim().is_empty() {
-            return Err(anyhow::anyhow!("{} user name is whitespace or empty", s));
+            anyhow::bail!("{} user name is whitespace or empty", s);
         }
 
         if s.graphemes(true).count() > 256 {
-            return Err(anyhow::anyhow!("{} user name is too long", s));
+            anyhow::bail!("{} user name is too long", s);
         }
 
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
         if s.chars().any(|g| forbidden_characters.contains(&g)) {
-            return Err(anyhow::anyhow!(
-                "{} user name contains forbidden characters",
-                s
-            ));
+            anyhow::bail!("{} user name contains forbidden characters", s);
         }
 
         Ok(Self { s: String::from(s) })

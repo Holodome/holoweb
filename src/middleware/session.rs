@@ -2,6 +2,7 @@ use crate::domain::users::UserID;
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
+use serde::de::DeserializeOwned;
 use std::future::{ready, Ready};
 
 pub struct Session(actix_session::Session);
@@ -16,11 +17,29 @@ impl Session {
     pub fn insert_user_id(&self, user_id: UserID) -> Result<(), anyhow::Error> {
         self.0
             .insert(Self::USER_ID_KEY, user_id)
-            .map_err(|e| anyhow::anyhow!("Failed to insert user id: {}", e))
+            .map_err(|e| anyhow::anyhow!("Failed to insert user id: {:?}", e))
     }
 
     pub fn get_user_id(&self) -> Result<Option<UserID>, anyhow::Error> {
         let r = self.0.get(Self::USER_ID_KEY)?;
+        Ok(r)
+    }
+
+    pub fn insert_form_data<D>(&self, key: &str, form_data: D) -> Result<(), anyhow::Error>
+    where
+        D: serde::Serialize,
+    {
+        self.0
+            .insert(key, form_data)
+            .map_err(|e| anyhow::anyhow!("Failed to insert form data '{:?}': {:?}", key, e))
+    }
+
+    pub fn pop_form_data<D>(&self, key: &str) -> Result<Option<D>, anyhow::Error>
+    where
+        D: DeserializeOwned,
+    {
+        let r = self.0.get::<D>(key)?;
+        self.0.remove(key);
         Ok(r)
     }
 

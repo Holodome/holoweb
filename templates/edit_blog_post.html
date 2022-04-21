@@ -4,7 +4,33 @@
 
 {% block content %}
 
-<p> {{ blog_post.title }} </p>
-<p> {{ blog_post.brief }} </p>
-<p> {{ blog_post.contents }} </p>
+<div class="ui main text container">
+  <div class="ui horizontal divider"></div>
+
+  <form class="ui large form" method="">
+    <div class="field">
+      <label>Title</label>
+      <input type="text" placeholder="Title" value="{{ blog_post.title }}">
+    </div>
+
+    <div class="ui section divider"></div>
+
+    <div class="field">
+      <label>Brief</label>
+      <input type="text" placeholder="Brief" value="{{ blog_post.brief }}">
+    </div>
+
+    <div class="ui section divider"></div>
+
+    <div class="field">
+      <label>Contents</label>
+      <textarea name="contents">{{ blog_post.contents }}</textarea>
+    </div>
+
+    <button class="ui fluid large submit button" type="submit">Submit</button>
+  </form>
+
+  <div class="ui horizontal divider"></div>
+</div>
+
 {% endblock %}

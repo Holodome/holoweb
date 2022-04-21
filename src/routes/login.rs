@@ -1,7 +1,7 @@
 use crate::domain::users::{Credentials, PasswordError, UserName, UserPassword};
 use crate::middleware::Session;
 use crate::services::{validate_credentials, AuthError};
-use crate::utils::see_other;
+use crate::utils::{e500, see_other};
 use crate::utils::{redirect_with_error, render_template};
 use crate::Pool;
 use actix_web::error::InternalError;
@@ -10,6 +10,13 @@ use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 use secrecy::Secret;
 
+const LOGIN_FORM_SESSION_KEY: &str = "login_form";
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct LoginCache {
+    name: String,
+}
+
 #[derive(Template)]
 #[template(path = "login.html")]
 struct LoginTemplate<'a> {
@@ -17,20 +24,18 @@ struct LoginTemplate<'a> {
     name: Option<&'a str>,
 }
 
-#[derive(serde::Deserialize)]
-pub struct LoginQueryData {
-    name: Option<String>,
-}
-
-#[tracing::instrument(skip(messages, query))]
+#[tracing::instrument(skip(messages, session))]
 pub async fn login_form(
     messages: IncomingFlashMessages,
-    query: web::Query<LoginQueryData>,
+    session: Session,
 ) -> actix_web::Result<HttpResponse> {
-    render_template(LoginTemplate {
-        messages,
-        name: query.0.name.as_deref(),
-    })
+    let form_data = session
+        .pop_form_data::<LoginCache>(LOGIN_FORM_SESSION_KEY)
+        .map_err(e500)?;
+
+    let name = form_data.as_ref().map(|f| f.name.as_str());
+
+    render_template(LoginTemplate { messages, name })
 }
 
 #[derive(thiserror::Error)]
@@ -64,8 +69,23 @@ pub async fn login(
     pool: web::Data<Pool>,
     session: Session,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
-    let login_redirect =
-        |e| redirect_with_error(format!("/login?name={}", &form.0.name).as_str(), e);
+    let login_redirect = |e| {
+        let e = if let Err(new_e) = session.insert_form_data(
+            LOGIN_FORM_SESSION_KEY,
+            LoginCache {
+                name: form.0.name.clone(),
+            },
+        ) {
+            LoginError::UnexpectedError(anyhow::anyhow!(
+                "Failed to execute request: {:?} & failed to cache data: {:?}",
+                e,
+                new_e
+            ))
+        } else {
+            e
+        };
+        redirect_with_error("/login", e)
+    };
 
     let credentials = Credentials {
         name: UserName::parse(&form.0.name)

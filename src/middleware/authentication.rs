@@ -27,7 +27,6 @@ pub async fn require_login(
     }
 }
 
-
 pub async fn require_non_logged(
     mut req: ServiceRequest,
     next: actix_web_lab::middleware::Next<impl MessageBody>,
@@ -43,8 +42,6 @@ pub async fn require_non_logged(
             let e = anyhow::anyhow!("The user has already logged in");
             Err(InternalError::from_response(e, response).into())
         }
-        None => {
-            next.call(req).await
-        }
+        None => next.call(req).await,
     }
 }
