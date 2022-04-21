@@ -1,4 +1,4 @@
-use crate::api::assert_is_redirect_to;
+use crate::api::assert_is_redirect_to_resource;
 use crate::common::TestApp;
 
 #[tokio::test]
@@ -10,7 +10,7 @@ async fn you_must_be_logged_in_to_change_password() {
             "new_name": "Hello",
         }))
         .await;
-    assert_is_redirect_to(&response, "/login");
+    assert_is_redirect_to_resource(&response, "/login");
 }
 
 #[tokio::test]
@@ -24,14 +24,14 @@ async fn new_name_must_be_valid() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to(&response, "/");
+    assert_is_redirect_to_resource(&response, "/blog_posts");
 
     let response = app
         .post_change_name(&serde_json::json!({
             "new_name": "",
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("Invalid name"));
@@ -48,10 +48,10 @@ async fn cant_change_to_taken_name() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to(&response, "/");
+    assert_is_redirect_to_resource(&response, "/blog_posts");
 
     let response = app.post_logout().await;
-    assert_is_redirect_to(&response, "/login");
+    assert_is_redirect_to_resource(&response, "/login");
 
     let response = app
         .post_registration(&serde_json::json!({
@@ -60,14 +60,14 @@ async fn cant_change_to_taken_name() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to(&response, "/");
+    assert_is_redirect_to_resource(&response, "/blog_posts");
 
     let response = app
         .post_change_name(&serde_json::json!({
             "new_name": "TakenName",
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("Taken name"));
@@ -84,17 +84,17 @@ async fn change_name_works() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to(&response, "/");
+    assert_is_redirect_to_resource(&response, "/blog_posts");
 
     let response = app
         .post_change_name(&serde_json::json!({
             "new_name": "NewName",
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/home");
 
     let response = app.post_logout().await;
-    assert_is_redirect_to(&response, "/login");
+    assert_is_redirect_to_resource(&response, "/login");
 
     let html = app.get_login_page_html().await;
     assert!(html.contains("You have successfully logged out"));
@@ -105,5 +105,5 @@ async fn change_name_works() {
             "password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to(&response, "/");
+    assert_is_redirect_to_resource(&response, "/blog_posts");
 }

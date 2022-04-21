@@ -1,13 +1,12 @@
-use crate::domain::users::{NewUser, NewUserError, PasswordError};
+use crate::domain::users::{NewUser, PasswordError, UserName, UserPassword};
 use crate::middleware::Session;
 use crate::services::{insert_new_user, UserError};
-use crate::utils::render_template;
 use crate::utils::see_other;
+use crate::utils::{redirect_with_error, render_template};
 use crate::Pool;
 use actix_web::error::InternalError;
 use actix_web::web;
 use actix_web::HttpResponse;
-use actix_web_flash_messages::FlashMessage;
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 use secrecy::{ExposeSecret, Secret};
@@ -15,15 +14,25 @@ use std::fmt::Formatter;
 
 #[derive(Template)]
 #[template(path = "registration.html")]
-struct RegistrationTemplate {
+struct RegistrationTemplate<'a> {
     messages: IncomingFlashMessages,
+    name: Option<&'a str>,
 }
 
-#[tracing::instrument(skip(messages))]
+#[derive(serde::Deserialize)]
+pub struct RegistrationQueryData {
+    name: Option<String>,
+}
+
+#[tracing::instrument(skip(messages, query))]
 pub async fn registration_form(
     messages: IncomingFlashMessages,
+    query: web::Query<RegistrationQueryData>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    render_template(RegistrationTemplate { messages })
+    render_template(RegistrationTemplate {
+        messages,
+        name: query.0.name.as_deref(),
+    })
 }
 
 #[derive(thiserror::Error)]
@@ -55,40 +64,36 @@ pub struct RegistrationFormData {
     repeat_password: Secret<String>,
 }
 
-impl TryFrom<RegistrationFormData> for NewUser {
-    type Error = RegistrationError;
-
-    fn try_from(value: RegistrationFormData) -> Result<Self, Self::Error> {
-        let dont_match = value.password.expose_secret() != value.repeat_password.expose_secret();
-        let user = NewUser::parse(value.name, value.password).map_err(|e| match e {
-            NewUserError::NameError(e) => RegistrationError::InvalidName(e),
-            NewUserError::PasswordError(e) => RegistrationError::InvalidPassword(e),
-        })?;
-
-        if dont_match {
-            return Err(RegistrationError::PasswordsDontMatch);
-        }
-
-        Ok(user)
-    }
-}
-
 #[tracing::instrument("Registration", skip(form, pool, session))]
 pub async fn registration(
     form: web::Form<RegistrationFormData>,
     pool: web::Data<Pool>,
     session: Session,
 ) -> Result<HttpResponse, InternalError<RegistrationError>> {
-    let new_user: NewUser =
-        RegistrationFormData::try_into(form.0).map_err(registration_redirect)?;
+    let registration_redirect =
+        |e| redirect_with_error(format!("/registration/?name={}", &form.0.name).as_str(), e);
+
+    if form.0.password.expose_secret() != form.0.repeat_password.expose_secret() {
+        return Err(registration_redirect(RegistrationError::PasswordsDontMatch));
+    }
+
+    let new_user = NewUser {
+        name: UserName::parse(&form.0.name)
+            .map_err(RegistrationError::InvalidName)
+            .map_err(registration_redirect)?,
+        password: UserPassword::parse(form.0.password)
+            .map_err(RegistrationError::InvalidPassword)
+            .map_err(registration_redirect)?,
+    };
 
     match insert_new_user(&pool, &new_user) {
         Ok(user) => {
             session.renew();
             session
                 .insert_user_id(user.id)
-                .map_err(|e| registration_redirect(RegistrationError::UnexpectedError(e.into())))?;
-            Ok(see_other("/"))
+                .map_err(RegistrationError::UnexpectedError)
+                .map_err(registration_redirect)?;
+            Ok(see_other("/blog_posts"))
         }
         Err(e) => match e {
             UserError::TakenName => Err(registration_redirect(RegistrationError::TakenName)),
@@ -97,9 +102,4 @@ pub async fn registration(
             ))),
         },
     }
-}
-
-fn registration_redirect(e: RegistrationError) -> InternalError<RegistrationError> {
-    FlashMessage::error(e.to_string()).send();
-    InternalError::from_response(e, see_other("/registration"))
 }

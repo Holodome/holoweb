@@ -97,7 +97,7 @@ pub async fn change_name(
     pool: web::Data<Pool>,
     user_id: UserID,
 ) -> Result<HttpResponse, InternalError<ChangeNameError>> {
-    let user_name = UserName::parse(form.0.new_name)
+    let user_name = UserName::parse(&form.0.new_name)
         .map_err(|e| redirect_with_error("/account/home", ChangeNameError::InvalidName(e)))?;
 
     let changeset = UpdateUser {

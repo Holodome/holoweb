@@ -20,7 +20,7 @@
       <div class="ui stacked segment">
         <div class="required field">
           <div class="ui input">
-            <input type="text" name="name" placeholder="Name">
+            <input type="text" name="name" placeholder="Name" value="{% if name.is_some() %}{{ name.unwrap() }}{% endif %}">
           </div>
         </div>
         <div class="required field">

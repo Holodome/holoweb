@@ -6,19 +6,31 @@ use crate::utils::{redirect_with_error, render_template};
 use crate::Pool;
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
-use actix_web_flash_messages::{IncomingFlashMessages};
+use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
 use secrecy::Secret;
 
 #[derive(Template)]
 #[template(path = "login.html")]
-struct LoginTemplate {
+struct LoginTemplate<'a> {
     messages: IncomingFlashMessages,
+    name: Option<&'a str>,
 }
 
-#[tracing::instrument(skip(messages))]
-pub async fn login_form(messages: IncomingFlashMessages) -> actix_web::Result<HttpResponse> {
-    render_template(LoginTemplate { messages })
+#[derive(serde::Deserialize)]
+pub struct LoginQueryData {
+    name: Option<String>,
+}
+
+#[tracing::instrument(skip(messages, query))]
+pub async fn login_form(
+    messages: IncomingFlashMessages,
+    query: web::Query<LoginQueryData>,
+) -> actix_web::Result<HttpResponse> {
+    render_template(LoginTemplate {
+        messages,
+        name: query.0.name.as_deref(),
+    })
 }
 
 #[derive(thiserror::Error)]
@@ -41,21 +53,22 @@ impl std::fmt::Debug for LoginError {
 }
 
 #[derive(serde::Deserialize)]
-pub struct FormData {
+pub struct LoginFormData {
     name: String,
     password: Secret<String>,
 }
 
 #[tracing::instrument("Login", skip(form, pool, session))]
 pub async fn login(
-    form: web::Form<FormData>,
+    form: web::Form<LoginFormData>,
     pool: web::Data<Pool>,
     session: Session,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
-    let login_redirect = |e| redirect_with_error("/login", e);
+    let login_redirect =
+        |e| redirect_with_error(format!("/login?name={}", &form.0.name).as_str(), e);
 
     let credentials = Credentials {
-        name: UserName::parse(form.0.name)
+        name: UserName::parse(&form.0.name)
             .map_err(LoginError::InvalidName)
             .map_err(login_redirect)?,
         password: UserPassword::parse(form.0.password)
@@ -70,7 +83,7 @@ pub async fn login(
                 .insert_user_id(user_id)
                 .map_err(LoginError::UnexpectedError)
                 .map_err(login_redirect)?;
-            Ok(see_other("/"))
+            Ok(see_other("/blog_posts"))
         }
         Err(e) => {
             let e = match e {
