@@ -1,5 +1,6 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
 use crate::domain::users::UserID;
+use crate::middleware::Session;
 use crate::routes::internal::comments::render_regular_comments;
 use crate::services::{
     get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post, insert_new_blog_post,
@@ -11,6 +12,8 @@ use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
+
+const EDIT_BLOG_POST_CACHE: &str = "edit_blog_post_form";
 
 #[derive(Template)]
 #[template(path = "blog_posts.html")]
@@ -51,8 +54,9 @@ pub async fn blog_post(
         .map_err(e500)?
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
-    let comments = get_comments_for_blog_post(&pool, &blog_post_id).map_err(e500)?;
-    let rendered_comments = render_regular_comments(comments).map_err(e500)?;
+    let rendered_comments =
+        render_regular_comments(get_comments_for_blog_post(&pool, &blog_post_id).map_err(e500)?)
+            .map_err(e500)?;
 
     render_template(BlogPostTemplate {
         messages,
@@ -61,37 +65,28 @@ pub async fn blog_post(
     })
 }
 
-struct BlogPostDisplay<'a> {
-    title: &'a str,
-    brief: &'a str,
-    contents: &'a str,
+#[derive(serde::Serialize, serde::Deserialize)]
+struct BlogPostDisplay {
+    title: String,
+    brief: String,
+    contents: String,
 }
 
-impl<'a> BlogPostDisplay<'a> {
-    pub fn new(b: &'a BlogPost) -> Self {
-        Self {
-            title: b.title.as_str(),
-            brief: b.brief.as_str(),
-            contents: b.contents.as_str(),
-        }
-    }
-}
-
-impl Default for BlogPostDisplay<'static> {
+impl Default for BlogPostDisplay {
     fn default() -> Self {
         Self {
-            title: "Untitled",
-            brief: "",
-            contents: "",
+            title: "Untitled".to_string(),
+            brief: "".to_string(),
+            contents: "".to_string(),
         }
     }
 }
 
 #[derive(Template)]
 #[template(path = "edit_blog_post.html")]
-struct EditBlogPostTemplate<'a> {
+struct EditBlogPostTemplate {
     messages: IncomingFlashMessages,
-    blog_post: BlogPostDisplay<'a>,
+    blog_post: BlogPostDisplay,
 }
 
 #[tracing::instrument("Edit blog post form", skip(pool, messages))]
@@ -107,7 +102,11 @@ pub async fn edit_blog_post_form(
 
     render_template(EditBlogPostTemplate {
         messages,
-        blog_post: BlogPostDisplay::new(&blog_post),
+        blog_post: BlogPostDisplay {
+            title: blog_post.title,
+            brief: blog_post.brief,
+            contents: blog_post.contents,
+        },
     })
 }
 
@@ -142,24 +141,49 @@ pub async fn edit_blog_post(
     ))
 }
 
-#[tracing::instrument("Create blog post form", skip(messages))]
+#[tracing::instrument("Create blog post form", skip(messages, session))]
 pub async fn create_blog_post_form(
     messages: IncomingFlashMessages,
+    session: Session,
 ) -> actix_web::Result<HttpResponse> {
-    let blog_post = BlogPostDisplay::default();
+    let blog_post = session
+        .pop_form_data::<BlogPostDisplay>(EDIT_BLOG_POST_CACHE)
+        .map_err(e500)?
+        .unwrap_or_default();
     render_template(EditBlogPostTemplate {
         messages,
         blog_post,
     })
 }
 
-#[tracing::instrument("Create blog post", skip(form, pool))]
+#[tracing::instrument("Create blog post", skip(form, pool, session))]
 pub async fn create_blog_post(
     // NOTE: Duplicate usage here
     form: web::Form<EditBlogPostForm>,
     pool: web::Data<Pool>,
     user_id: UserID,
+    session: Session,
 ) -> Result<HttpResponse, InternalError<anyhow::Error>> {
+    let create_blog_post_redirect = |e| {
+        let e = if let Err(new_e) = session.insert_form_data(
+            EDIT_BLOG_POST_CACHE,
+            BlogPostDisplay {
+                title: form.title.clone(),
+                brief: form.brief.clone(),
+                contents: form.contents.clone(),
+            },
+        ) {
+            anyhow::anyhow!(
+                "Failed to execute request: {:?} & failed to cache data: {:?}",
+                e,
+                new_e
+            )
+        } else {
+            e
+        };
+        redirect_with_error("/blog_posts/create", e)
+    };
+
     let new_blog_post = NewBlogPost {
         author_id: &user_id,
         title: &form.title,
@@ -167,7 +191,9 @@ pub async fn create_blog_post(
         contents: &form.contents,
     };
     let blog_post = insert_new_blog_post(&pool, &new_blog_post)
-        .map_err(|e| redirect_with_error("/blog_posts/create", anyhow::Error::new(e)))?;
+        .map_err(anyhow::Error::new)
+        .map_err(create_blog_post_redirect)?;
+
     Ok(see_other(
         format!("/blog_posts/{}", blog_post.id.as_ref()).as_str(),
     ))
