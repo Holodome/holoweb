@@ -1,4 +1,4 @@
-use crate::middleware::require_login;
+use crate::middleware::{require_login, require_non_logged};
 use crate::utils::see_other;
 use actix_web::{web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
@@ -26,6 +26,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::resource("/registration")
+                .wrap(from_fn(require_non_logged))
                 .route(web::get().to(registration::registration_form))
                 .route(web::post().to(registration::registration)),
         )
@@ -39,6 +40,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::resource("/login")
+                .wrap(from_fn(require_non_logged))
                 .route(web::get().to(login::login_form))
                 .route(web::post().to(login::login)),
         )

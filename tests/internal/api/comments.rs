@@ -64,10 +64,13 @@ async fn cant_edit_others_comment() {
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
+
     let blog_post = TestBlogPost::generate();
     let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
     let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
+
+    app.post_logout().await;
 
     let other_user = TestUser::generate();
     other_user.register_internally(app.pool());

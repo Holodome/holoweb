@@ -24,7 +24,7 @@ async fn new_name_must_be_valid() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
 
     let response = app
         .post_change_name(&serde_json::json!({
@@ -48,7 +48,7 @@ async fn cant_change_to_taken_name() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
 
     let response = app.post_logout().await;
     assert_is_redirect_to_resource(&response, "/login");
@@ -60,7 +60,7 @@ async fn cant_change_to_taken_name() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
 
     let response = app
         .post_change_name(&serde_json::json!({
@@ -84,7 +84,7 @@ async fn change_name_works() {
             "repeat_password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
 
     let response = app
         .post_change_name(&serde_json::json!({
@@ -105,5 +105,5 @@ async fn change_name_works() {
             "password": "!1Aapass"
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
 }

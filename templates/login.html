@@ -19,12 +19,14 @@
     <form class="ui large form" action="/login" method="post">
       <div class="ui stacked segment">
         <div class="required field">
-          <div class="ui input">
+          <div class="ui left icon input">
+            <i class="user icon"></i>
             <input type="text" name="name" placeholder="Name" value="{% if name.is_some() %}{{ name.unwrap() }}{% endif %}">
           </div>
         </div>
         <div class="required field">
-          <div class="ui input">
+          <div class="ui left icon input">
+            <i class="lock icon"></i>
             <input type="password" name="password" placeholder="Password" id="password_input">
           </div>
         </div>

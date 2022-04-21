@@ -71,7 +71,7 @@ pub async fn registration(
     session: Session,
 ) -> Result<HttpResponse, InternalError<RegistrationError>> {
     let registration_redirect =
-        |e| redirect_with_error(format!("/registration/?name={}", &form.0.name).as_str(), e);
+        |e| redirect_with_error(format!("/registration?name={}", &form.0.name).as_str(), e);
 
     if form.0.password.expose_secret() != form.0.repeat_password.expose_secret() {
         return Err(registration_redirect(RegistrationError::PasswordsDontMatch));
@@ -93,7 +93,7 @@ pub async fn registration(
                 .insert_user_id(user.id)
                 .map_err(RegistrationError::UnexpectedError)
                 .map_err(registration_redirect)?;
-            Ok(see_other("/blog_posts"))
+            Ok(see_other("/blog_posts/all"))
         }
         Err(e) => match e {
             UserError::TakenName => Err(registration_redirect(RegistrationError::TakenName)),

@@ -36,6 +36,6 @@ impl TestUser {
                 "password": self.password.as_ref().expose_secret()
             }))
             .await;
-        assert_is_redirect_to_resource(&response, "/blog_posts");
+        assert_is_redirect_to_resource(&response, "/blog_posts/all");
     }
 }

@@ -130,5 +130,5 @@ async fn change_password_works() {
             "password": &new_password
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
 }
