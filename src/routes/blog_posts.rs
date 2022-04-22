@@ -1,6 +1,6 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
 use crate::domain::users::UserID;
-use crate::middleware::Session;
+use crate::middleware::{Messages, Session};
 use crate::routes::internal::comments::render_regular_comments;
 use crate::services::{
     get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post, insert_new_blog_post,
@@ -18,7 +18,7 @@ const EDIT_BLOG_POST_CACHE: &str = "edit_blog_post_form";
 #[derive(Template)]
 #[template(path = "blog_posts.html")]
 struct BlogPostsTemplate {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     blog_posts: Vec<BlogPost>,
 }
 
@@ -30,7 +30,7 @@ pub async fn all_blog_posts(
     let blog_posts = get_all_blog_posts(&pool).map_err(e500)?;
 
     render_template(BlogPostsTemplate {
-        messages,
+        messages: messages.into(),
         blog_posts,
     })
 }
@@ -38,7 +38,7 @@ pub async fn all_blog_posts(
 #[derive(Template)]
 #[template(path = "blog_post.html")]
 struct BlogPostTemplate {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     blog_post: BlogPost,
     rendered_comments: String,
 }
@@ -59,7 +59,7 @@ pub async fn blog_post(
             .map_err(e500)?;
 
     render_template(BlogPostTemplate {
-        messages,
+        messages: messages.into(),
         blog_post,
         rendered_comments,
     })
@@ -85,8 +85,9 @@ impl Default for BlogPostDisplay {
 #[derive(Template)]
 #[template(path = "edit_blog_post.html")]
 struct EditBlogPostTemplate {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     blog_post: BlogPostDisplay,
+    action: String,
 }
 
 #[tracing::instrument("Edit blog post form", skip(pool, messages))]
@@ -101,12 +102,13 @@ pub async fn edit_blog_post_form(
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
     render_template(EditBlogPostTemplate {
-        messages,
+        messages: messages.into(),
         blog_post: BlogPostDisplay {
             title: blog_post.title,
             brief: blog_post.brief,
             contents: blog_post.contents,
         },
+        action: format!("/blog_posts/{}/edit", blog_post_id.as_ref()),
     })
 }
 
@@ -137,7 +139,7 @@ pub async fn edit_blog_post(
         )
     })?;
     Ok(see_other(
-        format!("/blog_posts/{}", blog_post_id.as_ref()).as_str(),
+        format!("/blog_posts/{}/view", blog_post_id.as_ref()).as_str(),
     ))
 }
 
@@ -151,8 +153,9 @@ pub async fn create_blog_post_form(
         .map_err(e500)?
         .unwrap_or_default();
     render_template(EditBlogPostTemplate {
-        messages,
+        messages: messages.into(),
         blog_post,
+        action: "/blog_posts/create".to_string(),
     })
 }
 
@@ -195,6 +198,6 @@ pub async fn create_blog_post(
         .map_err(create_blog_post_redirect)?;
 
     Ok(see_other(
-        format!("/blog_posts/{}", blog_post.id.as_ref()).as_str(),
+        format!("/blog_posts/{}/view", blog_post.id.as_ref()).as_str(),
     ))
 }

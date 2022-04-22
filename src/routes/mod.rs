@@ -6,6 +6,7 @@ use actix_web_lab::middleware::from_fn;
 mod account;
 mod blog_posts;
 mod comments;
+pub mod error_handlers;
 mod health_check;
 mod internal;
 mod login;
@@ -19,6 +20,7 @@ async fn redirect_to_blog_posts() -> HttpResponse {
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
+        .route("", web::get().to(redirect_to_blog_posts))
         .route("/", web::get().to(redirect_to_blog_posts))
         .service(
             web::resource("/logout")

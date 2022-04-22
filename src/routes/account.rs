@@ -7,6 +7,7 @@ use std::fmt::Formatter;
 
 use crate::domain::blog_posts::BlogPost;
 use crate::domain::projects::Project;
+use crate::middleware::Messages;
 use crate::Pool;
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
@@ -38,7 +39,7 @@ struct CommentInfo<'a> {
 #[derive(Template)]
 #[template(path = "account.html")]
 struct AccountPage<'a> {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     projects: Vec<ProjectInfo<'a>>,
     blog_posts: Vec<BlogPostInfo<'a>>,
     comments: Vec<CommentInfo<'a>>,
@@ -57,7 +58,7 @@ pub async fn account(
         .ok_or_else(|| e500("Failed to get user"))?;
 
     render_template(AccountPage {
-        messages,
+        messages: messages.into(),
         projects: vec![],
         // TODO
         blog_posts: vec![],

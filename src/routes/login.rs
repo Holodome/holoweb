@@ -1,5 +1,5 @@
 use crate::domain::users::{Credentials, PasswordError, UserName, UserPassword};
-use crate::middleware::Session;
+use crate::middleware::{Messages, Session};
 use crate::services::{validate_credentials, AuthError};
 use crate::utils::{e500, see_other};
 use crate::utils::{redirect_with_error, render_template};
@@ -20,7 +20,7 @@ struct LoginCache {
 #[derive(Template)]
 #[template(path = "login.html")]
 struct LoginTemplate<'a> {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     name: Option<&'a str>,
 }
 
@@ -35,7 +35,10 @@ pub async fn login_form(
 
     let name = form_data.as_ref().map(|f| f.name.as_str());
 
-    render_template(LoginTemplate { messages, name })
+    render_template(LoginTemplate {
+        messages: messages.into(),
+        name,
+    })
 }
 
 #[derive(thiserror::Error)]

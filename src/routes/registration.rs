@@ -1,5 +1,5 @@
 use crate::domain::users::{NewUser, PasswordError, UserName, UserPassword};
-use crate::middleware::Session;
+use crate::middleware::{Messages, Session};
 use crate::services::{insert_new_user, UserError};
 use crate::utils::{e500, see_other};
 use crate::utils::{redirect_with_error, render_template};
@@ -22,7 +22,7 @@ struct RegistrationCache {
 #[derive(Template)]
 #[template(path = "registration.html")]
 struct RegistrationTemplate<'a> {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     name: Option<&'a str>,
 }
 
@@ -37,7 +37,10 @@ pub async fn registration_form(
 
     let name = form_data.as_ref().map(|f| f.name.as_str());
 
-    render_template(RegistrationTemplate { messages, name })
+    render_template(RegistrationTemplate {
+        messages: messages.into(),
+        name,
+    })
 }
 
 #[derive(thiserror::Error)]

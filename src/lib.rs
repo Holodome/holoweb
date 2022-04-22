@@ -7,7 +7,6 @@ use diesel::{r2d2, SqliteConnection};
 
 pub mod config;
 pub mod domain;
-pub mod error_handlers;
 pub mod markdown;
 pub mod middleware;
 pub mod routes;

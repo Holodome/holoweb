@@ -41,29 +41,29 @@
 
 <div class="ui middle aligned center aligned grid" style="margin-top: 50px">
   {% for message in messages.iter() %}
-    {% match message.level() %}
-      {% when actix_web_flash_messages::Level::Info %}
+    {% match message.level %}
+      {% when crate::middleware::MessageLevel::Info %}
         <div class="ui info message">
           <div class="header">
-            {{ message.content() }}
+            {{ message.contents }}
           </div>
         </div>
-      {% when actix_web_flash_messages::Level::Success %}
+      {% when crate::middleware::MessageLevel::Success %}
         <div class="ui success message">
           <div class="header">
-            {{ message.content() }}
+            {{ message.contents }}
           </div>
         </div>
-      {% when actix_web_flash_messages::Level::Warning %}
+      {% when crate::middleware::MessageLevel::Warning %}
         <div class="ui warning message">
           <div class="header">
-            {{ message.content() }}
+            {{ message.contents }}
           </div>
         </div>
-      {% when actix_web_flash_messages::Level::Error %}
+      {% when crate::middleware::MessageLevel::Error %}
         <div class="ui error message">
           <div class="header">
-            {{ message.content() }}
+            {{ message.contents }}
           </div>
         </div>
       {% else %}
