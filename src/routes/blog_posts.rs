@@ -36,7 +36,7 @@ pub async fn all_blog_posts(
 }
 
 #[derive(Template)]
-#[template(path = "blog_post.html")]
+#[template(path = "blog_post.html", escape = "none")]
 struct BlogPostTemplate {
     messages: Messages,
     blog_post: BlogPost,

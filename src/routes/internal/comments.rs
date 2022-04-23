@@ -9,6 +9,7 @@ struct CommentTemplate<'a> {
     pub date: &'a str,
     pub contents: &'a str,
     pub rendered_children: Vec<String>,
+    pub id: &'a str,
 }
 
 pub fn render_regular_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
@@ -16,6 +17,7 @@ pub fn render_regular_comments(comments: Vec<Comment>) -> Result<String, anyhow:
 }
 
 fn render_comment(
+    id: &str,
     author: &str,
     date: &str,
     contents: &str,
@@ -26,6 +28,7 @@ fn render_comment(
         date,
         contents,
         rendered_children,
+        id,
     }
     .render()
     .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
@@ -38,7 +41,7 @@ fn render_comments<F, T>(
 ) -> Result<String, anyhow::Error>
 where
     F: FnMut(&&Comment, &&Comment) -> core::cmp::Ordering,
-    T: FnMut(&str, &str, &str, Vec<String>) -> Result<String, anyhow::Error>,
+    T: FnMut(&str, &str, &str, &str, Vec<String>) -> Result<String, anyhow::Error>,
 {
     let mut children = HashMap::<&str, Vec<&Comment>>::new();
     let mut orphans = Vec::new();
@@ -78,7 +81,13 @@ where
             };
             // TODO: Author
             // TODO: Date
-            let s = renderer("TODO", "TODO", contents, rendered_children)?;
+            let s = renderer(
+                current.id.as_ref(),
+                "TODO",
+                "TODO",
+                contents,
+                rendered_children,
+            )?;
             rendered.insert(current_id, s);
 
             continue;

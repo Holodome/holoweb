@@ -12,23 +12,24 @@ use actix_web::{web, HttpResponse, ResponseError};
 #[derive(serde::Deserialize)]
 pub struct CreateCommentFormData {
     contents: String,
+    reply_to_id: Option<CommentID>,
 }
 
 pub async fn create_comment(
     pool: web::Data<Pool>,
     user_id: UserID,
     post_id: web::Path<BlogPostID>,
-    query: web::Form<CreateCommentFormData>,
+    form: web::Form<CreateCommentFormData>,
 ) -> actix_web::Result<HttpResponse> {
     let post_id = post_id.into_inner();
     let new_comment = NewComment {
         author_id: &user_id,
         post_id: &post_id,
-        parent_id: None,
-        contents: &query.0.contents,
+        parent_id: form.0.reply_to_id.as_ref(),
+        contents: &form.0.contents,
     };
     insert_new_comment(&pool, &new_comment).map_err(e500)?;
-    Ok(see_other(&format!("/blog_posts/{}", post_id)))
+    Ok(see_other(&format!("/blog_posts/{}/view", post_id)))
 }
 
 #[derive(thiserror::Error)]

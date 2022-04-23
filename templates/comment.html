@@ -1,4 +1,4 @@
-<div class="comment">
+<div class="comment" id="comment-{{ id }}">
   <div class="content">
     <a class="author">{{ author }}</a>
     <div class="metadata">
@@ -8,13 +8,14 @@
       <p>{{ contents }}</p>
     </div>
     <div class="actions">
-      <a class="reply">Reply</a>
+      <a class="reply comment-reply-button" id="reply-comment-{{ id }}">Reply</a>
     </div>
   </div>
-  <div class="comments">
-    {% for child in rendered_children %}
-      {{ child }}
-    {% endfor %}
-  </div>
+  {% if !rendered_children.is_empty() %}
+    <div class="comments">
+      {% for child in rendered_children %}
+        {{ child }}
+      {% endfor %}
+    </div>
+  {% endif %}
 </div>
-

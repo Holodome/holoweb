@@ -2,6 +2,10 @@
 
 {% block title %}{{ blog_post.title }}{% endblock %}
 
+{% block head %}
+<script src="/static/js/blog_post.js"></script>
+{% endblock %}
+
 {% block content %}
 
 <div class="ui text container">
@@ -10,21 +14,32 @@
     {{ blog_post.title }}
   </h1>
 
-  <p> {{ blog_post.brief }} </p>
+  <p>{{ blog_post.brief }}</p>
 
   <div class="ui text container">
     {{ blog_post.contents }}
   </div>
 
   <h2 class="ui horizontal divider header">Comments</h2>
-  <div>
-    <form class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create">
+  <div class="ui comments">
+
+    <form hidden class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create" method="post" id="comment-reply-form">
+      <input type="hidden" id="comment-reply-form-id" value="" name="reply_to_id">
       <div class="field">
-        <textarea></textarea>
+        <textarea name="contents"></textarea>
       </div>
-      <div class="ui blue button">
+      <button class="ui blue submit button" type="submit">
         Add Reply
+      </button>
+    </form>
+
+    <form class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create" method="post" id="reply-form">
+      <div class="field">
+        <textarea name="contents"></textarea>
       </div>
+      <button class="ui blue submit button" type="submit">
+        Add Reply
+      </button>
     </form>
 
     <div class="ui section divider"> </div>

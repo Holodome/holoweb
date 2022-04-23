@@ -1,16 +1,17 @@
 get_comment_id_from_reply = reply_id => {
-    return reply_id.replace("reply-", "");
+    return reply_id.replace("reply-comment-", "");
 }
 
-$(() => {
-    const FORM = $("#reply-form");
-
-    $( ".comment-reply-button" ).each(() => {
-        let it = $(this);
-        it.click(e => {
-            e.preventDefault();
-            console.log(it.attr("class"), it.attr("id"));
-            $( get_comment_id_from_reply(it.id) ).after(FORM)
-        })
+$(document).ready(() => {
+    $( ".comment-reply-button" ).click(e => {
+        e.preventDefault();
+        let anchor_id = e.target.id;
+        let comment_id = get_comment_id_from_reply(anchor_id);
+        // Add form to current comment
+        let form = $("#comment-reply-form");
+        form.show();
+        $( "#comment-" + comment_id ).after(form);
+        // Set id of reply
+        $( "#comment-reply-form-id" ).val(comment_id);
     });
 });
