@@ -1,19 +1,18 @@
+use crate::domain::blog_posts::BlogPost;
+use crate::domain::projects::Project;
 use crate::domain::users::{
     Credentials, HashedUserPassword, PasswordError, UpdateUser, UserID, UserName, UserPassword,
 };
+use crate::middleware::Messages;
 use crate::services::{get_user_by_id, update_user, validate_credentials, AuthError, UserError};
 use crate::utils::{e500, redirect_with_error, render_template, see_other};
-use std::fmt::Formatter;
-
-use crate::domain::blog_posts::BlogPost;
-use crate::domain::projects::Project;
-use crate::middleware::Messages;
 use crate::Pool;
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
 use askama::Template;
 use secrecy::{ExposeSecret, Secret};
+use std::fmt::Formatter;
 
 struct ProjectInfo<'a> {
     id: &'a str,

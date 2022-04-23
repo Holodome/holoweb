@@ -44,30 +44,18 @@
     {% match message.level %}
       {% when crate::middleware::MessageLevel::Info %}
         <div class="ui info message">
-          <div class="header">
-            {{ message.contents }}
-          </div>
-        </div>
       {% when crate::middleware::MessageLevel::Success %}
         <div class="ui success message">
-          <div class="header">
-            {{ message.contents }}
-          </div>
-        </div>
       {% when crate::middleware::MessageLevel::Warning %}
         <div class="ui warning message">
-          <div class="header">
-            {{ message.contents }}
-          </div>
-        </div>
       {% when crate::middleware::MessageLevel::Error %}
         <div class="ui error message">
-          <div class="header">
-            {{ message.contents }}
-          </div>
-        </div>
       {% else %}
+        <div class="ui message">
     {% endmatch %}
+          <div class="header">{{ message.title }}</div>
+          <p>{{ message.contents }}</p>
+        </div>
   {% endfor %}
 </div>
 

@@ -21,7 +21,7 @@
         <div class="required field">
           <div class="ui left icon input">
             <i class="user icon"></i>
-            <input type="text" name="name" placeholder="Name" value="{% if name.is_some() %}{{ name.unwrap() }}{% endif %}">
+            <input type="text" name="name" placeholder="Name" value="{{ name.unwrap_or_default() }}">
           </div>
         </div>
         <div class="required field">
@@ -33,7 +33,7 @@
         <div class="field">
           <div class="ui checkbox">
             <input type="checkbox" id="show_password_checkbox">
-            <label>Show password</label>
+            <label for="show_password_checkbox">Show password</label>
           </div>
         </div>
         <button class="ui fluid large submit button" type="submit">Login</button>
