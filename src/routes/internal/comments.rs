@@ -119,8 +119,65 @@ mod tests {
         s.chars().filter(|c| !c.is_whitespace()).collect()
     }
 
+    #[derive(Template)]
+    #[template(
+        source = r#"<div class="comment">
+  <div class="content">
+    <a class="author">{{ author }}</a>
+    <div class="metadata">
+      <span class="date">{{ date }}</span>
+    </div>
+    <div class="text">
+      <p>{{ contents }}</p>
+    </div>
+    <div class="actions">
+      <a class="reply">Reply</a>
+    </div>
+  </div>
+  {% if !rendered_children.is_empty() %}
+    <div class="comments">
+      {% for child in rendered_children %}
+        {{ child }}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+"#,
+        ext = "html",
+        escape = "none"
+    )]
+    struct TestCommentTemplate<'a> {
+        pub author: &'a str,
+        pub date: &'a str,
+        pub contents: &'a str,
+        pub rendered_children: Vec<String>,
+        pub id: &'a str,
+    }
+
+    fn test_render_comment(
+        id: &str,
+        author: &str,
+        date: &str,
+        contents: &str,
+        rendered_children: Vec<String>,
+    ) -> Result<String, anyhow::Error> {
+        TestCommentTemplate {
+            author,
+            date,
+            contents,
+            rendered_children,
+            id,
+        }
+        .render()
+        .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
+    }
+
     fn test_render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
-        render_comments(comments, |a, b| a.contents.cmp(&b.contents), render_comment)
+        render_comments(
+            comments,
+            |a, b| a.contents.cmp(&b.contents),
+            test_render_comment,
+        )
     }
 
     fn generate_comment(

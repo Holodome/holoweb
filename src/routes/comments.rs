@@ -82,5 +82,5 @@ pub async fn edit_comment(
         is_deleted: Some(form.0.is_deleted),
     };
     update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
-    Ok(see_other(&format!("/blog_posts/{}", post_id)))
+    Ok(see_other(&format!("/blog_posts/{}/view", post_id)))
 }

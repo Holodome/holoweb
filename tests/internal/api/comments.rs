@@ -20,7 +20,10 @@ async fn create_comment_works() {
         )
         .await;
 
-    assert_is_redirect_to_resource(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
@@ -49,7 +52,10 @@ async fn edit_comment_works() {
             &comment_id,
         )
         .await;
-    assert_is_redirect_to_resource(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
@@ -116,7 +122,10 @@ async fn delete_comment_works() {
             &comment_id,
         )
         .await;
-    assert_is_redirect_to_resource(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
@@ -171,7 +180,10 @@ async fn create_response_comment_works() {
         )
         .await;
 
-    assert_is_redirect_to_resource(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
         .await;
@@ -202,7 +214,10 @@ async fn delete_comment_in_middle_of_response_tree_works() {
             &comment_id,
         )
         .await;
-    assert_is_redirect_to_resource(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
         .await;
