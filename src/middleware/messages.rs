@@ -26,9 +26,9 @@ impl From<IncomingFlashMessages> for Messages {
                 .map(|it| {
                     let level = match it.level() {
                         actix_web_flash_messages::Level::Info => MessageLevel::Info,
-                        actix_web_flash_messages::Level::Success => MessageLevel::Info,
-                        actix_web_flash_messages::Level::Warning => MessageLevel::Info,
-                        actix_web_flash_messages::Level::Error => MessageLevel::Info,
+                        actix_web_flash_messages::Level::Success => MessageLevel::Success,
+                        actix_web_flash_messages::Level::Warning => MessageLevel::Warning,
+                        actix_web_flash_messages::Level::Error => MessageLevel::Error,
                         _ => MessageLevel::Other,
                     };
                     let title = match level {
