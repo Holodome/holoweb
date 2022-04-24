@@ -12,23 +12,25 @@ struct CommentTemplate<'a> {
     pub id: &'a str,
 }
 
+pub struct RenderCommentData<'a> {
+    id: &'a str,
+    author: &'a str,
+    date: &'a str,
+    contents: &'a str,
+    rendered_children: Vec<String>,
+}
+
 pub fn render_regular_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
     render_comments(comments, |a, b| a.contents.cmp(&b.contents), render_comment)
 }
 
-fn render_comment(
-    id: &str,
-    author: &str,
-    date: &str,
-    contents: &str,
-    rendered_children: Vec<String>,
-) -> Result<String, anyhow::Error> {
+fn render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
     CommentTemplate {
-        author,
-        date,
-        contents,
-        rendered_children,
-        id,
+        author: data.author,
+        date: data.date,
+        contents: data.contents,
+        rendered_children: data.rendered_children,
+        id: data.id,
     }
     .render()
     .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
@@ -41,7 +43,7 @@ fn render_comments<F, T>(
 ) -> Result<String, anyhow::Error>
 where
     F: FnMut(&&Comment, &&Comment) -> core::cmp::Ordering,
-    T: FnMut(&str, &str, &str, &str, Vec<String>) -> Result<String, anyhow::Error>,
+    T: FnMut(RenderCommentData) -> Result<String, anyhow::Error>,
 {
     let mut children = HashMap::<&str, Vec<&Comment>>::new();
     let mut orphans = Vec::new();
@@ -81,13 +83,13 @@ where
             };
             // TODO: Author
             // TODO: Date
-            let s = renderer(
-                current.id.as_ref(),
-                "TODO",
-                "TODO",
+            let s = renderer(RenderCommentData {
+                id: current.id.as_ref(),
+                author: "TODO",
+                date: "TODO",
                 contents,
                 rendered_children,
-            )?;
+            })?;
             rendered.insert(current_id, s);
 
             continue;
@@ -153,18 +155,12 @@ mod tests {
         pub rendered_children: Vec<String>,
     }
 
-    fn test_render_comment(
-        _id: &str,
-        author: &str,
-        date: &str,
-        contents: &str,
-        rendered_children: Vec<String>,
-    ) -> Result<String, anyhow::Error> {
+    fn test_render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
         TestCommentTemplate {
-            author,
-            date,
-            contents,
-            rendered_children,
+            author: data.author,
+            date: data.date,
+            contents: data.contents,
+            rendered_children: data.rendered_children,
         }
         .render()
         .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
