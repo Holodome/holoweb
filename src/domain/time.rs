@@ -50,12 +50,12 @@ impl DateTime {
     }
 
     pub fn ago(&self) -> String {
-        let now = chrono::Utc::now();
-        self.since(now)
+        let now = Self::now();
+        self.since(&now)
     }
 
-    pub fn since(&self, now: chrono::DateTime<Utc>) -> String {
-        let difference = now - self.t;
+    pub fn since(&self, now: &DateTime) -> String {
+        let difference = now.t - self.t;
         duration_since_human_readable(difference)
     }
 }

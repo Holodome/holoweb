@@ -1,4 +1,5 @@
 use crate::domain::comments::Comment;
+use crate::domain::time::DateTime;
 use askama::Template;
 use std::collections::{HashMap, HashSet, VecDeque};
 
@@ -60,6 +61,8 @@ where
 
     orphans.sort_by(&mut comparator);
 
+    let current_time = DateTime::now();
+
     let mut visited = HashSet::<&str>::new();
     let mut rendered = HashMap::<&str, String>::new();
     let mut stack = VecDeque::from(orphans.clone());
@@ -82,11 +85,10 @@ where
                 current.contents.as_str()
             };
             // TODO: Author
-            // TODO: Date
             let s = renderer(RenderCommentData {
                 id: current.id.as_ref(),
                 author: "TODO",
-                date: "TODO",
+                date: &current.created_at.since(&current_time),
                 contents,
                 rendered_children,
             })?;
@@ -126,10 +128,6 @@ mod tests {
     #[template(
         source = r#"<div class="comment">
   <div class="content">
-    <a class="author">{{ author }}</a>
-    <div class="metadata">
-      <span class="date">{{ date }}</span>
-    </div>
     <div class="text">
       <p>{{ contents }}</p>
     </div>
@@ -150,16 +148,12 @@ mod tests {
         escape = "none"
     )]
     struct TestCommentTemplate<'a> {
-        pub author: &'a str,
-        pub date: &'a str,
         pub contents: &'a str,
         pub rendered_children: Vec<String>,
     }
 
     fn test_render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
         TestCommentTemplate {
-            author: data.author,
-            date: data.date,
             contents: data.contents,
             rendered_children: data.rendered_children,
         }
