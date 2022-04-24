@@ -28,8 +28,11 @@ pub async fn create_comment(
         parent_id: form.0.reply_to_id.as_ref(),
         contents: &form.0.contents,
     };
-    insert_new_comment(&pool, &new_comment).map_err(e500)?;
-    Ok(see_other(&format!("/blog_posts/{}/view", post_id)))
+    let new_comment = insert_new_comment(&pool, &new_comment).map_err(e500)?;
+    Ok(see_other(&format!(
+        "/blog_posts/{}/view#comment-{}",
+        post_id, new_comment.id
+    )))
 }
 
 #[derive(thiserror::Error)]
@@ -82,5 +85,8 @@ pub async fn edit_comment(
         is_deleted: Some(form.0.is_deleted),
     };
     update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
-    Ok(see_other(&format!("/blog_posts/{}/view", post_id)))
+    Ok(see_other(&format!(
+        "/blog_posts/{}/view#comment-{}",
+        post_id, comment_id
+    )))
 }

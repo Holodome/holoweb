@@ -151,11 +151,10 @@ mod tests {
         pub date: &'a str,
         pub contents: &'a str,
         pub rendered_children: Vec<String>,
-        pub id: &'a str,
     }
 
     fn test_render_comment(
-        id: &str,
+        _id: &str,
         author: &str,
         date: &str,
         contents: &str,
@@ -166,7 +165,6 @@ mod tests {
             date,
             contents,
             rendered_children,
-            id,
         }
         .render()
         .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
