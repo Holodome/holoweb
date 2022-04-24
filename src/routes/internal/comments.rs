@@ -115,6 +115,7 @@ mod tests {
     use super::*;
     use crate::domain::blog_posts::BlogPostID;
     use crate::domain::comments::CommentID;
+    use crate::domain::time::DateTime;
     use crate::domain::users::UserID;
 
     fn remove_spaces(s: &str) -> String {
@@ -179,14 +180,15 @@ mod tests {
         id: Option<CommentID>,
         reply_to: Option<CommentID>,
     ) -> Comment {
+        let time = DateTime::now();
         Comment {
             id: id.unwrap_or_else(|| CommentID::generate_random()),
             contents,
             author_id: UserID::generate_random(),
             post_id: BlogPostID::generate_random(),
             reply_to_id: reply_to,
-            created_at: "".to_string(),
-            updated_at: "".to_string(),
+            created_at: time.clone(),
+            updated_at: time,
             is_deleted: false,
         }
     }

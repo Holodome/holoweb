@@ -1,8 +1,8 @@
 use crate::domain::blog_posts::BlogPostID;
 use crate::domain::comments::{Comment, CommentID, NewComment, UpdateComment};
+use crate::domain::time::DateTime;
 use crate::domain::users::UserID;
 use crate::schema::comments::dsl::*;
-use crate::services::get_current_time_str;
 use crate::Pool;
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
@@ -47,7 +47,7 @@ pub fn update_comment(pool: &Pool, changeset: &UpdateComment) -> Result<(), anyh
 
 pub fn insert_new_comment(pool: &Pool, new_comment: &NewComment) -> Result<Comment, anyhow::Error> {
     let conn = pool.get()?;
-    let time = get_current_time_str();
+    let time = DateTime::now();
     let comment = Comment {
         id: CommentID::generate_random(),
         author_id: new_comment.author_id.clone(),
