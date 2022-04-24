@@ -3,8 +3,8 @@ use crate::domain::users::UserID;
 use crate::middleware::{Messages, Session};
 use crate::routes::internal::comments::render_regular_comments;
 use crate::services::{
-    get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post, insert_new_blog_post,
-    update_blog_post,
+    get_all_blog_posts, get_blog_post_by_id, get_comment_views_for_blog_post,
+    get_comments_for_blog_post, insert_new_blog_post, update_blog_post,
 };
 use crate::utils::{e500, redirect_with_error, render_template, see_other};
 use crate::Pool;
@@ -54,9 +54,10 @@ pub async fn blog_post(
         .map_err(e500)?
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
-    let rendered_comments =
-        render_regular_comments(get_comments_for_blog_post(&pool, &blog_post_id).map_err(e500)?)
-            .map_err(e500)?;
+    let comments = get_comment_views_for_blog_post(&pool, &blog_post_id).map_err(e500)?;
+    println!("{:?}", comments);
+    println!("{:?}", get_comments_for_blog_post(&pool, &blog_post_id));
+    let rendered_comments = render_regular_comments(comments).map_err(e500)?;
 
     render_template(BlogPostTemplate {
         messages: messages.into(),

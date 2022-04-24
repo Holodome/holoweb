@@ -1,4 +1,4 @@
-use crate::domain::comments::Comment;
+use crate::domain::comments::CommentView;
 use crate::domain::time::DateTime;
 use askama::Template;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -21,7 +21,7 @@ pub struct RenderCommentData<'a> {
     rendered_children: Vec<String>,
 }
 
-pub fn render_regular_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
+pub fn render_regular_comments(comments: Vec<CommentView>) -> Result<String, anyhow::Error> {
     render_comments(comments, |a, b| a.contents.cmp(&b.contents), render_comment)
 }
 
@@ -38,15 +38,15 @@ fn render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
 }
 
 fn render_comments<F, T>(
-    comments: Vec<Comment>,
+    comments: Vec<CommentView>,
     mut comparator: F,
     mut renderer: T,
 ) -> Result<String, anyhow::Error>
 where
-    F: FnMut(&&Comment, &&Comment) -> core::cmp::Ordering,
+    F: FnMut(&&CommentView, &&CommentView) -> core::cmp::Ordering,
     T: FnMut(RenderCommentData) -> Result<String, anyhow::Error>,
 {
-    let mut children = HashMap::<&str, Vec<&Comment>>::new();
+    let mut children = HashMap::<&str, Vec<&CommentView>>::new();
     let mut orphans = Vec::new();
     for comment in comments.iter() {
         if let Some(reply_to_id) = &comment.reply_to_id {
@@ -84,10 +84,9 @@ where
             } else {
                 current.contents.as_str()
             };
-            // TODO: Author
             let s = renderer(RenderCommentData {
                 id: current.id.as_ref(),
-                author: "TODO",
+                author: current.author_name.as_ref(),
                 date: &current.created_at.since(&current_time),
                 contents,
                 rendered_children,
@@ -118,7 +117,7 @@ mod tests {
     use crate::domain::blog_posts::BlogPostID;
     use crate::domain::comments::CommentID;
     use crate::domain::time::DateTime;
-    use crate::domain::users::UserID;
+    use crate::domain::users::UserName;
 
     fn remove_spaces(s: &str) -> String {
         s.chars().filter(|c| !c.is_whitespace()).collect()
@@ -161,7 +160,7 @@ mod tests {
         .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
     }
 
-    fn test_render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
+    fn test_render_comments(comments: Vec<CommentView>) -> Result<String, anyhow::Error> {
         render_comments(
             comments,
             |a, b| a.contents.cmp(&b.contents),
@@ -173,12 +172,12 @@ mod tests {
         contents: String,
         id: Option<CommentID>,
         reply_to: Option<CommentID>,
-    ) -> Comment {
+    ) -> CommentView {
         let time = DateTime::now();
-        Comment {
+        CommentView {
             id: id.unwrap_or_else(|| CommentID::generate_random()),
             contents,
-            author_id: UserID::generate_random(),
+            author_name: UserName::generate_random(),
             post_id: BlogPostID::generate_random(),
             reply_to_id: reply_to,
             created_at: time.clone(),
