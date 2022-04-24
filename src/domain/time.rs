@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{Duration, Utc};
 use diesel::backend::Backend;
 use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
@@ -56,32 +56,120 @@ impl DateTime {
 
     pub fn since(&self, now: chrono::DateTime<Utc>) -> String {
         let difference = now - self.t;
+        duration_since_human_readable(difference)
+    }
+}
 
-        let weeks = difference.num_weeks();
-        if weeks != 0 {
-            return format!("{} weeks ago", weeks);
-        }
+fn duration_since_human_readable(diff: Duration) -> String {
+    let weeks = diff.num_weeks();
+    if weeks != 0 {
+        return if weeks != 1 {
+            format!("{} weeks ago", weeks)
+        } else {
+            "1 week ago".to_string()
+        };
+    }
 
-        let days = difference.num_days();
-        if days != 0 {
-            return format!("{} days ago", days);
-        }
+    let days = diff.num_days();
+    if days != 0 {
+        return if days != 1 {
+            format!("{} days ago", days)
+        } else {
+            "1 day ago".to_string()
+        };
+    }
 
-        let hours = difference.num_hours();
-        if hours != 0 {
-            return format!("{} hours ago", hours);
-        }
+    let hours = diff.num_hours();
+    if hours != 0 {
+        return if hours != 1 {
+            format!("{} hours ago", hours)
+        } else {
+            "1 hour ago".to_string()
+        };
+    }
 
-        let minutes = difference.num_minutes();
-        if minutes != 0 {
-            return format!("{} minutes ago", minutes);
-        }
+    let minutes = diff.num_minutes();
+    if minutes != 0 {
+        return if minutes != 1 {
+            format!("{} minutes ago", minutes)
+        } else {
+            "1 minute ago".to_string()
+        };
+    }
 
-        let seconds = difference.num_seconds();
-        if seconds != 0 {
-            return format!("{} seconds ago", seconds);
-        }
+    let seconds = diff.num_seconds();
+    if seconds != 0 {
+        return if seconds != 1 {
+            format!("{} seconds ago", seconds)
+        } else {
+            "1 second ago".to_string()
+        };
+    }
 
-        "just now".to_string()
+    "just now".to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_one_week() {
+        let duration = Duration::weeks(1);
+        assert_eq!(duration_since_human_readable(duration), "1 week ago");
+    }
+
+    #[test]
+    fn test_many_weeks() {
+        let duration = Duration::weeks(123123);
+        assert_eq!(duration_since_human_readable(duration), "123123 weeks ago");
+    }
+
+    #[test]
+    fn test_one_day() {
+        let duration = Duration::days(1);
+        assert_eq!(duration_since_human_readable(duration), "1 day ago");
+    }
+
+    #[test]
+    fn test_multiple_days() {
+        let duration = Duration::days(5);
+        assert_eq!(duration_since_human_readable(duration), "5 days ago");
+    }
+
+    #[test]
+    fn test_one_hour_works() {
+        let duration = Duration::hours(1);
+        assert_eq!(duration_since_human_readable(duration), "1 hour ago");
+    }
+
+    #[test]
+    fn test_multiple_hours() {
+        let duration = Duration::hours(5);
+        assert_eq!(duration_since_human_readable(duration), "5 hours ago");
+    }
+
+    #[test]
+    fn test_minute_below_day() {
+        let duration = Duration::hours(23) + Duration::minutes(59);
+        assert_eq!(duration_since_human_readable(duration), "23 hours ago");
+    }
+
+    #[test]
+    fn test_one_minute_works() {
+        let duration = Duration::minutes(1);
+        assert_eq!(duration_since_human_readable(duration), "1 minute ago");
+    }
+
+    #[test]
+    fn test_one_second_works() {
+        let duration = Duration::seconds(1);
+        assert_eq!(duration_since_human_readable(duration), "1 second ago");
+    }
+
+    #[test]
+    fn test_just_now() {
+        let duration = Duration::seconds(0);
+        assert_eq!(duration_since_human_readable(duration), "just now");
     }
 }
