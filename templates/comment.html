@@ -15,18 +15,12 @@
         <div class="ui floating dropdown">
           <i class="icon ellipsis horizontal"></i>
           <div class="menu">
-            <div class="item">
-              <button class="edit-comment-button" id="edit-comment-{{ id }}">
-                <i class="edit icon"></i>
-                Edit
-              </button>
-            </div>
-            <div class="item">
-              <a>
-                <i class="delete icon"></i>
-                Delete
-              </a>
-            </div>
+            <a class="item edit-comment-button" id="edit-comment-{{ id }}">
+              Edit
+            </a>
+            <a class="item">
+              Delete
+            </a>
           </div>
         </div>
       {% endif %}

@@ -23,18 +23,22 @@ $(document).ready(() => {
     $( ".edit-comment-button" ).click(e => {
         e.preventDefault();
 
-        let form = $( "#edit-comment-form" );
-        let form_action = form.attr("action");
-        if (form_action && form_action !== "") {
-            let regex = /comments\/(.*)\/edit/;
-            let comment_id = form_action.match(regex)[1];
-            $( "#comment-contents-paragraph-" + comment_id ).show();
-        }
-
         let comment_id = e.target.id.replace("edit-comment-", "");
 
-        form.show();
+        let form = $( "#edit-comment-form" );
+        let form_action = form.attr("action");
+        if (form_action !== undefined && form_action !== "") {
+            let regex = /comments\/(.*)\/edit/;
+            let old_comment_id = form_action.match(regex)[1];
+            $( "#comment-contents-paragraph-" + old_comment_id ).show();
+            if (old_comment_id === comment_id && form.is(":visible")) {
+                form.attr("action", "");
+                form.hide();
+                return;
+            }
+        }
 
+        form.show();
         let current_path = window.location.pathname.replace("/view", "");
         form.attr("action", current_path + "/comments/" + comment_id + "/edit")
 
