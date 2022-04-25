@@ -47,20 +47,6 @@ pub fn get_comment_views_for_blog_post(
     use crate::schema::comments;
     use crate::schema::users;
     let conn = pool.get()?;
-    let query = comments::table
-        .filter(comments::post_id.eq_all(blog_post_id))
-        .inner_join(users::table.on(users::columns::id.eq(comments::columns::author_id)))
-        .select((
-            comments::id,
-            comments::contents,
-            users::name,
-            comments::post_id,
-            comments::reply_to_id,
-            comments::created_at,
-            comments::updated_at,
-            comments::is_deleted,
-        ));
-    println!("{}", debug_query(&query));
     Ok(comments::table
         .filter(comments::post_id.eq_all(blog_post_id))
         .inner_join(users::table.on(users::columns::id.eq(comments::columns::author_id)))
