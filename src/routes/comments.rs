@@ -12,23 +12,28 @@ use actix_web::{web, HttpResponse, ResponseError};
 #[derive(serde::Deserialize)]
 pub struct CreateCommentFormData {
     contents: String,
+    reply_to_id: Option<CommentID>,
 }
 
+#[tracing::instrument("Create comment", skip(pool, form))]
 pub async fn create_comment(
     pool: web::Data<Pool>,
     user_id: UserID,
     post_id: web::Path<BlogPostID>,
-    query: web::Form<CreateCommentFormData>,
+    form: web::Form<CreateCommentFormData>,
 ) -> actix_web::Result<HttpResponse> {
     let post_id = post_id.into_inner();
     let new_comment = NewComment {
         author_id: &user_id,
         post_id: &post_id,
-        parent_id: None,
-        contents: &query.0.contents,
+        parent_id: form.0.reply_to_id.as_ref(),
+        contents: &form.0.contents,
     };
-    insert_new_comment(&pool, &new_comment).map_err(e500)?;
-    Ok(see_other(&format!("/blog_posts/{}", post_id)))
+    let new_comment = insert_new_comment(&pool, &new_comment).map_err(e500)?;
+    Ok(see_other(&format!(
+        "/blog_posts/{}/view#comment-{}",
+        post_id, new_comment.id
+    )))
 }
 
 #[derive(thiserror::Error)]
@@ -58,9 +63,9 @@ impl ResponseError for EditCommentError {
 #[derive(serde::Deserialize)]
 pub struct EditCommentForm {
     contents: String,
-    is_deleted: bool,
 }
 
+#[tracing::instrument("Edit comment", skip(pool, form))]
 pub async fn edit_comment(
     pool: web::Data<Pool>,
     path: web::Path<(BlogPostID, CommentID)>,
@@ -78,8 +83,37 @@ pub async fn edit_comment(
     let changeset = UpdateComment {
         id: &comment_id,
         contents: Some(form.0.contents.as_str()),
-        is_deleted: Some(form.0.is_deleted),
+        is_deleted: None,
     };
     update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
-    Ok(see_other(&format!("/blog_posts/{}", post_id)))
+    Ok(see_other(&format!(
+        "/blog_posts/{}/view#comment-{}",
+        post_id, comment_id
+    )))
+}
+
+#[tracing::instrument("Delete comment", skip(pool))]
+pub async fn delete_comment(
+    pool: web::Data<Pool>,
+    path: web::Path<(BlogPostID, CommentID)>,
+    current_user_id: UserID,
+) -> Result<HttpResponse, EditCommentError> {
+    let (post_id, comment_id) = path.into_inner();
+    if let Some(comment) =
+        get_comment_by_id(&pool, &comment_id).map_err(EditCommentError::UnexpectedError)?
+    {
+        if comment.author_id != current_user_id {
+            return Err(EditCommentError::CantChangeOthersComment);
+        }
+    }
+    let changeset = UpdateComment {
+        id: &comment_id,
+        contents: None,
+        is_deleted: Some(true),
+    };
+    update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
+    Ok(see_other(&format!(
+        "/blog_posts/{}/view#comment-{}",
+        post_id, comment_id
+    )))
 }

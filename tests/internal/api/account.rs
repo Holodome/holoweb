@@ -1,4 +1,4 @@
-use crate::api::assert_is_redirect_to;
+use crate::api::assert_is_redirect_to_resource;
 use crate::common::TestApp;
 
 #[tokio::test]
@@ -11,7 +11,7 @@ async fn account_shows_correct_user_name() {
     });
 
     let response = app.post_registration(&register_body).await;
-    assert_is_redirect_to(&response, "/");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
     // Now we are logged
 
     let response = app.get_account_page_html().await;

@@ -1,4 +1,4 @@
-use crate::api::assert_is_redirect_to;
+use crate::api::assert_is_redirect_to_resource;
 use crate::common::TestApp;
 use uuid::Uuid;
 
@@ -14,7 +14,7 @@ async fn you_must_be_logged_in_to_change_password() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/login");
+    assert_is_redirect_to_resource(&response, "/login");
 }
 
 #[tokio::test]
@@ -37,7 +37,7 @@ async fn new_password_fields_must_match() {
             "repeat_new_password": &another_new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("Repeat password does not match new password"));
@@ -63,7 +63,7 @@ async fn current_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("Current password is incorrect"));
@@ -88,7 +88,7 @@ async fn new_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("New password is invalid"));
@@ -113,13 +113,13 @@ async fn change_password_works() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
     assert!(html.contains("Your password has been changed"));
 
     let response = app.post_logout().await;
-    assert_is_redirect_to(&response, "/login");
+    assert_is_redirect_to_resource(&response, "/login");
 
     let html = app.get_login_page_html().await;
     assert!(html.contains("You have successfully logged out"));
@@ -130,5 +130,5 @@ async fn change_password_works() {
             "password": &new_password
         }))
         .await;
-    assert_is_redirect_to(&response, "/");
+    assert_is_redirect_to_resource(&response, "/blog_posts/all");
 }

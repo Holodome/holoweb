@@ -18,19 +18,28 @@
     </div>
     <form class="ui large form" action="/registration" method="post">
       <div class="ui stacked segment">
-        <div class="field">
-          <div class="ui input">
-            <input type="text" name="name" placeholder="Name">
+        <div class="required field">
+          <div class="ui left icon input">
+            <i class="user icon"></i>
+            <input type="text" name="name" placeholder="Name" value="{% if name.is_some() %}{{ name.unwrap() }}{% endif %}">
+          </div>
+        </div>
+        <div class="required field">
+          <div class="ui left icon input">
+            <i class="lock icon"></i>
+            <input type="password" name="password" placeholder="Password" id="password_input">
+          </div>
+        </div>
+        <div class="required field">
+          <div class="ui left icon input">
+            <i class="lock icon"></i>
+            <input type="password" name="repeat_password" placeholder="Repeat password" id="repeat_password_input">
           </div>
         </div>
         <div class="field">
-          <div class="ui input">
-            <input type="password" name="password" placeholder="Password">
-          </div>
-        </div>
-        <div class="field">
-          <div class="ui input">
-            <input type="password" name="repeat_password" placeholder="Repeat password">
+          <div class="ui checkbox">
+            <input type="checkbox" id="show_password_checkbox">
+            <label for="show_password_checkbox">Show password</label>
           </div>
         </div>
         <button class="ui fluid large submit button" type="submit">Register</button>

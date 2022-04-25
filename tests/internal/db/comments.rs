@@ -1,9 +1,10 @@
 use crate::common::{TestBlogPost, TestComment, TestDB, TestUser};
 use claim::{assert_ok, assert_some};
 use holosite::domain::comments::{CommentID, NewComment, UpdateComment};
+use holosite::domain::users::UserName;
 use holosite::services::{
-    get_comment_by_id, get_comments_for_blog_post, get_comments_of_author, insert_new_comment,
-    update_comment,
+    get_comment_by_id, get_comment_views_for_blog_post, get_comments_for_blog_post,
+    get_comments_of_author, insert_new_comment, update_comment,
 };
 
 #[test]
@@ -179,4 +180,31 @@ fn update_comment_contents_works() {
     assert_some!(&res);
     let res = res.unwrap();
     assert_eq!(res.contents, "New contents");
+}
+
+#[test]
+fn test_get_comment_view_works() {
+    let db = TestDB::spawn();
+    let user = TestUser::generate();
+    let user_id = user.register_internally(db.pool());
+    let blog_post = TestBlogPost::generate();
+    let blog_post_id = blog_post.register_internally(db.pool(), &user_id);
+
+    let user_names: Vec<UserName> = (0..100)
+        .map(|_| {
+            let user = TestUser::generate();
+            let user_id = user.register_internally(db.pool());
+            let comment = TestComment::generate();
+            comment.register_internally(db.pool(), &blog_post_id, &user_id);
+            user.name
+        })
+        .collect();
+
+    let res = get_comment_views_for_blog_post(db.pool(), &blog_post_id);
+    assert_ok!(&res);
+    let res = res.unwrap();
+    assert_eq!(res.len(), user_names.len());
+    for i in 0..res.len() {
+        assert_eq!(res[i].author_name, user_names[i]);
+    }
 }

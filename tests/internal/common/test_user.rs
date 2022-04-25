@@ -1,4 +1,4 @@
-use crate::api::assert_is_redirect_to;
+use crate::api::assert_is_redirect_to_resource;
 use crate::common::test_app::TestApp;
 use holosite::domain::users::{NewUser, UserID, UserName, UserPassword};
 use holosite::services::insert_new_user;
@@ -36,6 +36,6 @@ impl TestUser {
                 "password": self.password.as_ref().expose_secret()
             }))
             .await;
-        assert_is_redirect_to(&response, "/");
+        assert_is_redirect_to_resource(&response, "/blog_posts/all");
     }
 }

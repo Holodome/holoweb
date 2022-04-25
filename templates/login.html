@@ -13,25 +13,27 @@
   <div class="column">
     <div class="ui image header">
       <div class="content">
-        Log in to your account
+        Login to your account
       </div>
     </div>
     <form class="ui large form" action="/login" method="post">
       <div class="ui stacked segment">
         <div class="required field">
-          <div class="ui input">
-            <input type="text" name="name" placeholder="Name">
+          <div class="ui left icon input">
+            <i class="user icon"></i>
+            <input type="text" name="name" placeholder="Name" value="{{ name.unwrap_or_default() }}">
           </div>
         </div>
         <div class="required field">
-          <div class="ui input">
+          <div class="ui left icon input">
+            <i class="lock icon"></i>
             <input type="password" name="password" placeholder="Password" id="password_input">
           </div>
         </div>
         <div class="field">
           <div class="ui checkbox">
             <input type="checkbox" id="show_password_checkbox">
-            <label>Show password</label>
+            <label for="show_password_checkbox">Show password</label>
           </div>
         </div>
         <button class="ui fluid large submit button" type="submit">Login</button>

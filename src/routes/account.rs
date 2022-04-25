@@ -1,18 +1,18 @@
+use crate::domain::blog_posts::BlogPost;
+use crate::domain::projects::Project;
 use crate::domain::users::{
     Credentials, HashedUserPassword, PasswordError, UpdateUser, UserID, UserName, UserPassword,
 };
+use crate::middleware::Messages;
 use crate::services::{get_user_by_id, update_user, validate_credentials, AuthError, UserError};
 use crate::utils::{e500, redirect_with_error, render_template, see_other};
-use std::fmt::Formatter;
-
-use crate::domain::blog_posts::BlogPost;
-use crate::domain::projects::Project;
 use crate::Pool;
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::{FlashMessage, IncomingFlashMessages};
 use askama::Template;
 use secrecy::{ExposeSecret, Secret};
+use std::fmt::Formatter;
 
 struct ProjectInfo<'a> {
     id: &'a str,
@@ -38,7 +38,7 @@ struct CommentInfo<'a> {
 #[derive(Template)]
 #[template(path = "account.html")]
 struct AccountPage<'a> {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     projects: Vec<ProjectInfo<'a>>,
     blog_posts: Vec<BlogPostInfo<'a>>,
     comments: Vec<CommentInfo<'a>>,
@@ -57,7 +57,7 @@ pub async fn account(
         .ok_or_else(|| e500("Failed to get user"))?;
 
     render_template(AccountPage {
-        messages,
+        messages: messages.into(),
         projects: vec![],
         // TODO
         blog_posts: vec![],
@@ -97,7 +97,7 @@ pub async fn change_name(
     pool: web::Data<Pool>,
     user_id: UserID,
 ) -> Result<HttpResponse, InternalError<ChangeNameError>> {
-    let user_name = UserName::parse(form.0.new_name)
+    let user_name = UserName::parse(&form.0.new_name)
         .map_err(|e| redirect_with_error("/account/home", ChangeNameError::InvalidName(e)))?;
 
     let changeset = UpdateUser {

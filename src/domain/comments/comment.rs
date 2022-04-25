@@ -1,5 +1,6 @@
 use crate::domain::blog_posts::BlogPostID;
 use crate::domain::comments::CommentID;
+use crate::domain::time::DateTime;
 use crate::domain::users::UserID;
 use crate::schema::comments;
 
@@ -12,8 +13,8 @@ pub struct Comment {
     pub post_id: BlogPostID,
     pub reply_to_id: Option<CommentID>,
 
-    pub created_at: String,
-    pub updated_at: String,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 
     pub is_deleted: bool,
 }

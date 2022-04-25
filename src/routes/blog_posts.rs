@@ -1,8 +1,9 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
-use crate::domain::comments::Comment;
 use crate::domain::users::UserID;
+use crate::middleware::{Messages, Session};
+use crate::routes::internal::comments::render_regular_comments;
 use crate::services::{
-    get_all_blog_posts, get_blog_post_by_id, get_comments_for_blog_post, insert_new_blog_post,
+    get_all_blog_posts, get_blog_post_by_id, get_comment_views_for_blog_post, insert_new_blog_post,
     update_blog_post,
 };
 use crate::utils::{e500, redirect_with_error, render_template, see_other};
@@ -11,12 +12,13 @@ use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
-use std::collections::{HashMap, HashSet, VecDeque};
+
+const EDIT_BLOG_POST_CACHE: &str = "edit_blog_post_form";
 
 #[derive(Template)]
 #[template(path = "blog_posts.html")]
 struct BlogPostsTemplate {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     blog_posts: Vec<BlogPost>,
 }
 
@@ -28,93 +30,15 @@ pub async fn all_blog_posts(
     let blog_posts = get_all_blog_posts(&pool).map_err(e500)?;
 
     render_template(BlogPostsTemplate {
-        messages,
+        messages: messages.into(),
         blog_posts,
     })
 }
 
 #[derive(Template)]
-#[template(path = "comment.html", escape = "none")]
-struct CommentRender<'a> {
-    author: &'a str,
-    date: &'a str,
-    contents: &'a str,
-    rendered_children: Vec<String>,
-}
-
-fn render_comments<F>(comments: Vec<Comment>, mut comparator: F) -> Result<String, anyhow::Error>
-where
-    F: FnMut(&&Comment, &&Comment) -> core::cmp::Ordering,
-{
-    let mut children = HashMap::<&str, Vec<&Comment>>::new();
-    let mut orphans = Vec::new();
-    for comment in comments.iter() {
-        if let Some(reply_to_id) = &comment.reply_to_id {
-            children
-                .entry(reply_to_id.as_ref().as_str())
-                .or_default()
-                .push(comment);
-        } else {
-            orphans.push(comment);
-        }
-    }
-
-    orphans.sort_by(&mut comparator);
-
-    let mut visited = HashSet::<&str>::new();
-    let mut rendered = HashMap::<&str, String>::new();
-    let mut stack = VecDeque::from(orphans.clone());
-    while !stack.is_empty() {
-        let current = stack.pop_front().unwrap();
-        let current_id = current.id.as_ref().as_str();
-        let children = children.entry(current_id).or_default();
-
-        if visited.contains(current_id) {
-            children.sort_by(&mut comparator);
-            let rendered_children = children
-                .iter()
-                .map(|c| rendered.remove(c.id.as_ref().as_str()).unwrap())
-                .collect();
-
-            // TODO: Handle deleted in render
-            let contents = if current.is_deleted {
-                "<deleted>"
-            } else {
-                current.contents.as_str()
-            };
-            // TODO: Author
-            // TODO: Date
-            let s = CommentRender {
-                author: "TODO",
-                date: "TODO",
-                contents,
-                rendered_children,
-            }
-            .render()?;
-            rendered.insert(current_id, s);
-
-            continue;
-        } else {
-            visited.insert(current_id);
-        }
-
-        stack.push_front(current);
-        for child in children {
-            stack.push_front(child);
-        }
-    }
-
-    Ok(orphans
-        .iter()
-        .map(|o| rendered.remove(o.id.as_ref().as_str()).unwrap())
-        .collect::<Vec<String>>()
-        .join(""))
-}
-
-#[derive(Template)]
-#[template(path = "blog_post.html")]
+#[template(path = "blog_post.html", escape = "none")]
 struct BlogPostTemplate {
-    messages: IncomingFlashMessages,
+    messages: Messages,
     blog_post: BlogPost,
     rendered_comments: String,
 }
@@ -124,54 +48,47 @@ pub async fn blog_post(
     pool: web::Data<Pool>,
     params: web::Path<BlogPostID>,
     messages: IncomingFlashMessages,
+    current_user_id: Option<UserID>,
 ) -> actix_web::Result<HttpResponse> {
     let blog_post_id = params.into_inner();
     let blog_post = get_blog_post_by_id(&pool, &blog_post_id)
         .map_err(e500)?
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
-    let comments = get_comments_for_blog_post(&pool, &blog_post_id).map_err(e500)?;
+    let comments = get_comment_views_for_blog_post(&pool, &blog_post_id).map_err(e500)?;
     let rendered_comments =
-        render_comments(comments, |a, b| a.contents.cmp(&b.contents)).map_err(e500)?;
+        render_regular_comments(comments, current_user_id.as_ref()).map_err(e500)?;
 
     render_template(BlogPostTemplate {
-        messages,
+        messages: messages.into(),
         blog_post,
         rendered_comments,
     })
 }
 
-struct BlogPostDisplay<'a> {
-    title: &'a str,
-    brief: &'a str,
-    contents: &'a str,
+#[derive(serde::Serialize, serde::Deserialize)]
+struct BlogPostDisplay {
+    title: String,
+    brief: String,
+    contents: String,
 }
 
-impl<'a> BlogPostDisplay<'a> {
-    pub fn new(b: &'a BlogPost) -> Self {
-        Self {
-            title: b.title.as_str(),
-            brief: b.brief.as_str(),
-            contents: b.contents.as_str(),
-        }
-    }
-}
-
-impl Default for BlogPostDisplay<'static> {
+impl Default for BlogPostDisplay {
     fn default() -> Self {
         Self {
-            title: "Untitled",
-            brief: "",
-            contents: "",
+            title: "Untitled".to_string(),
+            brief: "".to_string(),
+            contents: "".to_string(),
         }
     }
 }
 
 #[derive(Template)]
 #[template(path = "edit_blog_post.html")]
-struct EditBlogPostTemplate<'a> {
-    messages: IncomingFlashMessages,
-    blog_post: BlogPostDisplay<'a>,
+struct EditBlogPostTemplate {
+    messages: Messages,
+    blog_post: BlogPostDisplay,
+    action: String,
 }
 
 #[tracing::instrument("Edit blog post form", skip(pool, messages))]
@@ -186,8 +103,13 @@ pub async fn edit_blog_post_form(
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
 
     render_template(EditBlogPostTemplate {
-        messages,
-        blog_post: BlogPostDisplay::new(&blog_post),
+        messages: messages.into(),
+        blog_post: BlogPostDisplay {
+            title: blog_post.title,
+            brief: blog_post.brief,
+            contents: blog_post.contents,
+        },
+        action: format!("/blog_posts/{}/edit", blog_post_id.as_ref()),
     })
 }
 
@@ -218,28 +140,54 @@ pub async fn edit_blog_post(
         )
     })?;
     Ok(see_other(
-        format!("/blog_posts/{}", blog_post_id.as_ref()).as_str(),
+        format!("/blog_posts/{}/view", blog_post_id.as_ref()).as_str(),
     ))
 }
 
-#[tracing::instrument("Create blog post form", skip(messages))]
+#[tracing::instrument("Create blog post form", skip(messages, session))]
 pub async fn create_blog_post_form(
     messages: IncomingFlashMessages,
+    session: Session,
 ) -> actix_web::Result<HttpResponse> {
-    let blog_post = BlogPostDisplay::default();
+    let blog_post = session
+        .pop_form_data::<BlogPostDisplay>(EDIT_BLOG_POST_CACHE)
+        .map_err(e500)?
+        .unwrap_or_default();
     render_template(EditBlogPostTemplate {
-        messages,
+        messages: messages.into(),
         blog_post,
+        action: "/blog_posts/create".to_string(),
     })
 }
 
-#[tracing::instrument("Create blog post", skip(form, pool))]
+#[tracing::instrument("Create blog post", skip(form, pool, session))]
 pub async fn create_blog_post(
     // NOTE: Duplicate usage here
     form: web::Form<EditBlogPostForm>,
     pool: web::Data<Pool>,
     user_id: UserID,
+    session: Session,
 ) -> Result<HttpResponse, InternalError<anyhow::Error>> {
+    let create_blog_post_redirect = |e| {
+        let e = if let Err(new_e) = session.insert_form_data(
+            EDIT_BLOG_POST_CACHE,
+            BlogPostDisplay {
+                title: form.title.clone(),
+                brief: form.brief.clone(),
+                contents: form.contents.clone(),
+            },
+        ) {
+            anyhow::anyhow!(
+                "Failed to execute request: {:?} & failed to cache data: {:?}",
+                e,
+                new_e
+            )
+        } else {
+            e
+        };
+        redirect_with_error("/blog_posts/create", e)
+    };
+
     let new_blog_post = NewBlogPost {
         author_id: &user_id,
         title: &form.title,
@@ -247,123 +195,10 @@ pub async fn create_blog_post(
         contents: &form.contents,
     };
     let blog_post = insert_new_blog_post(&pool, &new_blog_post)
-        .map_err(|e| redirect_with_error("/blog_posts/create", anyhow::Error::new(e)))?;
+        .map_err(anyhow::Error::new)
+        .map_err(create_blog_post_redirect)?;
+
     Ok(see_other(
-        format!("/blog_posts/{}", blog_post.id.as_ref()).as_str(),
+        format!("/blog_posts/{}/view", blog_post.id.as_ref()).as_str(),
     ))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::domain::comments::CommentID;
-    use crate::domain::users::UserID;
-
-    fn remove_spaces(s: &str) -> String {
-        s.chars().filter(|c| !c.is_whitespace()).collect()
-    }
-
-    fn test_render_comments(comments: Vec<Comment>) -> Result<String, anyhow::Error> {
-        render_comments(comments, |a, b| a.contents.cmp(&b.contents))
-    }
-
-    fn generate_comment(
-        contents: String,
-        id: Option<CommentID>,
-        reply_to: Option<CommentID>,
-    ) -> Comment {
-        Comment {
-            id: id.unwrap_or_else(|| CommentID::generate_random()),
-            contents,
-            author_id: UserID::generate_random(),
-            post_id: BlogPostID::generate_random(),
-            reply_to_id: reply_to,
-            created_at: "".to_string(),
-            updated_at: "".to_string(),
-            is_deleted: false,
-        }
-    }
-
-    #[test]
-    fn render_comment_works() {
-        let comments = vec![generate_comment("hello world".to_string(), None, None)];
-        let rendered = test_render_comments(comments).unwrap();
-        let expected =
-            include_str!("../../tests/data/render_comments_render_comment.html").to_string();
-
-        let expected_without_spaces = remove_spaces(&expected);
-        let rendered_without_spaces = remove_spaces(&rendered);
-        assert_eq!(rendered_without_spaces, expected_without_spaces);
-    }
-
-    #[test]
-    fn render_reply_works() {
-        let id0 = CommentID::generate_random();
-        let comments = vec![
-            generate_comment("hello".to_string(), Some(id0.clone()), None),
-            generate_comment("world".to_string(), None, Some(id0.clone())),
-        ];
-        let rendered = test_render_comments(comments).unwrap();
-        let expected =
-            include_str!("../../tests/data/render_comments_render_reply.html").to_string();
-
-        let expected_without_spaces = remove_spaces(&expected);
-        let rendered_without_spaces = remove_spaces(&rendered);
-        assert_eq!(rendered_without_spaces, expected_without_spaces);
-    }
-
-    #[test]
-    fn render_multiple_replies_works() {
-        let id0 = CommentID::generate_random();
-        let comments = vec![
-            generate_comment("1".to_string(), Some(id0.clone()), None),
-            generate_comment("2".to_string(), None, Some(id0.clone())),
-            generate_comment("3".to_string(), None, Some(id0.clone())),
-        ];
-        let rendered = test_render_comments(comments).unwrap();
-        let expected =
-            include_str!("../../tests/data/render_comments_render_multiple_replies.html")
-                .to_string();
-
-        let expected_without_spaces = remove_spaces(&expected);
-        let rendered_without_spaces = remove_spaces(&rendered);
-        assert_eq!(rendered_without_spaces, expected_without_spaces);
-    }
-
-    #[test]
-    fn render_multiple_toplevel_comments() {
-        let comments = vec![
-            generate_comment("2".to_string(), None, None),
-            generate_comment("3".to_string(), None, None),
-        ];
-        let rendered = test_render_comments(comments).unwrap();
-        let expected =
-            include_str!("../../tests/data/render_comments_render_multiple_toplevel_comments.html")
-                .to_string();
-
-        let expected_without_spaces = remove_spaces(&expected);
-        let rendered_without_spaces = remove_spaces(&rendered);
-        assert_eq!(rendered_without_spaces, expected_without_spaces);
-    }
-
-    #[test]
-    fn render_multiple_levels_of_nesting_and_multiple_children_works() {
-        let id0 = CommentID::generate_random();
-        let id1 = CommentID::generate_random();
-        let id2 = CommentID::generate_random();
-        let comments = vec![
-            generate_comment("1".to_string(), Some(id0.clone()), None),
-            generate_comment("2".to_string(), None, Some(id0.clone())),
-            generate_comment("3".to_string(), Some(id1.clone()), Some(id0.clone())),
-            generate_comment("4".to_string(), Some(id2.clone()), Some(id1.clone())),
-            generate_comment("5".to_string(), None, Some(id2.clone())),
-            generate_comment("6".to_string(), None, Some(id2.clone())),
-        ];
-        let rendered = test_render_comments(comments).unwrap();
-        let expected = include_str!("../../tests/data/render_comments_render_multiple_levels_of_nesting_and_multiple_children.html").to_string();
-
-        let expected_without_spaces = remove_spaces(&expected);
-        let rendered_without_spaces = remove_spaces(&rendered);
-        assert_eq!(rendered_without_spaces, expected_without_spaces);
-    }
 }

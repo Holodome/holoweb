@@ -5,11 +5,16 @@
 {% block content %}
 
 <div class="ui text container">
+  <div class="ui menu">
+      <a class="ui button" href="/blog_posts/create">Create blog post</a>
+    </div>
+  </div>
+
   <div class="ui horizontal divider"></div>
   {% for blog_post in blog_posts %}
     <div class="ui text container">
       <h1 class="ui huge header">
-        <a href="/blog_posts/{{blog_post.id}}" class="article-link">
+        <a href="/blog_posts/{{blog_post.id}}/view" class="article-link">
           {{ blog_post.title }}
         </a>
       </h1>

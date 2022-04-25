@@ -1,4 +1,4 @@
-use crate::api::{assert_is_redirect_to, assert_resp_forbidden};
+use crate::api::{assert_is_redirect_to_resource, assert_resp_forbidden};
 use crate::common::{TestApp, TestBlogPost, TestComment, TestUser};
 
 #[tokio::test]
@@ -20,7 +20,10 @@ async fn create_comment_works() {
         )
         .await;
 
-    assert_is_redirect_to(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
@@ -49,7 +52,10 @@ async fn edit_comment_works() {
             &comment_id,
         )
         .await;
-    assert_is_redirect_to(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
@@ -64,10 +70,13 @@ async fn cant_edit_others_comment() {
     let test_user = TestUser::generate();
     let user_id = test_user.register_internally(app.pool());
     test_user.login(&app).await;
+
     let blog_post = TestBlogPost::generate();
     let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
     let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
+
+    app.post_logout().await;
 
     let other_user = TestUser::generate();
     other_user.register_internally(app.pool());
@@ -103,17 +112,11 @@ async fn delete_comment_works() {
     let test_comment = TestComment::generate();
     let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
 
-    let response = app
-        .post_edit_comment(
-            &serde_json::json!({
-                "contents": "New contents",
-                "is_deleted": true
-            }),
-            &blog_post_id,
-            &comment_id,
-        )
-        .await;
-    assert_is_redirect_to(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    let response = app.post_delete_comment(&blog_post_id, &comment_id).await;
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
@@ -168,7 +171,10 @@ async fn create_response_comment_works() {
         )
         .await;
 
-    assert_is_redirect_to(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
         .await;
@@ -199,7 +205,10 @@ async fn delete_comment_in_middle_of_response_tree_works() {
             &comment_id,
         )
         .await;
-    assert_is_redirect_to(&response, &format!("/blog_posts/{}", blog_post_id.as_ref()));
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
         .await;

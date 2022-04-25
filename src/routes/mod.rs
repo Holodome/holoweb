@@ -1,20 +1,27 @@
-use crate::error_handlers::redirect_on_same_page;
-use crate::middleware::require_login;
-use actix_web::middleware::ErrorHandlers;
-use actix_web::{http, web};
+use crate::middleware::{require_login, require_non_logged};
+use crate::utils::see_other;
+use actix_web::{web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
 
 mod account;
 mod blog_posts;
 mod comments;
+pub mod error_handlers;
 mod health_check;
+mod internal;
 mod login;
 mod logout;
 mod projects;
 mod registration;
 
+async fn redirect_to_blog_posts() -> HttpResponse {
+    see_other("/blog_posts/all")
+}
+
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.route("/health_check", web::get().to(health_check::health_check))
+        .route("", web::get().to(redirect_to_blog_posts))
+        .route("/", web::get().to(redirect_to_blog_posts))
         .service(
             web::resource("/logout")
                 .wrap(from_fn(require_login))
@@ -22,6 +29,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::resource("/registration")
+                .wrap(from_fn(require_non_logged))
                 .route(web::get().to(registration::registration_form))
                 .route(web::post().to(registration::registration)),
         )
@@ -35,14 +43,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         )
         .service(
             web::resource("/login")
-                .wrap(
-                    ErrorHandlers::new()
-                        .handler(
-                            http::StatusCode::INTERNAL_SERVER_ERROR,
-                            redirect_on_same_page,
-                        )
-                        .handler(http::StatusCode::BAD_REQUEST, redirect_on_same_page),
-                )
+                .wrap(from_fn(require_non_logged))
                 .route(web::get().to(login::login_form))
                 .route(web::post().to(login::login)),
         )
@@ -71,6 +72,11 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                     web::resource("/{post_id}/comments/{comment_id}/edit")
                         .wrap(from_fn(require_login))
                         .route(web::post().to(comments::edit_comment)),
+                )
+                .service(
+                    web::resource("/{post_id}/comments/{comment_id}/delete")
+                        .wrap(from_fn(require_login))
+                        .route(web::get().to(comments::delete_comment)),
                 ),
         );
 }

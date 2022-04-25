@@ -21,28 +21,25 @@ pub struct UserName {
 }
 
 impl UserName {
-    pub fn parse(s: String) -> Result<UserName, anyhow::Error> {
+    pub fn parse(s: &str) -> Result<UserName, anyhow::Error> {
         if s.trim().is_empty() {
-            return Err(anyhow::anyhow!("{} user name is whitespace or empty", s));
+            anyhow::bail!("{} user name is whitespace or empty", s);
         }
 
         if s.graphemes(true).count() > 256 {
-            return Err(anyhow::anyhow!("{} user name is too long", s));
+            anyhow::bail!("{} user name is too long", s);
         }
 
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
         if s.chars().any(|g| forbidden_characters.contains(&g)) {
-            return Err(anyhow::anyhow!(
-                "{} user name contains forbidden characters",
-                s
-            ));
+            anyhow::bail!("{} user name contains forbidden characters", s);
         }
 
-        Ok(Self { s })
+        Ok(Self { s: String::from(s) })
     }
 
     pub fn generate_random() -> Self {
-        UserName::parse(Uuid::new_v4().to_string()).expect("OOps")
+        UserName::parse(&Uuid::new_v4().to_string()).expect("OOps")
     }
 }
 
@@ -78,27 +75,27 @@ mod tests {
     #[test]
     fn a_256_grapheme_long_name_is_valid() {
         let name = "a".repeat(256);
-        assert_ok!(UserName::parse(name));
+        assert_ok!(UserName::parse(&name));
     }
 
     #[test]
     fn a_name_longer_than_256_graphemes_is_rejected() {
         let name = "a".repeat(257);
-        let result = UserName::parse(name);
+        let result = UserName::parse(&name);
         assert_err!(result);
     }
 
     #[test]
     fn whitespace_only_names_are_rejected() {
         let name = " ".to_string();
-        let result = UserName::parse(name);
+        let result = UserName::parse(&name);
         assert_err!(result);
     }
 
     #[test]
     fn emtpy_string_is_rejected() {
         let name = "".to_string();
-        let result = UserName::parse(name);
+        let result = UserName::parse(&name);
         assert_err!(result);
     }
 
@@ -106,7 +103,7 @@ mod tests {
     fn names_containing_invalid_characters_are_rejected() {
         for name in &['/', '(', ')', '"', '<', '>', '\\', '{', '}'] {
             let name = name.to_string();
-            let result = UserName::parse(name);
+            let result = UserName::parse(&name);
             assert_err!(result);
         }
     }
@@ -123,6 +120,6 @@ mod tests {
 
     #[quickcheck_macros::quickcheck]
     fn valid_name_is_valid(valid_name: ValidNameFixture) -> bool {
-        UserName::parse(valid_name.0).is_ok()
+        UserName::parse(&valid_name.0).is_ok()
     }
 }

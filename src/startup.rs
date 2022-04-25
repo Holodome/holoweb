@@ -1,9 +1,11 @@
 use crate::config::Config;
+use crate::routes::error_handlers::{internal_error_handler, not_found_handler};
 use crate::Pool;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::dev::Server;
-use actix_web::{web, App, HttpServer};
+use actix_web::middleware::ErrorHandlers;
+use actix_web::{http, web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
 use diesel::r2d2::ConnectionManager;
@@ -78,10 +80,15 @@ async fn run(
         App::new()
             .wrap(TracingLogger::default())
             .wrap(message_framework.clone())
-            .wrap(SessionMiddleware::new(
-                redis_store.clone(),
-                secret_key.clone(),
-            ))
+            .wrap(SessionMiddleware::builder(redis_store.clone(), secret_key.clone()).build())
+            .wrap(
+                ErrorHandlers::new()
+                    .handler(
+                        http::StatusCode::INTERNAL_SERVER_ERROR,
+                        internal_error_handler,
+                    )
+                    .handler(http::StatusCode::NOT_FOUND, not_found_handler),
+            )
             .app_data(web::Data::new(pool.clone()))
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .configure(crate::routes::configure)

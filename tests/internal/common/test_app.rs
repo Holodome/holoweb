@@ -135,6 +135,26 @@ impl TestApp {
         .await
     }
 
+    pub async fn post_delete_comment(
+        &self,
+        post_id: &BlogPostID,
+        comment_id: &CommentID,
+    ) -> Response {
+        self.api_client
+            .get(
+                format!(
+                    "{}/blog_posts/{}/comments/{}/delete",
+                    &self.address,
+                    post_id.as_ref(),
+                    comment_id.as_ref()
+                )
+                .as_str(),
+            )
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub async fn post_create_project(&self, body: &impl serde::Serialize) -> Response {
         self.post("/projects/create", body).await
     }
@@ -211,7 +231,7 @@ impl TestApp {
         self.get_edit_project_page(id).await.text().await.unwrap()
     }
 
-    async fn get_page(&self, rel_address: &str) -> Response {
+    pub async fn get_page(&self, rel_address: &str) -> Response {
         self.api_client
             .get(format!("{}{}", &self.address, rel_address))
             .send()
@@ -219,7 +239,7 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    async fn post<Body>(&self, rel_addr: &str, body: &Body) -> Response
+    pub async fn post<Body>(&self, rel_addr: &str, body: &Body) -> Response
     where
         Body: serde::Serialize,
     {

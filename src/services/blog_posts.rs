@@ -1,7 +1,7 @@
 use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
+use crate::domain::time::DateTime;
 use crate::domain::users::UserID;
 use crate::schema::blog_posts::dsl::*;
-use crate::services::get_current_time_str;
 use crate::Pool;
 use diesel::result::{DatabaseErrorKind, Error};
 use diesel::{insert_into, update, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
@@ -52,7 +52,7 @@ pub fn insert_new_blog_post(
     let conn = pool
         .get()
         .map_err(|e| BlogPostError::UnexpectedError(e.into()))?;
-    let time = get_current_time_str();
+    let time = DateTime::now();
     let blog_post = BlogPost {
         id: BlogPostID::generate_random(),
 

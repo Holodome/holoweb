@@ -11,40 +11,49 @@
   <h1 class="ui center aligned huge header">
     Account
   </h1>
+
   <div class="ui horizontal divider"></div>
 
-  <div class="ui section">
-    <h2 class="ui header">
-      Name
-    </h2>
-    <div class="ui input">
-      <input type="text" placeholder="name" value="{{ name }}">
-    </div>
+  <a class="ui negative button" href="/logout">Logout</a>
 
-    <button class="ui button">Change name</button>
-  </div>
+  <div class="ui horizontal divider"></div>
+
+  <form class="ui form" method="post" action="/account/change_name">
+    <div class="field">
+      <label>Name</label>
+      <input type="text" name="new_name" placeholder="name" value="{{ name }}">
+    </div>
+    <button type="submit" class="ui submit button">Change name</button>
+  </form>
 
   <div class="ui section divider"></div>
 
-  <div class="ui section">
-    <h2 class="ui header">
-      Email
-    </h2>
-    <div class="ui input">
-      <input type="email" placeholder="email" value="{{ email }}">
+  <form class="ui form" method="post" action="/account/change_email">
+    <div class="field">
+      <label>Email</label>
+      <input type="text" name="new_email" placeholder="name" value="{{ email }}">
     </div>
-
-    <button class="ui button">Change email</button>
-  </div>
+    <button type="submit" class="ui submit button">Change email</button>
+  </form>
 
   <div class="ui section divider"></div>
 
-  <div class="ui section">
-    <h2 class="ui header">
-      Password
-    </h2>
-    <button class="ui button">Change password</button>
-  </div>
+  <form class="ui form" method="post" action="/account/change_password">
+    <div class="field">
+      <label>Password</label>
+      <input type="password" name="current_password" placeholder="Current password">
+    </div>
+    <div class="field">
+      <label>New Password</label>
+      <input type="password" name="new_password" placeholder="New password">
+    </div>
+    <div class="field">
+      <label>Repeat new password</label>
+      <input type="password" name="repeat_new_password" placeholder="Repeat new password">
+    </div>
+
+    <button type="submit" class="ui submit button">Change password</button>
+  </form>
 
   <div class="ui section divider"></div>
 

@@ -1,3 +1,4 @@
+use crate::domain::time::DateTime;
 use crate::domain::users::{
     Credentials, HashedUserPassword, NewUser, UpdateUser, User, UserEmail, UserID, UserName,
     UserPasswordSalt, UserRole,
@@ -57,11 +58,7 @@ pub fn insert_new_user(pool: &Pool, new_user: &NewUser) -> Result<User, UserErro
         email: UserEmail::parse(format!("{}@email.com", Uuid::new_v4())).expect("Oh no"), // TODO
         password: hashed_password,
         password_salt: salt,
-        created_at: std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_millis()
-            .to_string(),
+        created_at: DateTime::now(),
         is_banned: false,
         role: UserRole::User,
     };

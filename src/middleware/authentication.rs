@@ -26,3 +26,22 @@ pub async fn require_login(
         }
     }
 }
+
+pub async fn require_non_logged(
+    mut req: ServiceRequest,
+    next: actix_web_lab::middleware::Next<impl MessageBody>,
+) -> Result<ServiceResponse<impl MessageBody>, actix_web::Error> {
+    let session = {
+        let (http_request, payload) = req.parts_mut();
+        Session::from_request(http_request, payload).await
+    }?;
+
+    match session.get_user_id().map_err(e500)? {
+        Some(_) => {
+            let response = see_other("/account/home");
+            let e = anyhow::anyhow!("The user has already logged in");
+            Err(InternalError::from_response(e, response).into())
+        }
+        None => next.call(req).await,
+    }
+}

@@ -1,20 +1,36 @@
-<div class="comment">
+<div class="comment" id="comment-{{ id }}">
   <div class="content">
     <a class="author">{{ author }}</a>
     <div class="metadata">
       <span class="date">{{ date }}</span>
     </div>
-    <div class="text">
-      <p>{{ contents }}</p>
-    </div>
-    <div class="actions">
-      <a class="reply">Reply</a>
-    </div>
-  </div>
-  <div class="comments">
-    {% for child in rendered_children %}
-      {{ child }}
-    {% endfor %}
-  </div>
-</div>
 
+    <div class="text" id="comment-contents-{{ id }}">
+      <p id="comment-contents-paragraph-{{ id }}">{{ contents }}</p>
+    </div>
+
+    <div class="actions">
+      <a class="reply comment-reply-button" id="reply-comment-{{ id }}">Reply</a>
+      {% if is_comment_author %}
+        <div class="ui floating dropdown">
+          <i class="icon ellipsis horizontal"></i>
+          <div class="menu">
+            <a class="item edit-comment-button" id="edit-comment-{{ id }}">
+              Edit
+            </a>
+            <a class="item delete-comment-button" id="delete-comment-{{ id }}">
+              Delete
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% if !rendered_children.is_empty() %}
+    <div class="comments">
+      {% for child in rendered_children %}
+        {{ child }}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
