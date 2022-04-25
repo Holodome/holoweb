@@ -62,7 +62,6 @@ impl ResponseError for EditCommentError {
 #[derive(serde::Deserialize)]
 pub struct EditCommentForm {
     contents: String,
-    is_deleted: bool,
 }
 
 pub async fn edit_comment(
@@ -82,7 +81,7 @@ pub async fn edit_comment(
     let changeset = UpdateComment {
         id: &comment_id,
         contents: Some(form.0.contents.as_str()),
-        is_deleted: Some(form.0.is_deleted),
+        is_deleted: None,
     };
     update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
     Ok(see_other(&format!(

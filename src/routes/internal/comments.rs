@@ -1,5 +1,6 @@
 use crate::domain::comments::CommentView;
 use crate::domain::time::DateTime;
+use crate::domain::users::UserID;
 use askama::Template;
 use std::collections::{HashMap, HashSet, VecDeque};
 
@@ -11,6 +12,7 @@ struct CommentTemplate<'a> {
     pub contents: &'a str,
     pub rendered_children: Vec<String>,
     pub id: &'a str,
+    pub is_comment_author: bool,
 }
 
 pub struct RenderCommentData<'a> {
@@ -19,10 +21,19 @@ pub struct RenderCommentData<'a> {
     date: &'a str,
     contents: &'a str,
     rendered_children: Vec<String>,
+    is_comment_author: bool,
 }
 
-pub fn render_regular_comments(comments: Vec<CommentView>) -> Result<String, anyhow::Error> {
-    render_comments(comments, |a, b| a.contents.cmp(&b.contents), render_comment)
+pub fn render_regular_comments(
+    comments: Vec<CommentView>,
+    current_user: Option<&UserID>,
+) -> Result<String, anyhow::Error> {
+    render_comments(
+        comments,
+        current_user,
+        |a, b| a.contents.cmp(&b.contents),
+        render_comment,
+    )
 }
 
 fn render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
@@ -32,6 +43,7 @@ fn render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
         contents: data.contents,
         rendered_children: data.rendered_children,
         id: data.id,
+        is_comment_author: data.is_comment_author,
     }
     .render()
     .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
@@ -39,6 +51,7 @@ fn render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
 
 fn render_comments<F, T>(
     comments: Vec<CommentView>,
+    current_user_id: Option<&UserID>,
     mut comparator: F,
     mut renderer: T,
 ) -> Result<String, anyhow::Error>
@@ -90,6 +103,9 @@ where
                 date: &current.created_at.since(&current_time),
                 contents,
                 rendered_children,
+                is_comment_author: current_user_id
+                    .map(|it| &current.author_id == it)
+                    .unwrap_or(false),
             })?;
             rendered.insert(current_id, s);
 
@@ -163,6 +179,7 @@ mod tests {
     fn test_render_comments(comments: Vec<CommentView>) -> Result<String, anyhow::Error> {
         render_comments(
             comments,
+            None,
             |a, b| a.contents.cmp(&b.contents),
             test_render_comment,
         )
@@ -177,6 +194,7 @@ mod tests {
         CommentView {
             id: id.unwrap_or_else(|| CommentID::generate_random()),
             contents,
+            author_id: UserID::generate_random(),
             author_name: UserName::generate_random(),
             post_id: BlogPostID::generate_random(),
             reply_to_id: reply_to,

@@ -13,5 +13,36 @@ $(document).ready(() => {
         $( "#comment-" + comment_id ).after(form);
         // Set id of reply
         $( "#comment-reply-form-id" ).val(comment_id);
-    });
+    })
+    ;
+
+    $('.ui.dropdown')
+        .dropdown()
+    ;
+
+    $( ".edit-comment-button" ).click(e => {
+        e.preventDefault();
+
+        let form = $( "#edit-comment-form" );
+        let form_action = form.attr("action");
+        if (form_action && form_action !== "") {
+            let regex = /comments\/(.*)\/edit/;
+            let comment_id = form_action.match(regex)[1];
+            $( "#comment-contents-paragraph-" + comment_id ).show();
+        }
+
+        let comment_id = e.target.id.replace("edit-comment-", "");
+
+        form.show();
+
+        let current_path = window.location.pathname.replace("/view", "");
+        form.attr("action", current_path + "/comments/" + comment_id + "/edit")
+
+        let paragraph = $( "#comment-contents-paragraph-" + comment_id );
+        paragraph.hide();
+
+        $( "#edit-comment-form-contents" ).val(paragraph.text());
+        $( "#comment-contents-" + comment_id ).after(form);
+    })
+    ;
 });

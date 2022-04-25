@@ -3,6 +3,8 @@
 {% block title %}{{ blog_post.title }}{% endblock %}
 
 {% block head %}
+<script src="/static/lib/dropdown.min.js"></script>
+<link rel="stylesheet" href="/static/lib/dropdown.min.css" type="text/css">
 <script src="/static/js/blog_post.js"></script>
 {% endblock %}
 
@@ -30,6 +32,15 @@
       </div>
       <button class="ui blue submit button" type="submit">
         Add Reply
+      </button>
+    </form>
+
+    <form hidden class="ui reply form" method="post" id="edit-comment-form">
+      <div class="field">
+        <textarea id="edit-comment-form-contents" name="contents"></textarea>
+      </div>
+      <button class="ui blue submit button" type="submit">
+        Edit
       </button>
     </form>
 

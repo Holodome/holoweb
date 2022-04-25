@@ -4,11 +4,32 @@
     <div class="metadata">
       <span class="date">{{ date }}</span>
     </div>
-    <div class="text">
-      <p>{{ contents }}</p>
+
+    <div class="text" id="comment-contents-{{ id }}">
+      <p id="comment-contents-paragraph-{{ id }}">{{ contents }}</p>
     </div>
+
     <div class="actions">
       <a class="reply comment-reply-button" id="reply-comment-{{ id }}">Reply</a>
+      {% if is_comment_author %}
+        <div class="ui floating dropdown">
+          <i class="icon ellipsis horizontal"></i>
+          <div class="menu">
+            <div class="item">
+              <button class="edit-comment-button" id="edit-comment-{{ id }}">
+                <i class="edit icon"></i>
+                Edit
+              </button>
+            </div>
+            <div class="item">
+              <a>
+                <i class="delete icon"></i>
+                Delete
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
   {% if !rendered_children.is_empty() %}

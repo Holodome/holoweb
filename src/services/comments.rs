@@ -5,8 +5,8 @@ use crate::domain::users::UserID;
 use crate::schema::comments::dsl::*;
 use crate::Pool;
 use diesel::{
-    debug_query, insert_into, update, EqAll, ExpressionMethods, JoinOnDsl, OptionalExtension,
-    QueryDsl, RunQueryDsl,
+    insert_into, update, EqAll, ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl,
+    RunQueryDsl,
 };
 
 pub fn get_comment_by_id(
@@ -53,6 +53,7 @@ pub fn get_comment_views_for_blog_post(
         .select((
             comments::id,
             comments::contents,
+            comments::author_id,
             users::name,
             comments::post_id,
             comments::reply_to_id,
