@@ -112,16 +112,7 @@ async fn delete_comment_works() {
     let test_comment = TestComment::generate();
     let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
 
-    let response = app
-        .post_edit_comment(
-            &serde_json::json!({
-                "contents": "New contents",
-                "is_deleted": true
-            }),
-            &blog_post_id,
-            &comment_id,
-        )
-        .await;
+    let response = app.post_delete_comment(&blog_post_id, &comment_id).await;
     assert_is_redirect_to_resource(
         &response,
         &format!("/blog_posts/{}/view", blog_post_id.as_ref()),

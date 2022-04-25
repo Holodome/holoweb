@@ -1,7 +1,7 @@
 use crate::common::{TestBlogPost, TestComment, TestDB, TestUser};
 use claim::{assert_ok, assert_some};
 use holosite::domain::comments::{CommentID, NewComment, UpdateComment};
-use holosite::domain::users::{UserID, UserName};
+use holosite::domain::users::UserName;
 use holosite::services::{
     get_comment_by_id, get_comment_views_for_blog_post, get_comments_for_blog_post,
     get_comments_of_author, insert_new_comment, update_comment,

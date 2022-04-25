@@ -93,7 +93,7 @@ where
 
             // TODO: Handle deleted in render
             let contents = if current.is_deleted {
-                "<deleted>"
+                "deleted"
             } else {
                 current.contents.as_str()
             };

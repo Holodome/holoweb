@@ -49,4 +49,15 @@ $(document).ready(() => {
         $( "#comment-contents-" + comment_id ).after(form);
     })
     ;
+
+    $( ".delete-comment-button" ).click(e => {
+        e.preventDefault();
+
+        let comment_id = e.target.id.replace("delete-comment-", "");
+
+        let current_path = window.location.pathname;
+        window.location.href = window.location.origin + current_path.replace("/view", "/comments/")
+            + comment_id + "/delete";
+    })
+    ;
 });

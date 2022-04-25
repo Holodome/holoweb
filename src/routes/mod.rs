@@ -72,6 +72,11 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                     web::resource("/{post_id}/comments/{comment_id}/edit")
                         .wrap(from_fn(require_login))
                         .route(web::post().to(comments::edit_comment)),
+                )
+                .service(
+                    web::resource("/{post_id}/comments/{comment_id}/delete")
+                        .wrap(from_fn(require_login))
+                        .route(web::get().to(comments::delete_comment)),
                 ),
         );
 }

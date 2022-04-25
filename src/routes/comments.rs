@@ -15,6 +15,7 @@ pub struct CreateCommentFormData {
     reply_to_id: Option<CommentID>,
 }
 
+#[tracing::instrument("Create comment", skip(pool, form))]
 pub async fn create_comment(
     pool: web::Data<Pool>,
     user_id: UserID,
@@ -64,6 +65,7 @@ pub struct EditCommentForm {
     contents: String,
 }
 
+#[tracing::instrument("Edit comment", skip(pool, form))]
 pub async fn edit_comment(
     pool: web::Data<Pool>,
     path: web::Path<(BlogPostID, CommentID)>,
@@ -82,6 +84,32 @@ pub async fn edit_comment(
         id: &comment_id,
         contents: Some(form.0.contents.as_str()),
         is_deleted: None,
+    };
+    update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
+    Ok(see_other(&format!(
+        "/blog_posts/{}/view#comment-{}",
+        post_id, comment_id
+    )))
+}
+
+#[tracing::instrument("Delete comment", skip(pool))]
+pub async fn delete_comment(
+    pool: web::Data<Pool>,
+    path: web::Path<(BlogPostID, CommentID)>,
+    current_user_id: UserID,
+) -> Result<HttpResponse, EditCommentError> {
+    let (post_id, comment_id) = path.into_inner();
+    if let Some(comment) =
+        get_comment_by_id(&pool, &comment_id).map_err(EditCommentError::UnexpectedError)?
+    {
+        if comment.author_id != current_user_id {
+            return Err(EditCommentError::CantChangeOthersComment);
+        }
+    }
+    let changeset = UpdateComment {
+        id: &comment_id,
+        contents: None,
+        is_deleted: Some(true),
     };
     update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
     Ok(see_other(&format!(
