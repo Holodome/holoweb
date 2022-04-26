@@ -1,4 +1,6 @@
-use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
+use crate::domain::blog_posts::{
+    BlogPost, BlogPostID, BlogPostVisibility, NewBlogPost, UpdateBlogPost,
+};
 use crate::domain::users::UserID;
 use crate::middleware::{Messages, Session};
 use crate::routes::internal::comments::render_regular_comments;
@@ -118,6 +120,7 @@ pub struct EditBlogPostForm {
     title: String,
     brief: String,
     contents: String,
+    visible_to_all: Option<String>,
 }
 
 #[tracing::instrument("Edit blog post form", skip(pool, form))]
@@ -193,6 +196,11 @@ pub async fn create_blog_post(
         title: &form.title,
         brief: &form.brief,
         contents: &form.contents,
+        visibility: form
+            .visible_to_all
+            .as_ref()
+            .map(|_| BlogPostVisibility::All)
+            .unwrap_or(BlogPostVisibility::Authenticated),
     };
     let blog_post = insert_new_blog_post(&pool, &new_blog_post)
         .map_err(anyhow::Error::new)

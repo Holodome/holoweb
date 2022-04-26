@@ -6,7 +6,7 @@ use diesel::sqlite::Sqlite;
 use std::io::Write;
 use std::str::FromStr;
 
-type Inner = chrono::DateTime<chrono::Utc>;
+type Inner = chrono::DateTime<Utc>;
 
 #[derive(
     Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
@@ -22,7 +22,7 @@ impl FromSql<diesel::sql_types::Text, Sqlite> for DateTime {
     ) -> diesel::deserialize::Result<Self> {
         <String as FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(bytes)
             .and_then(|s| {
-                chrono::DateTime::<chrono::Utc>::from_str(&s)
+                chrono::DateTime::<Utc>::from_str(&s)
                     .map_err(anyhow::Error::new)
                     .map_err(|e| e.into())
             })
@@ -36,7 +36,7 @@ impl ToSql<diesel::sql_types::Text, Sqlite> for DateTime {
     }
 }
 
-impl AsRef<chrono::DateTime<chrono::Utc>> for DateTime {
+impl AsRef<chrono::DateTime<Utc>> for DateTime {
     fn as_ref(&self) -> &chrono::DateTime<Utc> {
         &self.t
     }
@@ -44,9 +44,7 @@ impl AsRef<chrono::DateTime<chrono::Utc>> for DateTime {
 
 impl DateTime {
     pub fn now() -> Self {
-        Self {
-            t: chrono::Utc::now(),
-        }
+        Self { t: Utc::now() }
     }
 
     pub fn ago(&self) -> String {

@@ -15,7 +15,7 @@ mod tests {
     #[test]
     fn simple_test_that_markdown_parser_seems_to_work() {
         let markdown_input = "Hello world, this is a ~~complicated~~ *very simple* example.";
-        let html_output = parse_markdown_to_html(&markdown_input);
+        let html_output = parse_markdown_to_html(markdown_input);
         let expected_html =
             "<p>Hello world, this is a <del>complicated</del> <em>very simple</em> example.</p>\n";
         assert_eq!(expected_html, &html_output);

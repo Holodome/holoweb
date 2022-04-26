@@ -1,6 +1,6 @@
 use crate::common::{TestBlogPost, TestDB, TestUser};
 use claim::{assert_err, assert_ok, assert_some};
-use holosite::domain::blog_posts::{BlogPostID, NewBlogPost, UpdateBlogPost};
+use holosite::domain::blog_posts::{BlogPostID, BlogPostVisibility, NewBlogPost, UpdateBlogPost};
 use holosite::services::{
     get_all_blog_posts, get_blog_post_by_id, get_blog_post_by_title, insert_new_blog_post,
     update_blog_post, BlogPostError,
@@ -20,6 +20,7 @@ fn add_new_blog_post_works() {
             brief: &test_post.brief,
             contents: &test_post.contents,
             author_id: &user_id,
+            visibility: BlogPostVisibility::All,
         },
     );
     assert_ok!(&res);
@@ -75,7 +76,7 @@ fn update_blog_post_title_works() {
 
     let changeset = UpdateBlogPost {
         id: &post_id,
-        title: Some(&"New Title"),
+        title: Some("New Title"),
         brief: None,
         contents: None,
     };
@@ -131,7 +132,7 @@ fn change_blog_post_brief_works() {
     let changeset = UpdateBlogPost {
         id: &post_id,
         title: None,
-        brief: Some(&"New Brief"),
+        brief: Some("New Brief"),
         contents: None,
     };
     let res = update_blog_post(db.pool(), &changeset);
@@ -159,7 +160,7 @@ fn change_blog_post_contents_works() {
         id: &post_id,
         title: None,
         brief: None,
-        contents: Some(&"New contents"),
+        contents: Some("New contents"),
     };
     let res = update_blog_post(db.pool(), &changeset);
     assert_ok!(res);
@@ -189,6 +190,7 @@ fn cant_add_new_blog_post_with_taken_title() {
             brief: &test_post.brief,
             contents: &test_post.contents,
             author_id: &user_id,
+            visibility: BlogPostVisibility::All,
         },
     );
     assert_err!(&res);

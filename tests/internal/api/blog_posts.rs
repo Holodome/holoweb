@@ -1,5 +1,5 @@
 use crate::api::{assert_is_redirect_to_resource, assert_resp_ok};
-use crate::common::{TestApp, TestBlogPost, TestUser};
+use crate::common::{TestApp, TestBlogPost, TestComment, TestUser};
 
 #[tokio::test]
 async fn you_must_be_logged_in_to_see_create_blog_post_page() {
@@ -72,11 +72,11 @@ async fn you_must_be_logged_in_to_edit_blog_post() {
     let blog_post = TestBlogPost::generate();
     let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
 
-    let response = app.get_edit_blog_post_page(&blog_post_id.as_ref()).await;
+    let response = app.get_edit_blog_post_page(blog_post_id.as_ref()).await;
     assert_is_redirect_to_resource(&response, "/login");
 
     test_user.login(&app).await;
-    let response = app.get_edit_blog_post_page(&blog_post_id.as_ref()).await;
+    let response = app.get_edit_blog_post_page(blog_post_id.as_ref()).await;
     assert_resp_ok(&response);
 }
 
@@ -114,4 +114,23 @@ async fn edit_blog_post_works() {
 }
 
 #[tokio::test]
-async fn you_must_be_logged_in_to_leave_comments() {}
+async fn you_must_be_logged_in_to_leave_comments() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(app.pool());
+
+    let blog_post = TestBlogPost::generate();
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
+
+    let comment = TestComment::generate();
+
+    let response = app
+        .post_create_comment(
+            &serde_json::json!({
+                "contents": comment.contents
+            }),
+            &blog_post_id,
+        )
+        .await;
+    assert_is_redirect_to_resource(&response, "/login");
+}

@@ -17,66 +17,65 @@
 </head>
 
 <body>
-
-<header>
-  <div class="ui inverted menu">
-    <div class="ui container">
-      <h3 class="header item">
-        Holodome
-      </h3>
-      <a class="item" href="/blog_posts/all">
-        Blog posts
-      </a>
-      <a class="item" href="/projects/all">
-        Projects
-      </a>
-      <div class="right menu">
-        <a class="item" href="/account/home">
-          Account
+  <header>
+    <div class="ui inverted menu">
+      <div class="ui container">
+        <h3 class="header item">
+          Holodome
+        </h3>
+        <a class="item" href="/blog_posts/all">
+          Blog posts
         </a>
-      </div>
-    </div>
-  </div>
-</header>
-
-<div class="ui middle aligned center aligned grid" style="margin-top: 50px">
-  {% for message in messages.iter() %}
-    {% match message.level %}
-      {% when crate::middleware::MessageLevel::Info %}
-        <div class="ui info message">
-      {% when crate::middleware::MessageLevel::Success %}
-        <div class="ui success message">
-      {% when crate::middleware::MessageLevel::Warning %}
-        <div class="ui warning message">
-      {% when crate::middleware::MessageLevel::Error %}
-        <div class="ui error message">
-      {% else %}
-        <div class="ui message">
-    {% endmatch %}
-          <div class="header">{{ message.title }}</div>
-          <p>{{ message.contents }}</p>
+        <a class="item" href="/projects/all">
+          Projects
+        </a>
+        <div class="right menu">
+          <a class="item" href="/account/home">
+            Account
+          </a>
         </div>
-  {% endfor %}
-</div>
-
-{% block content %}
-
-{% endblock %}
-
-<div class="ui horizontal divider"> </div>
-
-<footer>
-  <div class="ui inverted vertical footer segment">
-    <div class="ui center aligned text container">
-      <div class="ui horizontal inverted small divided link list">
-        <a class="item" href="#">Site Map</a>
-        <a class="item" href="#">Contact Us</a>
-        <a class="item" href="#">Terms and Conditions</a>
-        <a class="item" href="#">Privacy Policy</a>
       </div>
     </div>
-  </div>
-</footer>
+  </header>
 
+  <div class="ui middle aligned center aligned grid" style="margin-top: 50px">
+    {% for message in messages.iter() %}
+      {% match message.level %}
+        {% when crate::middleware::MessageLevel::Info %}
+          <div class="ui info message">
+        {% when crate::middleware::MessageLevel::Success %}
+          <div class="ui success message">
+        {% when crate::middleware::MessageLevel::Warning %}
+          <div class="ui warning message">
+        {% when crate::middleware::MessageLevel::Error %}
+          <div class="ui error message">
+        {% else %}
+          <div class="ui message">
+      {% endmatch %}
+            <div class="header">{{ message.title }}</div>
+            <p>{{ message.contents }}</p>
+          </div>
+    {% endfor %}
+  </div>
+
+  {% block content %}
+
+  {% endblock %}
+
+  <div class="ui horizontal divider"> </div>
+
+  <footer>
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned text container">
+        <div class="ui horizontal inverted small divided link list">
+          <a class="item" href="#">Site Map</a>
+          <a class="item" href="#">Contact Us</a>
+          <a class="item" href="#">Terms and Conditions</a>
+          <a class="item" href="#">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
+
 </html>

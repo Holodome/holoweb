@@ -8,10 +8,10 @@ mod home;
 mod login;
 
 fn strip_from_query_params(s: &str) -> &str {
-    let url = s.split("#").nth(0).unwrap();
-    let mut url = url.split("?").nth(0).unwrap();
+    let url = s.split("#").next().unwrap();
+    let mut url = url.split("?").next().unwrap();
     if url.len() != 1 {
-        url = url.trim_end_matches("/");
+        url = url.trim_end_matches('/');
     }
     url
 }

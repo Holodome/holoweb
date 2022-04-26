@@ -192,7 +192,7 @@ mod tests {
     ) -> CommentView {
         let time = DateTime::now();
         CommentView {
-            id: id.unwrap_or_else(|| CommentID::generate_random()),
+            id: id.unwrap_or_else(CommentID::generate_random),
             contents,
             author_id: UserID::generate_random(),
             author_name: UserName::generate_random(),
@@ -221,7 +221,7 @@ mod tests {
         let id0 = CommentID::generate_random();
         let comments = vec![
             generate_comment("hello".to_string(), Some(id0.clone()), None),
-            generate_comment("world".to_string(), None, Some(id0.clone())),
+            generate_comment("world".to_string(), None, Some(id0)),
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
@@ -238,7 +238,7 @@ mod tests {
         let comments = vec![
             generate_comment("1".to_string(), Some(id0.clone()), None),
             generate_comment("2".to_string(), None, Some(id0.clone())),
-            generate_comment("3".to_string(), None, Some(id0.clone())),
+            generate_comment("3".to_string(), None, Some(id0)),
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected =
@@ -275,10 +275,10 @@ mod tests {
         let comments = vec![
             generate_comment("1".to_string(), Some(id0.clone()), None),
             generate_comment("2".to_string(), None, Some(id0.clone())),
-            generate_comment("3".to_string(), Some(id1.clone()), Some(id0.clone())),
-            generate_comment("4".to_string(), Some(id2.clone()), Some(id1.clone())),
+            generate_comment("3".to_string(), Some(id1.clone()), Some(id0)),
+            generate_comment("4".to_string(), Some(id2.clone()), Some(id1)),
             generate_comment("5".to_string(), None, Some(id2.clone())),
-            generate_comment("6".to_string(), None, Some(id2.clone())),
+            generate_comment("6".to_string(), None, Some(id2)),
         ];
         let rendered = test_render_comments(comments).unwrap();
         let expected = include_str!("../../../tests/data/render_comments_render_multiple_levels_of_nesting_and_multiple_children.html").to_string();

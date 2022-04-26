@@ -73,7 +73,7 @@ fn update_project_title_works() {
 
     let changeset = UpdateProject {
         id: &post_id,
-        title: Some(&"New Title"),
+        title: Some("New Title"),
         brief: None,
         visibility: None,
     };
@@ -128,7 +128,7 @@ fn change_project_brief_works() {
     let changeset = UpdateProject {
         id: &post_id,
         title: None,
-        brief: Some(&"New Brief"),
+        brief: Some("New Brief"),
         visibility: None,
     };
     let res = update_project(db.pool(), &changeset);

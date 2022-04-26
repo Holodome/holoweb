@@ -48,18 +48,18 @@ pub fn get_comment_views_for_blog_post(
     use crate::schema::users;
     let conn = pool.get()?;
     Ok(comments::table
-        .filter(comments::post_id.eq_all(blog_post_id))
-        .inner_join(users::table.on(users::columns::id.eq(comments::columns::author_id)))
+        .filter(post_id.eq_all(blog_post_id))
+        .inner_join(users::table.on(users::columns::id.eq(author_id)))
         .select((
-            comments::id,
-            comments::contents,
-            comments::author_id,
+            id,
+            contents,
+            author_id,
             users::name,
-            comments::post_id,
-            comments::reply_to_id,
-            comments::created_at,
-            comments::updated_at,
-            comments::is_deleted,
+            post_id,
+            reply_to_id,
+            created_at,
+            updated_at,
+            is_deleted,
         ))
         .load::<CommentView>(&conn)?)
 }

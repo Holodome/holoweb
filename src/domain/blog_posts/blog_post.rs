@@ -1,4 +1,4 @@
-use crate::domain::blog_posts::BlogPostID;
+use crate::domain::blog_posts::{BlogPostID, BlogPostVisibility};
 use crate::domain::time::DateTime;
 use crate::domain::users::UserID;
 use crate::schema::blog_posts;
@@ -15,5 +15,5 @@ pub struct BlogPost {
     pub created_at: DateTime,
     pub updated_at: DateTime,
 
-    pub visibility: String,
+    pub visibility: BlogPostVisibility,
 }

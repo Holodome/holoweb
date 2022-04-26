@@ -1,4 +1,6 @@
-use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
+use crate::domain::blog_posts::{
+    BlogPost, BlogPostID, BlogPostVisibility, NewBlogPost, UpdateBlogPost,
+};
 use crate::domain::time::DateTime;
 use crate::domain::users::UserID;
 use crate::schema::blog_posts::dsl::*;
@@ -62,7 +64,7 @@ pub fn insert_new_blog_post(
         author_id: new_blog_post.author_id.clone(),
         created_at: time.clone(),
         updated_at: time,
-        visibility: "all".to_string(),
+        visibility: BlogPostVisibility::All,
     };
     insert_into(blog_posts)
         .values(&blog_post)

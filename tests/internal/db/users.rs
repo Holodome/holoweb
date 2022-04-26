@@ -111,7 +111,7 @@ fn cant_create_user_with_same_name_and_get_correct_error_kind() {
         db.pool(),
         &NewUser {
             name: test_user.name.clone(),
-            password: test_user.password.clone(),
+            password: test_user.password,
         },
     );
     assert_err!(&res);

@@ -24,7 +24,7 @@ impl TestUser {
             name: self.name.clone(),
             password: self.password.clone(),
         };
-        insert_new_user(&pool, &new_user)
+        insert_new_user(pool, &new_user)
             .expect("Failed to insert new user")
             .id
     }

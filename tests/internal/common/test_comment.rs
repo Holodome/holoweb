@@ -28,7 +28,7 @@ impl TestComment {
             parent_id: None,
             contents: &self.contents,
         };
-        insert_new_comment(&pool, &new_comment)
+        insert_new_comment(pool, &new_comment)
             .expect("Failed to insert comment.html")
             .id
     }
@@ -46,7 +46,7 @@ impl TestComment {
             parent_id: Some(parent_id),
             contents: &self.contents,
         };
-        insert_new_comment(&pool, &new_comment)
+        insert_new_comment(pool, &new_comment)
             .expect("Failed to insert comment.html")
             .id
     }

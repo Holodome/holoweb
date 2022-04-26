@@ -1,6 +1,5 @@
 use crate::middleware::Messages;
 use crate::utils::render_template;
-use actix_web::dev;
 use actix_web::dev::ServiceResponse;
 use actix_web::middleware::ErrorHandlerResponse;
 use askama::Template;
@@ -13,9 +12,7 @@ struct ErrorPageTemplate<'a> {
     messages: Messages,
 }
 
-pub fn not_found_handler<B>(
-    res: dev::ServiceResponse<B>,
-) -> actix_web::Result<ErrorHandlerResponse<B>> {
+pub fn not_found_handler<B>(res: ServiceResponse<B>) -> actix_web::Result<ErrorHandlerResponse<B>> {
     let (req, _) = res.into_parts();
     let res = render_template(ErrorPageTemplate {
         error_title: "Not found",
@@ -30,7 +27,7 @@ pub fn not_found_handler<B>(
 }
 
 pub fn internal_error_handler<B>(
-    res: dev::ServiceResponse<B>,
+    res: ServiceResponse<B>,
 ) -> actix_web::Result<ErrorHandlerResponse<B>> {
     let (req, _) = res.into_parts();
     let res = render_template(ErrorPageTemplate {
