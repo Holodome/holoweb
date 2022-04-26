@@ -83,7 +83,7 @@ pub fn update_blog_post(pool: &Pool, changeset: &UpdateBlogPost) -> Result<(), B
 
 pub fn get_blog_posts_of_author(
     pool: &Pool,
-    author: UserID,
+    author: &UserID,
 ) -> Result<Vec<BlogPost>, anyhow::Error> {
     let conn = pool.get()?;
     Ok(blog_posts
