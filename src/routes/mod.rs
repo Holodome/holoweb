@@ -1,4 +1,5 @@
 use crate::middleware::{require_login, require_non_logged};
+use crate::routes::users::user_page;
 use crate::utils::see_other;
 use actix_web::{web, HttpResponse};
 use actix_web_lab::middleware::from_fn;
@@ -6,13 +7,14 @@ use actix_web_lab::middleware::from_fn;
 mod account;
 mod blog_posts;
 mod comments;
-pub mod error_handlers;
+pub(crate) mod error_handlers;
 mod health_check;
 mod internal;
 mod login;
 mod logout;
 mod projects;
 mod registration;
+mod users;
 
 async fn redirect_to_blog_posts() -> HttpResponse {
     see_other("/blog_posts/all")
@@ -47,6 +49,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
                 .route(web::get().to(login::login_form))
                 .route(web::post().to(login::login)),
         )
+        .route("/users/{user_id}", web::get().to(user_page))
         .service(
             web::scope("/blog_posts")
                 .route("/all", web::get().to(blog_posts::all_blog_posts))

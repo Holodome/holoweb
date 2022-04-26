@@ -6,6 +6,7 @@ mod comments;
 mod health_check;
 mod home;
 mod login;
+mod users;
 
 fn strip_from_query_params(s: &str) -> &str {
     let url = s.split("#").next().unwrap();

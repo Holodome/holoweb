@@ -7,22 +7,33 @@ use diesel::deserialize::FromSql;
 use diesel::serialize::{Output, ToSql};
 use diesel::sqlite::Sqlite;
 use futures_util::future::{err, ok, Ready};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Write;
 use uuid::Uuid;
 
 #[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    derive_more::Display,
-    diesel::AsExpression,
-    diesel::FromSqlRow,
-    serde::Deserialize,
-    serde::Serialize,
+    Debug, Clone, PartialEq, derive_more::Display, diesel::AsExpression, diesel::FromSqlRow,
 )]
 #[sql_type = "diesel::sql_types::Text"]
 pub struct UserID {
     s: String,
+}
+
+impl<'de> Deserialize<'de> for UserID {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        Ok(Self {
+            s: String::deserialize(deserializer)?,
+        })
+    }
+}
+
+impl Serialize for UserID {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.s.as_str())
+    }
 }
 
 impl FromSql<diesel::sql_types::Text, Sqlite> for UserID {

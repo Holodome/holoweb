@@ -236,6 +236,14 @@ impl TestApp {
             .await
     }
 
+    pub async fn get_user_page(&self, id: &str) -> Response {
+        self.get_page(format!("/users/{}", id).as_str()).await
+    }
+
+    pub async fn get_user_page_html(&self, id: &str) -> String {
+        self.get_page_html(format!("/users/{}", id).as_str()).await
+    }
+
     pub async fn get_page(&self, rel_address: &str) -> Response {
         self.api_client
             .get(format!("{}{}", &self.address, rel_address))

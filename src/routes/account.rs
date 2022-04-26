@@ -1,5 +1,3 @@
-use crate::domain::blog_posts::BlogPost;
-use crate::domain::projects::Project;
 use crate::domain::users::{
     Credentials, HashedUserPassword, PasswordError, UpdateUser, UserID, UserName, UserPassword,
 };
@@ -14,34 +12,10 @@ use askama::Template;
 use secrecy::{ExposeSecret, Secret};
 use std::fmt::Formatter;
 
-struct ProjectInfo<'a> {
-    id: &'a str,
-    title: &'a str,
-    brief: &'a str,
-    role: &'a str,
-}
-
-struct BlogPostInfo<'a> {
-    id: &'a str,
-    title: &'a str,
-    brief: &'a str,
-    role: &'a str,
-}
-
-struct CommentInfo<'a> {
-    project: &'a Project,
-    blog_post: &'a BlogPost,
-    date: &'a str,
-    contents: &'a str,
-}
-
 #[derive(Template)]
 #[template(path = "account.html")]
 struct AccountPage<'a> {
     messages: Messages,
-    projects: Vec<ProjectInfo<'a>>,
-    blog_posts: Vec<BlogPostInfo<'a>>,
-    comments: Vec<CommentInfo<'a>>,
     name: &'a str,
     email: &'a str,
 }
@@ -58,11 +32,6 @@ pub async fn account(
 
     render_template(AccountPage {
         messages: messages.into(),
-        projects: vec![],
-        // TODO
-        blog_posts: vec![],
-        // TODO
-        comments: vec![],
         name: user.name.as_ref(),
         email: user.email.as_ref(),
     })
