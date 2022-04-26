@@ -10,13 +10,14 @@
     </div>
 
     <div class="text" id="comment-contents-{{ id }}">
-      <p id="comment-contents-paragraph-{{ id }}">
-        {% if !is_deleted %}
-          {{ contents }}
-        {% else %}
-          <em>Deleted</em>
-        {% endif %}
+      <p hidden id="comment-contents-paragraph-raw-{{ id }}">
+        {{ contents_raw }}
       </p>
+      {% if !is_deleted %}
+        {{ contents }}
+      {% else %}
+      <p><em>Deleted</em></p>
+      {% endif %}
     </div>
 
     <div class="actions">

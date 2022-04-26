@@ -1,6 +1,7 @@
 use crate::domain::comments::CommentView;
 use crate::domain::time::DateTime;
 use crate::domain::users::UserID;
+use crate::markdown::parse_markdown_to_html;
 use askama::Template;
 use std::collections::{HashMap, HashSet, VecDeque};
 
@@ -15,6 +16,7 @@ struct CommentTemplate<'a> {
     pub is_comment_author: bool,
     pub is_deleted: bool,
     pub author_id: &'a str,
+    pub contents_raw: &'a str,
 }
 
 pub struct RenderCommentData<'a> {
@@ -44,12 +46,13 @@ fn render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
     CommentTemplate {
         author: data.author,
         date: data.date,
-        contents: data.contents,
+        contents: &parse_markdown_to_html(data.contents),
         rendered_children: data.rendered_children,
         id: data.id,
         is_comment_author: data.is_comment_author,
         is_deleted: data.is_deleted,
         author_id: data.author_id,
+        contents_raw: data.contents,
     }
     .render()
     .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))

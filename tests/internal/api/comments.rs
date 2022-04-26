@@ -1,6 +1,5 @@
-use crate::api::{assert_is_redirect_to_resource, assert_resp_forbidden};
+use crate::api::assert_is_redirect_to_resource;
 use crate::common::{extract_csrf_token, TestApp, TestBlogPost, TestComment, TestUser};
-use actix_web::web::post;
 
 #[tokio::test]
 async fn create_comment_works() {
@@ -100,16 +99,15 @@ async fn cant_edit_others_comment() {
             .await,
     );
 
-    let response = app
-        .post_edit_comment(
-            &serde_json::json!({
-                "csrf_token": csrf,
-                "contents": "New contents",
-            }),
-            &blog_post_id,
-            &comment_id,
-        )
-        .await;
+    app.post_edit_comment(
+        &serde_json::json!({
+            "csrf_token": csrf,
+            "contents": "New contents",
+        }),
+        &blog_post_id,
+        &comment_id,
+    )
+    .await;
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
@@ -140,7 +138,7 @@ async fn delete_comment_works() {
         .get_view_blog_post_page_html(blog_post_id.as_ref())
         .await;
     assert!(!post_html.contains("New contents"));
-    assert!(!post_html.contains(&test_comment.contents));
+    assert!(!post_html.contains(&format!("<p>{}</p>", &test_comment.contents)));
 }
 
 #[tokio::test]
@@ -245,4 +243,42 @@ async fn delete_comment_in_middle_of_response_tree_works() {
 
     assert!(post_html.contains(&response_comment.contents));
     assert!(!post_html.contains(&test_comment.contents));
+}
+
+#[tokio::test]
+async fn markdown_comments_rendering_works() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(app.pool());
+    test_user.login(&app).await;
+    let blog_post = TestBlogPost::generate();
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
+    let mut test_comment = TestComment::generate();
+    test_comment.contents = "This is *very* **good** `markdown` render".to_string();
+
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
+    let response = app
+        .post_create_comment(
+            &serde_json::json!({
+                "csrf_token": csrf,
+                "contents": &test_comment.contents
+            }),
+            &blog_post_id,
+        )
+        .await;
+
+    assert_is_redirect_to_resource(
+        &response,
+        &format!("/blog_posts/{}/view", blog_post_id.as_ref()),
+    );
+
+    let post_html = app
+        .get_view_blog_post_page_html(blog_post_id.as_ref())
+        .await;
+    assert!(post_html
+        .contains("This is <em>very</em> <strong>good</strong> <code>markdown</code> render"));
 }

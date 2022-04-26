@@ -43,12 +43,3 @@ pub fn assert_resp_ok(response: &reqwest::Response) {
         response
     )
 }
-
-pub fn assert_resp_forbidden(response: &reqwest::Response) {
-    assert_eq!(
-        response.status().as_u16(),
-        403,
-        "Response is not FORBIDDEN: {:?}",
-        response
-    )
-}
