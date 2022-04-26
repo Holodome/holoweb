@@ -21,8 +21,8 @@
   <form class="ui form" method="post" action="/account/change_name">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="field">
-      <label>Name</label>
-      <input type="text" name="new_name" placeholder="name" value="{{ name }}">
+      <label for="name_input">Name</label>
+      <input id="name_input" type="text" name="new_name" placeholder="name" value="{{ name }}">
     </div>
     <button type="submit" class="ui submit button">Change name</button>
   </form>
@@ -32,8 +32,8 @@
   <form class="ui form" method="post" action="/account/change_email">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="field">
-      <label>Email</label>
-      <input type="text" name="new_email" placeholder="name" value="{{ email }}">
+      <label for="email_input">Email</label>
+      <input id="email_input" type="text" name="new_email" placeholder="name" value="{{ email }}">
     </div>
     <button type="submit" class="ui submit button">Change email</button>
   </form>
@@ -43,16 +43,16 @@
   <form class="ui form" method="post" action="/account/change_password">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="field">
-      <label>Password</label>
-      <input type="password" name="current_password" placeholder="Current password">
+      <label for="password_input">Password</label>
+      <input id="password_input" type="password" name="current_password" placeholder="Current password">
     </div>
     <div class="field">
-      <label>New Password</label>
-      <input type="password" name="new_password" placeholder="New password">
+      <label for="new_password_input">New Password</label>
+      <input id="new_password_input" type="password" name="new_password" placeholder="New password">
     </div>
     <div class="field">
-      <label>Repeat new password</label>
-      <input type="password" name="repeat_new_password" placeholder="Repeat new password">
+      <label for="repeat_new_password_input">Repeat new password</label>
+      <input id="repeat_new_password_input" type="password" name="repeat_new_password" placeholder="Repeat new password">
     </div>
 
     <button type="submit" class="ui submit button">Change password</button>

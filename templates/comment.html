@@ -1,17 +1,27 @@
 <div class="comment" id="comment-{{ id }}">
   <div class="content">
-    <a class="author">{{ author }}</a>
+    {% if !is_deleted %}
+      <a class="author" href="/users/{{ author_id }}">{{ author }}</a>
+    {% else %}
+      <a class="author"><em>Deleted</em></a>
+    {% endif %}
     <div class="metadata">
       <span class="date">{{ date }}</span>
     </div>
 
     <div class="text" id="comment-contents-{{ id }}">
-      <p id="comment-contents-paragraph-{{ id }}">{{ contents }}</p>
+      <p id="comment-contents-paragraph-{{ id }}">
+        {% if !is_deleted %}
+          {{ contents }}
+        {% else %}
+          <em>Deleted</em>
+        {% endif %}
+      </p>
     </div>
 
     <div class="actions">
       <a class="reply comment-reply-button" id="reply-comment-{{ id }}">Reply</a>
-      {% if is_comment_author %}
+      {% if is_comment_author && !is_deleted %}
         <div class="ui floating dropdown">
           <i class="icon ellipsis horizontal"></i>
           <div class="menu">

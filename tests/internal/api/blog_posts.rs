@@ -1,5 +1,6 @@
 use crate::api::{assert_is_redirect_to_resource, assert_resp_ok};
 use crate::common::{extract_csrf_token, TestApp, TestBlogPost, TestComment, TestUser};
+use holosite::domain::blog_posts::BlogPostVisibility;
 
 #[tokio::test]
 async fn you_must_be_logged_in_to_see_create_blog_post_page() {
@@ -161,6 +162,35 @@ async fn cant_view_protected_blog_post() {
     let html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
         .await;
-    println!("{}", html);
+    assert!(html.contains("You have to be authenticated to view this blog post"))
+}
+
+#[tokio::test]
+async fn can_change_blog_post_visibility() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(app.pool());
+
+    let mut blog_post = TestBlogPost::generate();
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
+
+    let html = app
+        .get_view_blog_post_page_html(blog_post_id.as_ref())
+        .await;
+    assert!(!html.contains("You have to be authenticated to view this blog post"));
+
+    blog_post.visibility = BlogPostVisibility::Authenticated;
+    test_user.login(&app).await;
+    let csrf = extract_csrf_token(
+        &app.get_edit_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+    app.post_edit_blog_post(&blog_post.to_json(&csrf), &blog_post_id)
+        .await;
+    app.post_logout().await;
+
+    let html = app
+        .get_view_blog_post_page_html(blog_post_id.as_ref())
+        .await;
     assert!(html.contains("You have to be authenticated to view this blog post"))
 }

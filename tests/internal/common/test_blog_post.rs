@@ -28,12 +28,22 @@ impl TestBlogPost {
     }
 
     pub fn to_json(&self, csrf: &str) -> serde_json::Value {
-        serde_json::json!({
-            "csrf_token": csrf,
-            "title": self.title.clone(),
-            "brief": self.brief.clone(),
-            "contents": self.contents.clone()
-        })
+        if self.visibility == BlogPostVisibility::All {
+            serde_json::json!({
+                "csrf_token": csrf,
+                "title": self.title.clone(),
+                "brief": self.brief.clone(),
+                "contents": self.contents.clone(),
+                "visible_to_all": "hello world"
+            })
+        } else {
+            serde_json::json!({
+                "csrf_token": csrf,
+                "title": self.title.clone(),
+                "brief": self.brief.clone(),
+                "contents": self.contents.clone()
+            })
+        }
     }
 
     pub fn register_internally(&self, pool: &Pool, author_id: &UserID) -> BlogPostID {

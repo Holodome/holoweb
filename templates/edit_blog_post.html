@@ -11,22 +11,27 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
     <div class="field">
-      <label>Title</label>
-      <input type="text" name="title" placeholder="Title" value="{{ blog_post.title }}">
+      <label for="title_input">Title</label>
+      <input id="title_input" type="text" name="title" placeholder="Title" value="{{ blog_post.title }}">
     </div>
 
     <div class="ui section divider"></div>
 
     <div class="field">
-      <label>Brief</label>
-      <input type="text" name="brief" placeholder="Brief" value="{{ blog_post.brief }}">
+      <label for="brief_input">Brief</label>
+      <input id="brief_input" type="text" name="brief" placeholder="Brief" value="{{ blog_post.brief }}">
     </div>
 
     <div class="ui section divider"></div>
 
     <div class="field">
-      <label>Contents</label>
-      <textarea name="contents">{{ blog_post.contents }}</textarea>
+      <label for="blog_post_contents_textarea">Contents</label>
+      <textarea id="blog_post_contents_textarea" name="contents">{{ blog_post.contents }}</textarea>
+    </div>
+
+    <div class="ui checkbox">
+      <input id="visible_to_all_checkbox" type="checkbox" name="visible_to_all">
+      <label for="visible_to_all_checkbox">Visible to all</label>
     </div>
 
     <button class="ui fluid large submit button" type="submit">Submit</button>

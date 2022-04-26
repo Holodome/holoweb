@@ -79,6 +79,7 @@ fn update_blog_post_title_works() {
         title: Some("New Title"),
         brief: None,
         contents: None,
+        visibility: None,
     };
     let res = update_blog_post(db.pool(), &changeset);
     assert_ok!(res);
@@ -111,6 +112,7 @@ fn cant_change_blog_post_title_to_taken_title() {
             title: Some(&other_post.title),
             brief: None,
             contents: None,
+            visibility: None,
         },
     );
     assert_err!(&res);
@@ -134,6 +136,7 @@ fn change_blog_post_brief_works() {
         title: None,
         brief: Some("New Brief"),
         contents: None,
+        visibility: None,
     };
     let res = update_blog_post(db.pool(), &changeset);
     assert_ok!(res);
@@ -161,6 +164,7 @@ fn change_blog_post_contents_works() {
         title: None,
         brief: None,
         contents: Some("New contents"),
+        visibility: None,
     };
     let res = update_blog_post(db.pool(), &changeset);
     assert_ok!(res);

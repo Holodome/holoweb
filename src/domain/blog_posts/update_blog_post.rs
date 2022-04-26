@@ -1,4 +1,4 @@
-use crate::domain::blog_posts::BlogPostID;
+use crate::domain::blog_posts::{BlogPostID, BlogPostVisibility};
 use crate::schema::blog_posts;
 
 #[derive(diesel::AsChangeset)]
@@ -8,4 +8,5 @@ pub struct UpdateBlogPost<'a> {
     pub title: Option<&'a str>,
     pub brief: Option<&'a str>,
     pub contents: Option<&'a str>,
+    pub visibility: Option<BlogPostVisibility>,
 }

@@ -167,6 +167,11 @@ pub async fn edit_blog_post(
         title: Some(&form.title),
         brief: Some(&form.brief),
         contents: Some(&form.contents),
+        visibility: Some(if form.visible_to_all.is_some() {
+            BlogPostVisibility::All
+        } else {
+            BlogPostVisibility::Authenticated
+        }),
     };
     update_blog_post(&pool, &changeset).map_err(|e| redirect(e.into()))?;
     Ok(see_other(

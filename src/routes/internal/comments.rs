@@ -13,6 +13,8 @@ struct CommentTemplate<'a> {
     pub rendered_children: Vec<String>,
     pub id: &'a str,
     pub is_comment_author: bool,
+    pub is_deleted: bool,
+    pub author_id: &'a str,
 }
 
 pub struct RenderCommentData<'a> {
@@ -22,6 +24,8 @@ pub struct RenderCommentData<'a> {
     contents: &'a str,
     rendered_children: Vec<String>,
     is_comment_author: bool,
+    is_deleted: bool,
+    author_id: &'a str,
 }
 
 pub fn render_regular_comments(
@@ -44,6 +48,8 @@ fn render_comment(data: RenderCommentData) -> Result<String, anyhow::Error> {
         rendered_children: data.rendered_children,
         id: data.id,
         is_comment_author: data.is_comment_author,
+        is_deleted: data.is_deleted,
+        author_id: data.author_id,
     }
     .render()
     .map_err(|e| anyhow::anyhow!("Failed to render comment: {:?}", e))
@@ -91,21 +97,17 @@ where
                 .map(|c| rendered.remove(c.id.as_ref().as_str()).unwrap())
                 .collect();
 
-            // TODO: Handle deleted in render
-            let contents = if current.is_deleted {
-                "deleted"
-            } else {
-                current.contents.as_str()
-            };
             let s = renderer(RenderCommentData {
                 id: current.id.as_ref(),
                 author: current.author_name.as_ref(),
                 date: &current.created_at.since(&current_time),
-                contents,
+                contents: &current.contents,
                 rendered_children,
                 is_comment_author: current_user_id
                     .map(|it| &current.author_id == it)
                     .unwrap_or(false),
+                is_deleted: current.is_deleted,
+                author_id: current.author_id.as_ref(),
             })?;
             rendered.insert(current_id, s);
 
