@@ -1,5 +1,5 @@
 use crate::api::{assert_is_redirect_to_resource, assert_resp_ok};
-use crate::common::{TestApp, TestBlogPost, TestComment, TestUser};
+use crate::common::{extract_csrf_token, TestApp, TestBlogPost, TestComment, TestUser};
 
 #[tokio::test]
 async fn you_must_be_logged_in_to_see_create_blog_post_page() {
@@ -29,7 +29,8 @@ async fn create_blog_post_and_see_it_appears_at_dashboard() {
     test_user.login(&app).await;
 
     let blog_post = TestBlogPost::generate();
-    app.post_create_blog_post(&blog_post.to_json()).await;
+    let csrf = extract_csrf_token(&app.get_create_blog_post_page_html().await);
+    app.post_create_blog_post(&blog_post.to_json(&csrf)).await;
 
     let html = app.get_all_blog_posts_page_html().await;
     assert!(html.contains(&blog_post.title));
@@ -38,8 +39,7 @@ async fn create_blog_post_and_see_it_appears_at_dashboard() {
 #[tokio::test]
 async fn you_must_be_logged_in_to_create_blog_post() {
     let app = TestApp::spawn().await;
-    let blog_post = TestBlogPost::generate();
-    let response = app.post_create_blog_post(&blog_post.to_json()).await;
+    let response = app.get_create_blog_post_page().await;
     assert_is_redirect_to_resource(&response, "/login");
 }
 
@@ -99,8 +99,13 @@ async fn edit_blog_post_works() {
         .await;
     assert!(html.contains(&blog_post.title));
 
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
     let updated = TestBlogPost::generate();
-    app.post_edit_blog_post(&updated.to_json(), &blog_post_id)
+    app.post_edit_blog_post(&updated.to_json(&csrf), &blog_post_id)
         .await;
 
     let response = app
@@ -122,11 +127,17 @@ async fn you_must_be_logged_in_to_leave_comments() {
     let blog_post = TestBlogPost::generate();
     let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
 
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
     let comment = TestComment::generate();
 
     let response = app
         .post_create_comment(
             &serde_json::json!({
+                "csrf_token": csrf,
                 "contents": comment.contents
             }),
             &blog_post_id,

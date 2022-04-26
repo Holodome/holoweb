@@ -1,7 +1,7 @@
 use crate::domain::users::{
     Credentials, HashedUserPassword, PasswordError, UpdateUser, UserID, UserName, UserPassword,
 };
-use crate::middleware::Messages;
+use crate::middleware::{Messages, Session};
 use crate::services::{get_user_by_id, update_user, validate_credentials, AuthError, UserError};
 use crate::utils::{e500, redirect_with_error, render_template, see_other};
 use crate::Pool;
@@ -18,13 +18,15 @@ struct AccountPage<'a> {
     messages: Messages,
     name: &'a str,
     email: &'a str,
+    csrf_token: &'a str,
 }
 
-#[tracing::instrument(skip(pool, messages))]
+#[tracing::instrument(skip(pool, messages, session))]
 pub async fn account(
     pool: web::Data<Pool>,
     user_id: UserID,
     messages: IncomingFlashMessages,
+    session: Session,
 ) -> actix_web::Result<HttpResponse> {
     let user = get_user_by_id(&pool, &user_id)
         .map_err(e500)?
@@ -34,11 +36,14 @@ pub async fn account(
         messages: messages.into(),
         name: user.name.as_ref(),
         email: user.email.as_ref(),
+        csrf_token: session.get_csrf_token().map_err(e500)?.expose_secret(),
     })
 }
 
 #[derive(thiserror::Error)]
 pub enum ChangeNameError {
+    #[error("Invalid CSRF token")]
+    CSRFError,
     #[error("Taken name")]
     TakenName,
     #[error("Invalid name")]
@@ -58,14 +63,30 @@ impl std::fmt::Debug for ChangeNameError {
 #[derive(serde::Deserialize)]
 pub struct ChangeNameForm {
     new_name: String,
+    csrf_token: Secret<String>,
 }
 
-#[tracing::instrument(skip(form, pool))]
+#[tracing::instrument(skip(form, pool, session))]
 pub async fn change_name(
     form: web::Form<ChangeNameForm>,
     pool: web::Data<Pool>,
     user_id: UserID,
+    session: Session,
 ) -> Result<HttpResponse, InternalError<ChangeNameError>> {
+    if form.csrf_token.expose_secret()
+        != session
+            .get_csrf_token()
+            .map_err(|e| {
+                redirect_with_error_to_account(ChangeNameError::UnexpectedError(anyhow::anyhow!(
+                    "Failed to fetch CSRF token from session: {:?}",
+                    e
+                )))
+            })?
+            .expose_secret()
+    {
+        return Err(redirect_with_error_to_account(ChangeNameError::CSRFError));
+    }
+
     let user_name = UserName::parse(&form.0.new_name)
         .map_err(|e| redirect_with_error("/account/home", ChangeNameError::InvalidName(e)))?;
 
@@ -100,10 +121,13 @@ pub struct ChangePasswordForm {
     current_password: Secret<String>,
     new_password: Secret<String>,
     repeat_new_password: Secret<String>,
+    csrf_token: Secret<String>,
 }
 
 #[derive(thiserror::Error)]
 pub enum ChangePasswordError {
+    #[error("Invalid CSRF token")]
+    CSRFError,
     #[error("Repeat password does not match new password")]
     RepeatPasswordDoesntMatch,
     #[error("Current password is incorrect")]
@@ -122,12 +146,28 @@ impl std::fmt::Debug for ChangePasswordError {
     }
 }
 
-#[tracing::instrument("Change password", skip(form, pool))]
+#[tracing::instrument("Change password", skip(form, pool, session))]
 pub async fn change_password(
     form: web::Form<ChangePasswordForm>,
     pool: web::Data<Pool>,
     user_id: UserID,
+    session: Session,
 ) -> Result<HttpResponse, InternalError<ChangePasswordError>> {
+    if form.csrf_token.expose_secret()
+        != session
+            .get_csrf_token()
+            .map_err(|e| {
+                redirect_with_error_to_account(ChangePasswordError::UnexpectedError(
+                    anyhow::anyhow!("Failed to fetch CSRF token from session: {:?}", e),
+                ))
+            })?
+            .expose_secret()
+    {
+        return Err(redirect_with_error_to_account(
+            ChangePasswordError::CSRFError,
+        ));
+    }
+
     if form.new_password.expose_secret() != form.repeat_new_password.expose_secret() {
         return Err(redirect_with_error_to_account(
             ChangePasswordError::RepeatPasswordDoesntMatch,

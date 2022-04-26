@@ -180,6 +180,10 @@ impl TestApp {
         self.get_page("/blog_posts/create").await
     }
 
+    pub async fn get_create_blog_post_page_html(&self) -> String {
+        self.get_page_html("/blog_posts/create").await
+    }
+
     pub async fn get_all_blog_posts_page(&self) -> Response {
         self.get_page("/blog_posts/all").await
     }

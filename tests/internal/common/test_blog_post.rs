@@ -27,8 +27,9 @@ impl TestBlogPost {
         result
     }
 
-    pub fn to_json(&self) -> serde_json::Value {
+    pub fn to_json(&self, csrf: &str) -> serde_json::Value {
         serde_json::json!({
+            "csrf_token": csrf,
             "title": self.title.clone(),
             "brief": self.brief.clone(),
             "contents": self.contents.clone()

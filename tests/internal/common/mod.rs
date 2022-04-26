@@ -6,6 +6,7 @@ mod test_user;
 
 use holosite::config::Config;
 use once_cell::sync::Lazy;
+use regex::Regex;
 pub use test_app::*;
 pub use test_blog_post::*;
 pub use test_comment::*;
@@ -71,4 +72,13 @@ impl TestDB {
     pub fn pool(&self) -> &Pool {
         &self.pool
     }
+}
+
+pub fn extract_csrf_token(html: &str) -> String {
+    let reg = Regex::new(r#"<input type="hidden" name="csrf_token" value="(.*)">"#).unwrap();
+    for it in reg.captures_iter(html) {
+        return it[1].to_string();
+    }
+
+    panic!("Failed to get csrf")
 }

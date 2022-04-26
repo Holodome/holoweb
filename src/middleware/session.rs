@@ -2,16 +2,31 @@ use crate::domain::users::UserID;
 use actix_session::SessionExt;
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
+use secrecy::Secret;
 use serde::de::DeserializeOwned;
 use std::future::{ready, Ready};
+use uuid::Uuid;
 
 pub struct Session(actix_session::Session);
 
 impl Session {
     const USER_ID_KEY: &'static str = "user_id";
+    const CSRF_TOKEN_KEY: &'static str = "csrf";
 
     pub fn renew(&self) {
         self.0.renew();
+    }
+
+    pub fn get_csrf_token(&self) -> Result<Secret<String>, anyhow::Error> {
+        let token = if let Some(token) = self.0.get(Self::CSRF_TOKEN_KEY)? {
+            Secret::new(token)
+        } else {
+            let token = Uuid::new_v4().to_string();
+            self.0.insert(Self::CSRF_TOKEN_KEY, token.clone())?;
+            Secret::new(token)
+        };
+
+        Ok(token)
     }
 
     pub fn insert_user_id(&self, user_id: UserID) -> Result<(), anyhow::Error> {

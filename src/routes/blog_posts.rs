@@ -15,6 +15,7 @@ use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::IncomingFlashMessages;
 use askama::Template;
+use secrecy::{ExposeSecret, Secret};
 
 const EDIT_BLOG_POST_CACHE: &str = "edit_blog_post_form";
 
@@ -40,18 +41,20 @@ pub async fn all_blog_posts(
 
 #[derive(Template)]
 #[template(path = "blog_post.html", escape = "none")]
-struct BlogPostTemplate {
+struct BlogPostTemplate<'a> {
     messages: Messages,
     blog_post: BlogPost,
     rendered_comments: String,
+    csrf_token: &'a str,
 }
 
-#[tracing::instrument("Blog post", skip(pool, messages))]
+#[tracing::instrument("Blog post", skip(pool, messages, session))]
 pub async fn blog_post(
     pool: web::Data<Pool>,
     params: web::Path<BlogPostID>,
     messages: IncomingFlashMessages,
     current_user_id: Option<UserID>,
+    session: Session,
 ) -> actix_web::Result<HttpResponse> {
     let blog_post_id = params.into_inner();
     let blog_post = get_blog_post_by_id(&pool, &blog_post_id)
@@ -74,6 +77,7 @@ pub async fn blog_post(
         messages: messages.into(),
         blog_post,
         rendered_comments,
+        csrf_token: session.get_csrf_token().map_err(e500)?.expose_secret(),
     })
 }
 
@@ -96,17 +100,19 @@ impl Default for BlogPostDisplay {
 
 #[derive(Template)]
 #[template(path = "edit_blog_post.html")]
-struct EditBlogPostTemplate {
+struct EditBlogPostTemplate<'a> {
     messages: Messages,
     blog_post: BlogPostDisplay,
-    action: String,
+    action: &'a str,
+    csrf_token: &'a str,
 }
 
-#[tracing::instrument("Edit blog post form", skip(pool, messages))]
+#[tracing::instrument("Edit blog post form", skip(pool, messages, session))]
 pub async fn edit_blog_post_form(
     pool: web::Data<Pool>,
     params: web::Path<BlogPostID>,
     messages: IncomingFlashMessages,
+    session: Session,
 ) -> actix_web::Result<HttpResponse> {
     let blog_post_id = params.into_inner();
     let blog_post = get_blog_post_by_id(&pool, &blog_post_id)
@@ -120,7 +126,8 @@ pub async fn edit_blog_post_form(
             brief: blog_post.brief,
             contents: blog_post.contents,
         },
-        action: format!("/blog_posts/{}/edit", blog_post_id.as_ref()),
+        action: format!("/blog_posts/{}/edit", blog_post_id.as_ref()).as_str(),
+        csrf_token: session.get_csrf_token().map_err(e500)?.expose_secret(),
     })
 }
 
@@ -130,27 +137,38 @@ pub struct EditBlogPostForm {
     brief: String,
     contents: String,
     visible_to_all: Option<String>,
+    csrf_token: Secret<String>,
 }
 
-#[tracing::instrument("Edit blog post form", skip(pool, form))]
+#[tracing::instrument("Edit blog post form", skip(pool, form, session))]
 pub async fn edit_blog_post(
     pool: web::Data<Pool>,
     form: web::Form<EditBlogPostForm>,
     blog_post_id: web::Path<BlogPostID>,
+    session: Session,
 ) -> Result<HttpResponse, InternalError<anyhow::Error>> {
     let blog_post_id = blog_post_id.into_inner();
+
+    let redirect = |e| {
+        redirect_with_error(
+            format!("/blog_posts/{}/edit", blog_post_id.as_ref()).as_str(),
+            e,
+        )
+    };
+
+    if form.csrf_token.expose_secret()
+        != session.get_csrf_token().map_err(redirect)?.expose_secret()
+    {
+        return Err(redirect(anyhow::anyhow!("Invalid CSRF token")));
+    }
+
     let changeset = UpdateBlogPost {
         id: &blog_post_id,
         title: Some(&form.title),
         brief: Some(&form.brief),
         contents: Some(&form.contents),
     };
-    update_blog_post(&pool, &changeset).map_err(|e| {
-        redirect_with_error(
-            format!("/blog_posts/{}/edit", blog_post_id.as_ref()).as_str(),
-            anyhow::Error::new(e),
-        )
-    })?;
+    update_blog_post(&pool, &changeset).map_err(|e| redirect(e.into()))?;
     Ok(see_other(
         format!("/blog_posts/{}/view", blog_post_id.as_ref()).as_str(),
     ))
@@ -168,7 +186,8 @@ pub async fn create_blog_post_form(
     render_template(EditBlogPostTemplate {
         messages: messages.into(),
         blog_post,
-        action: "/blog_posts/create".to_string(),
+        action: "/blog_posts/create",
+        csrf_token: session.get_csrf_token().map_err(e500)?.expose_secret(),
     })
 }
 

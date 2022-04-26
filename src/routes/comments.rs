@@ -2,12 +2,14 @@ use crate::domain::blog_posts::BlogPostID;
 use crate::domain::comments::NewComment;
 use crate::domain::comments::{CommentID, UpdateComment};
 use crate::domain::users::UserID;
+use crate::middleware::Session;
 use crate::services::insert_new_comment;
 use crate::services::{get_comment_by_id, update_comment};
-use crate::utils::{e500, see_other};
+use crate::utils::{e500, redirect_with_error, see_other};
 use crate::Pool;
-use actix_web::http::StatusCode;
-use actix_web::{web, HttpResponse, ResponseError};
+use actix_web::error::InternalError;
+use actix_web::{web, HttpResponse};
+use secrecy::{ExposeSecret, Secret};
 
 #[derive(serde::Deserialize)]
 pub struct CreateCommentFormData {
@@ -38,6 +40,8 @@ pub async fn create_comment(
 
 #[derive(thiserror::Error)]
 pub enum EditCommentError {
+    #[error("Invalid CSRF token")]
+    CSRFError,
     #[error("Can't change others comment")]
     CantChangeOthersComment,
     #[error("Something went wrong")]
@@ -51,33 +55,44 @@ impl std::fmt::Debug for EditCommentError {
     }
 }
 
-impl ResponseError for EditCommentError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            Self::CantChangeOthersComment => StatusCode::FORBIDDEN,
-            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
-
 #[derive(serde::Deserialize)]
 pub struct EditCommentForm {
     contents: String,
+    csrf_token: Secret<String>,
 }
 
-#[tracing::instrument("Edit comment", skip(pool, form))]
+#[tracing::instrument("Edit comment", skip(pool, form, session))]
 pub async fn edit_comment(
     pool: web::Data<Pool>,
     path: web::Path<(BlogPostID, CommentID)>,
     form: web::Form<EditCommentForm>,
     current_user_id: UserID,
-) -> Result<HttpResponse, EditCommentError> {
+    session: Session,
+) -> Result<HttpResponse, InternalError<EditCommentError>> {
     let (post_id, comment_id) = path.into_inner();
-    if let Some(comment) =
-        get_comment_by_id(&pool, &comment_id).map_err(EditCommentError::UnexpectedError)?
+    let redirect = |e| {
+        redirect_with_error(
+            &format!("/blog_posts/{}/view#comment-{}", post_id, comment_id),
+            e,
+        )
+    };
+
+    if form.csrf_token.expose_secret()
+        != session
+            .get_csrf_token()
+            .map_err(EditCommentError::UnexpectedError)
+            .map_err(redirect)?
+            .expose_secret()
+    {
+        return Err(redirect(EditCommentError::CSRFError));
+    }
+
+    if let Some(comment) = get_comment_by_id(&pool, &comment_id)
+        .map_err(EditCommentError::UnexpectedError)
+        .map_err(redirect)?
     {
         if comment.author_id != current_user_id {
-            return Err(EditCommentError::CantChangeOthersComment);
+            return Err(redirect(EditCommentError::CantChangeOthersComment));
         }
     }
     let changeset = UpdateComment {
@@ -85,7 +100,10 @@ pub async fn edit_comment(
         contents: Some(form.0.contents.as_str()),
         is_deleted: None,
     };
-    update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
+    update_comment(&pool, &changeset)
+        .map_err(EditCommentError::UnexpectedError)
+        .map_err(redirect)?;
+
     Ok(see_other(&format!(
         "/blog_posts/{}/view#comment-{}",
         post_id, comment_id
@@ -97,13 +115,23 @@ pub async fn delete_comment(
     pool: web::Data<Pool>,
     path: web::Path<(BlogPostID, CommentID)>,
     current_user_id: UserID,
-) -> Result<HttpResponse, EditCommentError> {
+) -> Result<HttpResponse, InternalError<EditCommentError>> {
     let (post_id, comment_id) = path.into_inner();
-    if let Some(comment) =
-        get_comment_by_id(&pool, &comment_id).map_err(EditCommentError::UnexpectedError)?
+    let redirect = |e| {
+        redirect_with_error(
+            &format!("/blog_posts/{}/view#comment-{}", post_id, comment_id),
+            e,
+        )
+    };
+
+    // TODO: CSRF
+
+    if let Some(comment) = get_comment_by_id(&pool, &comment_id)
+        .map_err(EditCommentError::UnexpectedError)
+        .map_err(redirect)?
     {
         if comment.author_id != current_user_id {
-            return Err(EditCommentError::CantChangeOthersComment);
+            return Err(redirect(EditCommentError::CantChangeOthersComment));
         }
     }
     let changeset = UpdateComment {
@@ -111,7 +139,9 @@ pub async fn delete_comment(
         contents: None,
         is_deleted: Some(true),
     };
-    update_comment(&pool, &changeset).map_err(EditCommentError::UnexpectedError)?;
+    update_comment(&pool, &changeset)
+        .map_err(EditCommentError::UnexpectedError)
+        .map_err(redirect)?;
     Ok(see_other(&format!(
         "/blog_posts/{}/view#comment-{}",
         post_id, comment_id

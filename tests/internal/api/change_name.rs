@@ -1,12 +1,22 @@
 use crate::api::assert_is_redirect_to_resource;
-use crate::common::TestApp;
+use crate::common::{extract_csrf_token, TestApp, TestUser};
+use secrecy::ExposeSecret;
 
 #[tokio::test]
 async fn you_must_be_logged_in_to_change_password() {
     let app = TestApp::spawn().await;
+    let user = TestUser::generate();
+    user.register_internally(app.pool());
+    user.login(&app).await;
+
+    let account = app.get_account_page_html().await;
+    let csrf = extract_csrf_token(&account);
+
+    app.post_logout().await;
 
     let response = app
         .post_change_name(&serde_json::json!({
+            "csrf_token": csrf,
             "new_name": "Hello",
         }))
         .await;
@@ -16,78 +26,63 @@ async fn you_must_be_logged_in_to_change_password() {
 #[tokio::test]
 async fn new_name_must_be_valid() {
     let app = TestApp::spawn().await;
+    let user = TestUser::generate();
+    user.register_internally(app.pool());
+    user.login(&app).await;
 
-    let response = app
-        .post_registration(&serde_json::json!({
-            "name": "SuperValidName",
-            "password": "!1Aapass",
-            "repeat_password": "!1Aapass"
-        }))
-        .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts/all");
+    let account = app.get_account_page_html().await;
+    let csrf = extract_csrf_token(&account);
 
     let response = app
         .post_change_name(&serde_json::json!({
+            "csrf_token": csrf,
             "new_name": "",
         }))
         .await;
     assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
-    assert!(html.contains("Invalid name"));
+    assert!(html.contains(user.name.as_ref()));
 }
 
 #[tokio::test]
 async fn cant_change_to_taken_name() {
     let app = TestApp::spawn().await;
+    let user = TestUser::generate();
+    user.register_internally(app.pool());
+    user.login(&app).await;
 
-    let response = app
-        .post_registration(&serde_json::json!({
-            "name": "TakenName",
-            "password": "!1Aapass",
-            "repeat_password": "!1Aapass"
-        }))
-        .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts/all");
+    let other_user = TestUser::generate();
+    other_user.register_internally(app.pool());
 
-    let response = app.post_logout().await;
-    assert_is_redirect_to_resource(&response, "/login");
-
-    let response = app
-        .post_registration(&serde_json::json!({
-            "name": "SuperValidName",
-            "password": "!1Aapass",
-            "repeat_password": "!1Aapass"
-        }))
-        .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts/all");
+    let account = app.get_account_page_html().await;
+    let csrf = extract_csrf_token(&account);
 
     let response = app
         .post_change_name(&serde_json::json!({
-            "new_name": "TakenName",
+            "csrf_token": csrf,
+            "new_name": other_user.name.as_ref(),
         }))
         .await;
     assert_is_redirect_to_resource(&response, "/account/home");
 
     let html = app.get_account_page_html().await;
-    assert!(html.contains("Taken name"));
+    assert!(html.contains(user.name.as_ref()));
 }
 
 #[tokio::test]
 async fn change_name_works() {
     let app = TestApp::spawn().await;
+    let user = TestUser::generate();
+    user.register_internally(app.pool());
+    user.login(&app).await;
 
-    let response = app
-        .post_registration(&serde_json::json!({
-            "name": "TakenName",
-            "password": "!1Aapass",
-            "repeat_password": "!1Aapass"
-        }))
-        .await;
-    assert_is_redirect_to_resource(&response, "/blog_posts/all");
+    let account = app.get_account_page_html().await;
+    let csrf = extract_csrf_token(&account);
 
     let response = app
         .post_change_name(&serde_json::json!({
+            "csrf_token": csrf,
             "new_name": "NewName",
         }))
         .await;
@@ -102,7 +97,7 @@ async fn change_name_works() {
     let response = app
         .post_login(&serde_json::json!({
             "name": "NewName",
-            "password": "!1Aapass"
+            "password": user.password.as_ref().expose_secret()
         }))
         .await;
     assert_is_redirect_to_resource(&response, "/blog_posts/all");

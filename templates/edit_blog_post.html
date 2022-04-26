@@ -8,6 +8,8 @@
   <div class="ui horizontal divider"></div>
 
   <form class="ui large form" method="post" action="{{ action }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
     <div class="field">
       <label>Title</label>
       <input type="text" name="title" placeholder="Title" value="{{ blog_post.title }}">

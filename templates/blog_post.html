@@ -27,6 +27,7 @@
 
     <form hidden class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create" method="post" id="comment-reply-form">
       <input type="hidden" id="comment-reply-form-id" value="" name="reply_to_id">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <div class="field">
         <textarea name="contents"></textarea>
       </div>
@@ -36,6 +37,7 @@
     </form>
 
     <form hidden class="ui reply form" method="post" id="edit-comment-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <div class="field">
         <textarea id="edit-comment-form-contents" name="contents"></textarea>
       </div>
@@ -45,6 +47,7 @@
     </form>
 
     <form class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create" method="post" id="reply-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <div class="field">
         <textarea name="contents"></textarea>
       </div>

@@ -1194,6 +1194,7 @@ dependencies = [
  "pulldown-cmark",
  "quickcheck",
  "quickcheck_macros",
+ "regex",
  "reqwest",
  "secrecy",
  "serde",

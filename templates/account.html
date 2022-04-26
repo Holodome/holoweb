@@ -19,6 +19,7 @@
   <div class="ui horizontal divider"></div>
 
   <form class="ui form" method="post" action="/account/change_name">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="field">
       <label>Name</label>
       <input type="text" name="new_name" placeholder="name" value="{{ name }}">
@@ -29,6 +30,7 @@
   <div class="ui section divider"></div>
 
   <form class="ui form" method="post" action="/account/change_email">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="field">
       <label>Email</label>
       <input type="text" name="new_email" placeholder="name" value="{{ email }}">
@@ -39,6 +41,7 @@
   <div class="ui section divider"></div>
 
   <form class="ui form" method="post" action="/account/change_password">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="field">
       <label>Password</label>
       <input type="password" name="current_password" placeholder="Current password">

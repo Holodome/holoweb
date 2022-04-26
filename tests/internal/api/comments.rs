@@ -1,5 +1,6 @@
 use crate::api::{assert_is_redirect_to_resource, assert_resp_forbidden};
-use crate::common::{TestApp, TestBlogPost, TestComment, TestUser};
+use crate::common::{extract_csrf_token, TestApp, TestBlogPost, TestComment, TestUser};
+use actix_web::web::post;
 
 #[tokio::test]
 async fn create_comment_works() {
@@ -11,9 +12,15 @@ async fn create_comment_works() {
     let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
     let test_comment = TestComment::generate();
 
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
     let response = app
         .post_create_comment(
             &serde_json::json!({
+                "csrf_token": csrf,
                 "contents": &test_comment.contents
             }),
             &blog_post_id,
@@ -42,9 +49,15 @@ async fn edit_comment_works() {
     let test_comment = TestComment::generate();
     let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
 
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
     let response = app
         .post_edit_comment(
             &serde_json::json!({
+                "csrf_token": csrf,
                 "contents": "New contents",
                 "is_deleted": false
             }),
@@ -82,22 +95,27 @@ async fn cant_edit_others_comment() {
     other_user.register_internally(app.pool());
     other_user.login(&app).await;
 
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
     let response = app
         .post_edit_comment(
             &serde_json::json!({
+                "csrf_token": csrf,
                 "contents": "New contents",
-                "is_deleted": false
             }),
             &blog_post_id,
             &comment_id,
         )
         .await;
-    assert_resp_forbidden(&response);
 
     let post_html = app
         .get_view_blog_post_page_html(blog_post_id.as_ref())
         .await;
     assert!(!post_html.contains("New contents"));
+    assert!(post_html.contains("Can't change others comment"));
     assert!(post_html.contains(&test_comment.contents));
 }
 
@@ -161,9 +179,15 @@ async fn create_response_comment_works() {
     let comment_id = test_comment.register_internally(app.pool(), &blog_post_id, &user_id);
     let other_comment = TestComment::generate();
 
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
     let response = app
         .post_create_comment(
             &serde_json::json!({
+                "csrf_token": csrf,
                 "contents": &other_comment.contents,
                 "parent": comment_id.as_ref()
             }),
@@ -195,9 +219,15 @@ async fn delete_comment_in_middle_of_response_tree_works() {
     let response_comment = TestComment::generate();
     response_comment.register_response_internally(app.pool(), &blog_post_id, &user_id, &comment_id);
 
+    let csrf = extract_csrf_token(
+        &app.get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+            .await,
+    );
+
     let response = app
         .post_edit_comment(
             &serde_json::json!({
+                "csrf_token": csrf,
                 "contents": "New contents",
                 "is_deleted": true
             }),
