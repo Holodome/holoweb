@@ -3,6 +3,7 @@ use crate::domain::blog_posts::{
 };
 use crate::domain::users::UserID;
 use crate::middleware::{Messages, Session};
+use crate::routes::error_handlers::ErrorPageTemplate;
 use crate::routes::internal::comments::render_regular_comments;
 use crate::services::{
     get_all_blog_posts, get_blog_post_by_id, get_comment_views_for_blog_post, insert_new_blog_post,
@@ -56,6 +57,14 @@ pub async fn blog_post(
     let blog_post = get_blog_post_by_id(&pool, &blog_post_id)
         .map_err(e500)?
         .ok_or_else(|| actix_web::error::ErrorNotFound("No blog post with such id"))?;
+
+    if blog_post.visibility == BlogPostVisibility::Authenticated && current_user_id.is_none() {
+        return render_template(ErrorPageTemplate {
+            error_title: "Insufficient permissions",
+            error_message: "You have to be authenticated to view this blog post",
+            messages: messages.into(),
+        });
+    }
 
     let comments = get_comment_views_for_blog_post(&pool, &blog_post_id).map_err(e500)?;
     let rendered_comments =

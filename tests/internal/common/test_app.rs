@@ -1,3 +1,4 @@
+use crate::api::assert_resp_ok;
 use crate::common::{get_test_config, init_tracing, TestDB};
 use holosite::domain::blog_posts::BlogPostID;
 use holosite::domain::comments::CommentID;
@@ -172,7 +173,7 @@ impl TestApp {
     }
 
     pub async fn get_account_page_html(&self) -> String {
-        self.get_page("/account/home").await.text().await.unwrap()
+        self.get_page_html("/account/home").await
     }
 
     pub async fn get_create_blog_post_page(&self) -> Response {
@@ -184,7 +185,7 @@ impl TestApp {
     }
 
     pub async fn get_all_blog_posts_page_html(&self) -> String {
-        self.get_all_blog_posts_page().await.text().await.unwrap()
+        self.get_page_html("/blog_posts/all").await
     }
 
     pub async fn get_edit_blog_post_page(&self, id: &str) -> Response {
@@ -193,7 +194,8 @@ impl TestApp {
     }
 
     pub async fn get_edit_blog_post_page_html(&self, id: &str) -> String {
-        self.get_edit_blog_post_page(id).await.text().await.unwrap()
+        self.get_page_html(format!("/blog_posts/{}/edit", id).as_str())
+            .await
     }
 
     pub async fn get_view_blog_post_page(&self, id: &str) -> Response {
@@ -202,7 +204,8 @@ impl TestApp {
     }
 
     pub async fn get_view_blog_post_page_html(&self, id: &str) -> String {
-        self.get_view_blog_post_page(id).await.text().await.unwrap()
+        self.get_page_html(format!("/blog_posts/{}/view", id).as_str())
+            .await
     }
 
     pub async fn get_view_project_page(&self, id: &str) -> Response {
@@ -211,7 +214,8 @@ impl TestApp {
     }
 
     pub async fn get_view_project_page_html(&self, id: &str) -> String {
-        self.get_view_blog_post_page(id).await.text().await.unwrap()
+        self.get_page_html(format!("/projects/{}/view", id).as_str())
+            .await
     }
 
     pub async fn get_all_projects_page(&self) -> Response {
@@ -219,7 +223,7 @@ impl TestApp {
     }
 
     pub async fn get_all_projects_page_html(&self) -> String {
-        self.get_all_projects_page().await.text().await.unwrap()
+        self.get_page_html("/projects/all").await
     }
 
     pub async fn get_edit_project_page(&self, id: &str) -> Response {
@@ -228,7 +232,8 @@ impl TestApp {
     }
 
     pub async fn get_edit_project_page_html(&self, id: &str) -> String {
-        self.get_edit_project_page(id).await.text().await.unwrap()
+        self.get_page_html(format!("/blog_posts/{}/edit", id).as_str())
+            .await
     }
 
     pub async fn get_page(&self, rel_address: &str) -> Response {
@@ -249,5 +254,11 @@ impl TestApp {
             .send()
             .await
             .expect("Failed to execute request")
+    }
+
+    pub async fn get_page_html(&self, rel_address: &str) -> String {
+        let response = self.get_page(rel_address).await;
+        assert_resp_ok(&response);
+        response.text().await.unwrap()
     }
 }

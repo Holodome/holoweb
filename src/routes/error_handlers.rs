@@ -6,10 +6,10 @@ use askama::Template;
 
 #[derive(Template)]
 #[template(path = "error_page.html")]
-struct ErrorPageTemplate<'a> {
-    error_title: &'a str,
-    error_message: &'a str,
-    messages: Messages,
+pub struct ErrorPageTemplate<'a> {
+    pub error_title: &'a str,
+    pub error_message: &'a str,
+    pub messages: Messages,
 }
 
 pub fn not_found_handler<B>(res: ServiceResponse<B>) -> actix_web::Result<ErrorHandlerResponse<B>> {

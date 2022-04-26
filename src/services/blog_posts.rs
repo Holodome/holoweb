@@ -1,6 +1,4 @@
-use crate::domain::blog_posts::{
-    BlogPost, BlogPostID, BlogPostVisibility, NewBlogPost, UpdateBlogPost,
-};
+use crate::domain::blog_posts::{BlogPost, BlogPostID, NewBlogPost, UpdateBlogPost};
 use crate::domain::time::DateTime;
 use crate::domain::users::UserID;
 use crate::schema::blog_posts::dsl::*;
@@ -57,14 +55,13 @@ pub fn insert_new_blog_post(
     let time = DateTime::now();
     let blog_post = BlogPost {
         id: BlogPostID::generate_random(),
-
         title: new_blog_post.title.to_string(),
         brief: new_blog_post.brief.to_string(),
         contents: new_blog_post.contents.to_string(),
         author_id: new_blog_post.author_id.clone(),
         created_at: time.clone(),
         updated_at: time,
-        visibility: BlogPostVisibility::All,
+        visibility: new_blog_post.visibility.clone(),
     };
     insert_into(blog_posts)
         .values(&blog_post)

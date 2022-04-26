@@ -134,3 +134,22 @@ async fn you_must_be_logged_in_to_leave_comments() {
         .await;
     assert_is_redirect_to_resource(&response, "/login");
 }
+
+#[tokio::test]
+async fn cant_view_protected_blog_post() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(app.pool());
+
+    let blog_post = TestBlogPost::generate_authenticated();
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
+
+    let response = app.get_view_blog_post_page(blog_post_id.as_ref()).await;
+    assert_resp_ok(&response);
+
+    let html = app
+        .get_view_blog_post_page_html(blog_post_id.as_ref())
+        .await;
+    println!("{}", html);
+    assert!(html.contains("You have to be authenticated to view this blog post"))
+}
