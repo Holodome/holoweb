@@ -194,3 +194,34 @@ async fn can_change_blog_post_visibility() {
         .await;
     assert!(html.contains("You have to be authenticated to view this blog post"))
 }
+
+#[tokio::test]
+async fn blogpost_contents_are_rendered_from_markdown() {
+    let app = TestApp::spawn().await;
+    let test_user = TestUser::generate();
+    let user_id = test_user.register_internally(app.pool());
+    test_user.login(&app).await;
+
+    let mut blog_post = TestBlogPost::generate();
+    blog_post.contents = r#"
+# This is title
+
+*Hello world*
+
+`inline code`
+    "#
+    .to_string();
+    let blog_post_id = blog_post.register_internally(app.pool(), &user_id);
+
+    let response = app
+        .get_view_blog_post_page(blog_post_id.as_ref().as_str())
+        .await;
+    assert_resp_ok(&response);
+    let html = app
+        .get_view_blog_post_page_html(blog_post_id.as_ref().as_str())
+        .await;
+    assert!(html.contains(&blog_post.title));
+    assert!(html.contains("<h1>This is title</h1>"));
+    assert!(html.contains("<em>Hello world</em>"));
+    assert!(html.contains("<p><code>inline code</code></p>"));
+}

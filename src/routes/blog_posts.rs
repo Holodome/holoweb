@@ -2,6 +2,7 @@ use crate::domain::blog_posts::{
     BlogPost, BlogPostID, BlogPostVisibility, NewBlogPost, UpdateBlogPost,
 };
 use crate::domain::users::UserID;
+use crate::markdown::parse_markdown_to_html;
 use crate::middleware::{Messages, Session};
 use crate::routes::error_handlers::ErrorPageTemplate;
 use crate::routes::internal::comments::render_regular_comments;
@@ -43,7 +44,10 @@ pub async fn all_blog_posts(
 #[template(path = "blog_post.html", escape = "none")]
 struct BlogPostTemplate<'a> {
     messages: Messages,
-    blog_post: BlogPost,
+    blog_post_id: &'a str,
+    blog_post_title: &'a str,
+    blog_post_brief: &'a str,
+    blog_post_contents: &'a str,
     rendered_comments: String,
     csrf_token: &'a str,
 }
@@ -75,7 +79,10 @@ pub async fn blog_post(
 
     render_template(BlogPostTemplate {
         messages: messages.into(),
-        blog_post,
+        blog_post_id: blog_post.id.as_ref().as_str(),
+        blog_post_title: &blog_post.title,
+        blog_post_brief: &blog_post.brief,
+        blog_post_contents: &parse_markdown_to_html(&blog_post.contents),
         rendered_comments,
         csrf_token: session.get_csrf_token().map_err(e500)?.expose_secret(),
     })

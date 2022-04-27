@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ blog_post.title }}{% endblock %}
+{% block title %}{{ blog_post_title }}{% endblock %}
 
 {% block head %}
 <script src="/static/lib/dropdown.min.js"></script>
@@ -13,19 +13,19 @@
 <div class="ui text container">
   <div class="ui horizontal divider"></div>
   <h1 class="ui huge header">
-    {{ blog_post.title }}
+    {{ blog_post_title }}
   </h1>
 
-  <p>{{ blog_post.brief }}</p>
+  <p>{{ blog_post_brief }}</p>
 
   <div class="ui text container">
-    {{ blog_post.contents }}
+    {{ blog_post_contents }}
   </div>
 
   <h2 class="ui horizontal divider header">Comments</h2>
   <div class="ui comments">
 
-    <form hidden class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create" method="post" id="comment-reply-form">
+    <form hidden class="ui reply form" action="/blog_posts/{{blog_post_id}}/comments/create" method="post" id="comment-reply-form">
       <input type="hidden" id="comment-reply-form-id" value="" name="reply_to_id">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <div class="field">
@@ -46,7 +46,7 @@
       </button>
     </form>
 
-    <form class="ui reply form" action="/blog_posts/{{blog_post.id}}/comments/create" method="post" id="reply-form">
+    <form class="ui reply form" action="/blog_posts/{{blog_post_id}}/comments/create" method="post" id="reply-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <div class="field">
         <textarea name="contents"></textarea>

@@ -100,11 +100,12 @@ where
                 .map(|c| rendered.remove(c.id.as_ref().as_str()).unwrap())
                 .collect();
 
+            let contents = current.contents.trim_start_matches(char::is_whitespace);
             let s = renderer(RenderCommentData {
                 id: current.id.as_ref(),
                 author: current.author_name.as_ref(),
                 date: &current.created_at.since(&current_time),
-                contents: &current.contents,
+                contents,
                 rendered_children,
                 is_comment_author: current_user_id
                     .map(|it| &current.author_id == it)

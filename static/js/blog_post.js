@@ -45,7 +45,7 @@ $(document).ready(() => {
         let paragraph = $( "#comment-contents-paragraph-" + comment_id );
         paragraph.hide();
 
-        $( "#edit-comment-form-contents" ).val(paragraph.text());
+        $( "#edit-comment-form-contents" ).val(paragraph.text().trim());
         $( "#comment-contents-" + comment_id ).after(form);
     })
     ;
