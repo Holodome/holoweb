@@ -1,5 +1,9 @@
 -- Your SQL goes here
 -- This file should undo anything in `up.sql`
+create table check_if_migrated (
+    whatever int primary key not null
+);
+
 create table users (
     id varchar primary key not null,
     name text unique not null,

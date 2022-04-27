@@ -9,6 +9,7 @@ use actix_web::{http, web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
 use diesel::r2d2::ConnectionManager;
+use diesel::RunQueryDsl;
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
 use std::time::Duration;
@@ -29,6 +30,12 @@ pub fn get_connection_pool(uri: &str) -> Pool {
 
 impl Application {
     pub async fn build_with_pool(config: Config, pool: Pool) -> Result<Self, anyhow::Error> {
+        // Check if database migrated
+        let conn = pool.get()?;
+        crate::schema::check_if_migrated::dsl::check_if_migrated
+            .load::<(i32,)>(&conn)
+            .map_err(|_| anyhow::anyhow!("Database is not migrated"))?;
+
         let address = format!("{}:{}", config.app.host, config.app.port);
         tracing::info!("Starting server on {:?}", &address);
         let listener = TcpListener::bind(address)?;

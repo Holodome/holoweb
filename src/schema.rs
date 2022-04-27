@@ -12,6 +12,12 @@ table! {
 }
 
 table! {
+    check_if_migrated (whatever) {
+        whatever -> Integer,
+    }
+}
+
+table! {
     comments (id) {
         id -> Text,
         contents -> Text,
@@ -72,6 +78,7 @@ joinable!(projects -> users (author_id));
 
 allow_tables_to_appear_in_same_query!(
     blog_posts,
+    check_if_migrated,
     comments,
     project_blog_post_junctions,
     project_editor_junctions,

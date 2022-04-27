@@ -5,3 +5,4 @@ drop table comments;
 drop table projects;
 drop table project_blog_post_junctions;
 drop table project_editor_junctions;
+drop table check_if_migrated;
