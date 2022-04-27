@@ -87,7 +87,11 @@ async fn run(
         App::new()
             .wrap(TracingLogger::default())
             .wrap(message_framework.clone())
-            .wrap(SessionMiddleware::builder(redis_store.clone(), secret_key.clone()).build())
+            .wrap(
+                SessionMiddleware::builder(redis_store.clone(), secret_key.clone())
+                    .cookie_secure(false)
+                    .build(),
+            )
             .wrap(
                 ErrorHandlers::new()
                     .handler(
