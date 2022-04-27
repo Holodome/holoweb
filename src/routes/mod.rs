@@ -38,7 +38,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         .service(
             web::scope("/account")
                 .wrap(from_fn(require_login))
-                .route("/home", web::get().to(account::account))
+                .route("/home", web::get().to(account::account_home))
+                .route("/settings", web::get().to(account::account_settings))
                 .route("/change_name", web::post().to(account::change_name))
                 .route("/change_password", web::post().to(account::change_password))
                 .route("/change_email", web::post().to(account::change_email)),

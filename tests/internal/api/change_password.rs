@@ -10,7 +10,7 @@ async fn you_must_be_logged_in_to_change_password() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     app.post_logout().await;
@@ -37,7 +37,7 @@ async fn new_password_fields_must_match() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     let response = app
@@ -48,9 +48,9 @@ async fn new_password_fields_must_match() {
             "repeat_new_password": &another_new_password
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/settings");
 
-    let html = app.get_account_page_html().await;
+    let html = app.get_account_settings_page_html().await;
     assert!(html.contains("Repeat password does not match new password"));
 }
 
@@ -64,7 +64,7 @@ async fn current_password_must_be_valid() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     let response = app
@@ -75,9 +75,9 @@ async fn current_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/settings");
 
-    let html = app.get_account_page_html().await;
+    let html = app.get_account_settings_page_html().await;
     assert!(html.contains("Current password is incorrect"));
 }
 
@@ -90,7 +90,7 @@ async fn new_password_must_be_valid() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     let response = app
@@ -101,9 +101,9 @@ async fn new_password_must_be_valid() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/settings");
 
-    let html = app.get_account_page_html().await;
+    let html = app.get_account_settings_page_html().await;
     assert!(html.contains("New password is invalid"));
 }
 
@@ -116,7 +116,7 @@ async fn change_password_works() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     let response = app
@@ -127,9 +127,9 @@ async fn change_password_works() {
             "repeat_new_password": &new_password
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/settings");
 
-    let html = app.get_account_page_html().await;
+    let html = app.get_account_settings_page_html().await;
     assert!(html.contains("Your password has been changed"));
 
     let response = app.post_logout().await;

@@ -172,8 +172,8 @@ impl TestApp {
         .await
     }
 
-    pub async fn get_account_page_html(&self) -> String {
-        self.get_page_html("/account/home").await
+    pub async fn get_account_settings_page_html(&self) -> String {
+        self.get_page_html("/account/settings").await
     }
 
     pub async fn get_create_blog_post_page(&self) -> Response {

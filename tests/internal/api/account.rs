@@ -14,6 +14,6 @@ async fn account_shows_correct_user_name() {
     assert_is_redirect_to_resource(&response, "/blog_posts/all");
     // Now we are logged
 
-    let response = app.get_account_page_html().await;
+    let response = app.get_account_settings_page_html().await;
     assert!(response.contains("SuperValidName"));
 }

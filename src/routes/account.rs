@@ -13,7 +13,7 @@ use secrecy::{ExposeSecret, Secret};
 use std::fmt::Formatter;
 
 #[derive(Template)]
-#[template(path = "account.html")]
+#[template(path = "account_settings.html")]
 struct AccountPage<'a> {
     messages: Messages,
     name: &'a str,
@@ -22,7 +22,7 @@ struct AccountPage<'a> {
 }
 
 #[tracing::instrument(skip(pool, messages, session))]
-pub async fn account(
+pub async fn account_settings(
     pool: web::Data<Pool>,
     user_id: UserID,
     messages: IncomingFlashMessages,
@@ -88,7 +88,7 @@ pub async fn change_name(
     }
 
     let user_name = UserName::parse(&form.0.new_name)
-        .map_err(|e| redirect_with_error("/account/home", ChangeNameError::InvalidName(e)))?;
+        .map_err(|e| redirect_with_error("/account/settings", ChangeNameError::InvalidName(e)))?;
 
     let changeset = UpdateUser {
         id: &user_id,
@@ -100,7 +100,7 @@ pub async fn change_name(
 
     update_user(&pool, &changeset).map_err(|e| {
         redirect_with_error(
-            "/account/home",
+            "/account/settings",
             match e {
                 UserError::TakenName => ChangeNameError::TakenName,
                 _ => ChangeNameError::UnexpectedError(e.into()),
@@ -108,7 +108,7 @@ pub async fn change_name(
         )
     })?;
     FlashMessage::info("Your name has been changed").send();
-    Ok(see_other("/account/home"))
+    Ok(see_other("/account/settings"))
 }
 
 #[tracing::instrument("Change email")]
@@ -217,9 +217,14 @@ pub async fn change_password(
     })?;
 
     FlashMessage::info("Your password has been changed").send();
-    Ok(see_other("/account/home"))
+    Ok(see_other("/account/settings"))
 }
 
 fn redirect_with_error_to_account<E: std::fmt::Display>(e: E) -> InternalError<E> {
-    redirect_with_error("/account/home", e)
+    redirect_with_error("/account/settings", e)
+}
+
+#[tracing::instrument("Redirect to account")]
+pub async fn account_home(user_id: UserID) -> HttpResponse {
+    see_other(format!("/users/{}", user_id.as_ref()).as_str())
 }

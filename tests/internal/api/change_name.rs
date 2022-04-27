@@ -9,7 +9,7 @@ async fn you_must_be_logged_in_to_change_password() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     app.post_logout().await;
@@ -30,7 +30,7 @@ async fn new_name_must_be_valid() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     let response = app
@@ -39,9 +39,9 @@ async fn new_name_must_be_valid() {
             "new_name": "",
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/settings");
 
-    let html = app.get_account_page_html().await;
+    let html = app.get_account_settings_page_html().await;
     assert!(html.contains(user.name.as_ref()));
 }
 
@@ -55,7 +55,7 @@ async fn cant_change_to_taken_name() {
     let other_user = TestUser::generate();
     other_user.register_internally(app.pool());
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     let response = app
@@ -64,9 +64,9 @@ async fn cant_change_to_taken_name() {
             "new_name": other_user.name.as_ref(),
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/settings");
 
-    let html = app.get_account_page_html().await;
+    let html = app.get_account_settings_page_html().await;
     assert!(html.contains(user.name.as_ref()));
 }
 
@@ -77,7 +77,7 @@ async fn change_name_works() {
     user.register_internally(app.pool());
     user.login(&app).await;
 
-    let account = app.get_account_page_html().await;
+    let account = app.get_account_settings_page_html().await;
     let csrf = extract_csrf_token(&account);
 
     let response = app
@@ -86,7 +86,7 @@ async fn change_name_works() {
             "new_name": "NewName",
         }))
         .await;
-    assert_is_redirect_to_resource(&response, "/account/home");
+    assert_is_redirect_to_resource(&response, "/account/settings");
 
     let response = app.post_logout().await;
     assert_is_redirect_to_resource(&response, "/login");

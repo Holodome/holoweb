@@ -39,6 +39,8 @@ struct UserPageTemplate<'a> {
     blog_posts: Vec<BlogPostInfo<'a>>,
     comments: Vec<CommentInfo>,
     messages: Messages,
+    registered_when: &'a str,
+    display_account_link: bool,
 }
 
 #[tracing::instrument("User page", skip(pool, messages))]
@@ -46,6 +48,7 @@ pub async fn user_page(
     pool: web::Data<Pool>,
     path: web::Path<UserID>,
     messages: IncomingFlashMessages,
+    current_user_id: Option<UserID>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let user_id = path.into_inner();
     let user = get_user_by_id(&pool, &user_id)
@@ -84,5 +87,7 @@ pub async fn user_page(
         blog_posts: blog_post_infos,
         comments: comment_infos,
         messages: messages.into(),
+        registered_when: user.created_at.ago().as_str(),
+        display_account_link: current_user_id.map(|it| it == user.id).unwrap_or(false),
     })
 }
