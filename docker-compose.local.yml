@@ -15,7 +15,6 @@ services:
 
   app:
     container_name: "app"
-    image: "holodome/holoweb"
     build:
       context: .
       dockerfile: Dockerfile
