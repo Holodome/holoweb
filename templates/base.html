@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>{% block title %}Holodome{% endblock %}</title>
 
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script
     src="/static/lib/jquery-3.1.1.min.js"
     integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -14,11 +15,13 @@
 
   {% block head %}
   {% endblock %}
+
+  <link rel="stylesheet" href="/static/css/base.css">
 </head>
 
 <body>
   <header>
-    <div class="ui inverted menu">
+    <div class="ui inverted menu" style="border-radius: 0">
       <div class="ui container">
         <h3 class="header item">
           Holodome
@@ -38,31 +41,33 @@
     </div>
   </header>
 
-  <div class="ui middle aligned center aligned grid" style="margin-top: 50px">
-    {% for message in messages.iter() %}
-      {% match message.level %}
-        {% when crate::middleware::MessageLevel::Info %}
-          <div class="ui info message">
-        {% when crate::middleware::MessageLevel::Success %}
-          <div class="ui success message">
-        {% when crate::middleware::MessageLevel::Warning %}
-          <div class="ui warning message">
-        {% when crate::middleware::MessageLevel::Error %}
-          <div class="ui error message">
-        {% else %}
-          <div class="ui message">
-      {% endmatch %}
-            <div class="header">{{ message.title }}</div>
-            <p>{{ message.contents }}</p>
-          </div>
-    {% endfor %}
-  </div>
+  <main style="margin-top: 50px">
+    <div class="ui middle aligned center aligned grid">
+      {% for message in messages.iter() %}
+        {% match message.level %}
+          {% when crate::middleware::MessageLevel::Info %}
+            <div class="ui info message">
+          {% when crate::middleware::MessageLevel::Success %}
+            <div class="ui success message">
+          {% when crate::middleware::MessageLevel::Warning %}
+            <div class="ui warning message">
+          {% when crate::middleware::MessageLevel::Error %}
+            <div class="ui error message">
+          {% else %}
+            <div class="ui message">
+        {% endmatch %}
+              <div class="header">{{ message.title }}</div>
+              <p>{{ message.contents }}</p>
+            </div>
+      {% endfor %}
+    </div>
 
-  {% block content %}
+    {% block content %}
 
-  {% endblock %}
+    {% endblock %}
 
-  <div class="ui horizontal divider"> </div>
+    <div class="ui horizontal divider"></div>
+  </main>
 
   <footer>
     <div class="ui inverted vertical footer segment">
