@@ -50,6 +50,7 @@ struct BlogPostTemplate<'a> {
     blog_post_contents: &'a str,
     rendered_comments: String,
     csrf_token: &'a str,
+    is_authenticated: bool
 }
 
 #[tracing::instrument("Blog post", skip(pool, messages, session))]
@@ -85,6 +86,7 @@ pub async fn blog_post(
         blog_post_contents: &parse_markdown_to_html(&blog_post.contents),
         rendered_comments,
         csrf_token: session.get_csrf_token().map_err(e500)?.expose_secret(),
+        is_authenticated: current_user_id.is_some()
     })
 }
 

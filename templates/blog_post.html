@@ -11,6 +11,12 @@
 {% block content %}
 
 <div class="ui text container">
+  {% if is_authenticated %}
+    <div class="ui menu">
+      <a class="ui button" href="/blog_posts/{{ blog_post_id }}/edit">Edit</a>
+    </div>
+  {% endif %}
+
   <div class="ui horizontal divider"></div>
   <h1 class="ui huge header">
     {{ blog_post_title }}
